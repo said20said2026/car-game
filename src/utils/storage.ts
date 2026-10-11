@@ -100,6 +100,7 @@ export function loadPlayerStats(): PlayerStats {
         selectedCarId: parsed.selectedCarId ?? 'red_rocket',
         selectedTrack: parsed.selectedTrack ?? 'day',
         soundEnabled: parsed.soundEnabled ?? true,
+        musicEnabled: parsed.musicEnabled ?? true,
         upgrades: parsed.upgrades ?? {},
         unlockedCars: parsed.unlockedCars ?? ['red_rocket'],
       };
@@ -114,6 +115,7 @@ export function loadPlayerStats(): PlayerStats {
     selectedCarId: 'red_rocket',
     selectedTrack: 'day',
     soundEnabled: true,
+    musicEnabled: true,
     upgrades: {
       red_rocket: { ...DEFAULT_UPGRADE },
     },

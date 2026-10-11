@@ -4,6 +4,8 @@ import {
   RotateCcw,
   Volume2,
   VolumeX,
+  Music,
+  Music2,
   Gauge,
   Flame,
   Coins,
@@ -57,6 +59,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const [gameState, setGameState] = useState<GameState>('MENU');
   const [selectedTrack, setSelectedTrack] = useState<TrackEnvironment>('day');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [musicEnabled, setMusicEnabled] = useState<boolean>(true);
   const [currentScore, setCurrentScore] = useState<number>(0);
   const [runCoins, setRunCoins] = useState<number>(0);
   const [runDistance, setRunDistance] = useState<number>(0);
@@ -140,10 +143,13 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     setSelectedCarId(stats.selectedCarId);
     setSelectedTrack(stats.selectedTrack);
     setSoundEnabled(stats.soundEnabled);
+    const musicOn = stats.musicEnabled ?? true;
+    setMusicEnabled(musicOn);
     soundManager.setEnabled(stats.soundEnabled);
+    soundManager.setMusicEnabled(musicOn);
   }, []);
 
-  // Sync sound settings
+  // Sync sound effects settings
   const toggleSound = () => {
     const next = !soundEnabled;
     setSoundEnabled(next);
@@ -151,6 +157,24 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     const stats = loadPlayerStats();
     stats.soundEnabled = next;
     savePlayerStats(stats);
+  };
+
+  // Sync high-energy background music settings
+  const toggleMusic = () => {
+    const next = !musicEnabled;
+    setMusicEnabled(next);
+    soundManager.setMusicEnabled(next);
+    const stats = loadPlayerStats();
+    stats.musicEnabled = next;
+    savePlayerStats(stats);
+
+    if (gameState === 'PLAYING') {
+      if (next) {
+        soundManager.startMusic();
+      } else {
+        soundManager.stopMusic();
+      }
+    }
   };
 
   // Switch Track Environment
@@ -321,16 +345,23 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     setComboMessage(null);
 
     soundManager.startEngine();
-  }, []);
+    if (musicEnabled) {
+      soundManager.startMusic();
+    }
+  }, [musicEnabled]);
 
   const pauseGame = () => {
     setGameState('PAUSED');
     soundManager.stopEngine();
+    soundManager.pauseMusic();
   };
 
   const resumeGame = () => {
     setGameState('PLAYING');
     soundManager.startEngine();
+    if (musicEnabled) {
+      soundManager.resumeMusic();
+    }
   };
 
   useImperativeHandle(ref, () => ({
@@ -343,6 +374,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const gameOver = useCallback(() => {
     setGameState('GAMEOVER');
     soundManager.stopEngine();
+    soundManager.stopMusic();
     soundManager.playCrash();
 
     // Persist scores and coins
@@ -492,8 +524,9 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           }
         }
 
-        // Update sound engine
+        // Update sound engine & dynamic nitro music harmonics
         soundManager.updateEngine(p.speed / effective.topSpeed, wantAccel, wantNitro);
+        soundManager.setNitroMusicMode(wantNitro);
 
         // Spawn traffic
         nextTrafficSpawn -= dt;
@@ -1493,12 +1526,42 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           </div>
         )}
 
-        {/* Right: Sound, Fullscreen, Pause / Garage */}
-        <div className="flex items-center gap-2">
+        {/* Right: Sound, Music, Fullscreen, Pause / Garage */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Background Music Toggle Button */}
           <button
+            type="button"
+            onClick={toggleMusic}
+            className={`p-1.5 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold ${
+              musicEnabled
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-500/20'
+                : 'bg-slate-900/80 text-slate-400 border-slate-700/60 hover:text-white hover:bg-slate-800'
+            }`}
+            title={musicEnabled ? 'إيقاف موسيقى السباق الحماسية' : 'تشغيل موسيقى السباق الحماسية'}
+            aria-label="Toggle Race Music"
+          >
+            {musicEnabled ? (
+              <Music className="w-4 h-4 text-amber-400 animate-pulse" />
+            ) : (
+              <Music2 className="w-4 h-4 text-slate-400" />
+            )}
+            <span className="hidden sm:inline text-[11px] font-bold">
+              {musicEnabled ? 'موسيقى السباق' : 'الموسيقى: متوقفة'}
+            </span>
+            {musicEnabled && (
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
+            )}
+          </button>
+
+          {/* Sound FX Toggle Button */}
+          <button
+            type="button"
             onClick={toggleSound}
-            className="p-1.5 rounded-lg bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/60 transition-colors"
-            title={soundEnabled ? 'كتم الصوت' : 'تشغيل الصوت'}
+            className="p-1.5 rounded-lg bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/60 transition-colors cursor-pointer"
+            title={soundEnabled ? 'كتم المؤثرات الصوتية' : 'تشغيل المؤثرات الصوتية'}
             aria-label="Sound Toggle"
           >
             {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-red-400" />}
@@ -1746,6 +1809,29 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 </div>
               )}
 
+              {/* Music Setting Quick Toggle in Menu */}
+              <div className="flex items-center justify-center pt-1">
+                <button
+                  type="button"
+                  onClick={toggleMusic}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                    musicEnabled
+                      ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-sm shadow-amber-500/10'
+                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  {musicEnabled ? (
+                    <Music className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                  ) : (
+                    <Music2 className="w-3.5 h-3.5 text-slate-400" />
+                  )}
+                  <span>موسيقى السباق الحماسية:</span>
+                  <span className={`font-bold ${musicEnabled ? 'text-amber-400' : 'text-slate-400'}`}>
+                    {musicEnabled ? 'مفعلة' : 'متوقفة'}
+                  </span>
+                </button>
+              </div>
+
               {/* Action Buttons: Play Now / Garage */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                 <button
@@ -1793,13 +1879,28 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               <div className="space-y-2">
                 <button
                   onClick={resumeGame}
-                  className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg transition-colors"
+                  className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg transition-colors cursor-pointer"
                 >
                   متابعة القيادة
                 </button>
+
+                {/* Music toggle during pause */}
+                <button
+                  type="button"
+                  onClick={toggleMusic}
+                  className={`w-full py-2 px-4 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer ${
+                    musicEnabled
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                      : 'bg-slate-900 text-slate-400 border-slate-700'
+                  }`}
+                >
+                  {musicEnabled ? <Music className="w-4 h-4 text-amber-400" /> : <Music2 className="w-4 h-4 text-slate-400" />}
+                  <span>موسيقى السباق: {musicEnabled ? 'مفعلة (تشغيل)' : 'متوقفة (كتم)'}</span>
+                </button>
+
                 <button
                   onClick={startGame}
-                  className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg border border-slate-700 transition-colors"
+                  className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg border border-slate-700 transition-colors cursor-pointer"
                 >
                   إعادة تشغيل السباق
                 </button>
@@ -1807,8 +1908,9 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   onClick={() => {
                     setGameState('MENU');
                     soundManager.stopEngine();
+                    soundManager.stopMusic();
                   }}
-                  className="w-full py-2.5 px-4 bg-slate-900/60 hover:bg-slate-800 text-slate-300 rounded-lg transition-colors text-xs"
+                  className="w-full py-2.5 px-4 bg-slate-900/60 hover:bg-slate-800 text-slate-300 rounded-lg transition-colors text-xs cursor-pointer"
                 >
                   العودة للقائمة الرئيسية
                 </button>

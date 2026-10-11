@@ -33,6 +33,7 @@ export interface PlayerStats {
   selectedCarId: string;
   selectedTrack: TrackEnvironment;
   soundEnabled: boolean;
+  musicEnabled?: boolean;
   upgrades: Record<string, CarUpgrades>;
   unlockedCars: string[];
 }

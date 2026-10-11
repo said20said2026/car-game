@@ -1,25 +1,67 @@
 /**
  * Web Audio API synthesizer for the car racing game.
  * Generates dynamic engine RPM audio, tire drift screech, turbo nitro hiss,
- * coin bells, and crash impacts without relying on external media files.
+ * coin bells, crash impacts, AND a high-octane procedural racing soundtrack.
  */
+
+// Note frequency definitions (Hz)
+const N = {
+  // Bass octave 2 & 3
+  D2: 73.42,
+  F2: 87.31,
+  G2: 98.0,
+  A2: 110.0,
+  Bb2: 116.54,
+  C3: 130.81,
+  D3: 146.83,
+  E3: 164.81,
+  F3: 174.61,
+  G3: 196.0,
+  A3: 220.0,
+  // Mid octave 4
+  D4: 293.66,
+  E4: 329.63,
+  F4: 349.23,
+  G4: 392.0,
+  A4: 440.0,
+  Bb4: 466.16,
+  C5: 523.25,
+  D5: 587.33,
+  E5: 659.25,
+  F5: 698.46,
+};
 
 class SoundEngine {
   private ctx: AudioContext | null = null;
-  private enabled: boolean = true;
+  private sfxEnabled: boolean = true;
+  private musicEnabled: boolean = true;
+  private isEngineRunning: boolean = false;
+  private isMusicPlaying: boolean = false;
+
+  // Engine Audio Nodes
   private engineOsc: OscillatorNode | null = null;
   private engineSubOsc: OscillatorNode | null = null;
   private engineFilter: BiquadFilterNode | null = null;
   private engineGain: GainNode | null = null;
-  private isEngineRunning: boolean = false;
+
+  // Background Music Nodes & Sequencer State
+  private musicGain: GainNode | null = null;
+  private musicFilter: BiquadFilterNode | null = null;
+  private musicTimer: number | null = null;
+  private musicNextTime: number = 0;
+  private musicStep: number = 0;
+  private musicVolume: number = 0.35;
+  private isNitroMusicActive: boolean = false;
 
   constructor() {
-    // Sound will initialize on first user gesture to comply with browser autoplay policy
+    // Sound initializes on user gesture to obey browser autoplay policies
   }
 
   private initContext() {
     if (!this.ctx) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioCtx) {
         this.ctx = new AudioCtx();
       }
@@ -29,41 +71,422 @@ class SoundEngine {
     }
   }
 
+  // ==========================================
+  // Master SFX Controls
+  // ==========================================
   public setEnabled(enabled: boolean) {
-    this.enabled = enabled;
+    this.sfxEnabled = enabled;
     if (!enabled && this.engineGain) {
       this.engineGain.gain.setValueAtTime(0, this.ctx?.currentTime || 0);
     }
   }
 
   public isEnabled(): boolean {
-    return this.enabled;
+    return this.sfxEnabled;
   }
 
+  // ==========================================
+  // High-Energy Background Music Controls
+  // ==========================================
+  public setMusicEnabled(enabled: boolean) {
+    this.musicEnabled = enabled;
+    if (!enabled) {
+      this.stopMusic();
+    } else {
+      // If was previously running in game, start smoothly
+      if (this.isEngineRunning && !this.isMusicPlaying) {
+        this.startMusic();
+      }
+    }
+  }
+
+  public isMusicEnabled(): boolean {
+    return this.musicEnabled;
+  }
+
+  public toggleMusic(): boolean {
+    const next = !this.musicEnabled;
+    this.setMusicEnabled(next);
+    return next;
+  }
+
+  public setMusicVolume(volume: number) {
+    this.musicVolume = Math.max(0, Math.min(1, volume));
+    if (this.musicGain && this.ctx) {
+      this.musicGain.gain.setTargetAtTime(
+        this.musicEnabled ? this.musicVolume : 0,
+        this.ctx.currentTime,
+        0.05
+      );
+    }
+  }
+
+  private initMusicChain() {
+    if (!this.ctx) return;
+    if (!this.musicGain) {
+      this.musicGain = this.ctx.createGain();
+      this.musicGain.gain.setValueAtTime(0, this.ctx.currentTime);
+      this.musicGain.connect(this.ctx.destination);
+    }
+
+    if (!this.musicFilter) {
+      this.musicFilter = this.ctx.createBiquadFilter();
+      this.musicFilter.type = 'lowpass';
+      this.musicFilter.frequency.setValueAtTime(4500, this.ctx.currentTime);
+      this.musicFilter.Q.setValueAtTime(1.2, this.ctx.currentTime);
+      this.musicFilter.connect(this.musicGain);
+    }
+  }
+
+  public startMusic() {
+    if (!this.musicEnabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    this.initMusicChain();
+    if (this.isMusicPlaying) return;
+
+    this.isMusicPlaying = true;
+    const now = this.ctx.currentTime;
+
+    if (this.musicGain) {
+      this.musicGain.gain.cancelScheduledValues(now);
+      this.musicGain.gain.setValueAtTime(0.01, now);
+      this.musicGain.gain.linearRampToValueAtTime(this.musicVolume, now + 0.3);
+    }
+
+    this.musicNextTime = now + 0.05;
+
+    // Scheduler tick every 25ms with 120ms lookahead
+    if (this.musicTimer !== null) {
+      window.clearInterval(this.musicTimer);
+    }
+
+    this.musicTimer = window.setInterval(() => {
+      this.scheduler();
+    }, 25);
+  }
+
+  public pauseMusic() {
+    if (!this.isMusicPlaying) return;
+    if (this.musicTimer !== null) {
+      window.clearInterval(this.musicTimer);
+      this.musicTimer = null;
+    }
+    if (this.musicGain && this.ctx) {
+      this.musicGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.05);
+    }
+    this.isMusicPlaying = false;
+  }
+
+  public resumeMusic() {
+    if (!this.musicEnabled) return;
+    if (this.isMusicPlaying) return;
+    this.startMusic();
+  }
+
+  public stopMusic() {
+    if (this.musicTimer !== null) {
+      window.clearInterval(this.musicTimer);
+      this.musicTimer = null;
+    }
+    if (this.musicGain && this.ctx) {
+      try {
+        this.musicGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.08);
+      } catch {}
+    }
+    this.isMusicPlaying = false;
+    this.musicStep = 0;
+  }
+
+  public setNitroMusicMode(active: boolean) {
+    if (this.isNitroMusicActive === active) return;
+    this.isNitroMusicActive = active;
+    if (!this.ctx || !this.musicFilter || !this.musicGain) return;
+
+    const now = this.ctx.currentTime;
+    if (active) {
+      // Excite filter cutoff & volume surge during nitro
+      this.musicFilter.frequency.setTargetAtTime(9000, now, 0.08);
+      this.musicGain.gain.setTargetAtTime(this.musicVolume * 1.2, now, 0.08);
+    } else {
+      this.musicFilter.frequency.setTargetAtTime(4500, now, 0.15);
+      this.musicGain.gain.setTargetAtTime(this.musicVolume, now, 0.15);
+    }
+  }
+
+  private scheduler() {
+    if (!this.ctx || !this.isMusicPlaying) return;
+
+    // 132 BPM racing tempo
+    // 1 beat = 60 / 132 = 0.4545s
+    // 16th step = 0.4545 / 4 = 0.1136s
+    const stepDuration = 60 / 132 / 4;
+    const lookahead = 0.12;
+
+    while (this.musicNextTime < this.ctx.currentTime + lookahead) {
+      this.playMusicStep(this.musicStep, this.musicNextTime);
+      this.musicNextTime += stepDuration;
+      this.musicStep = (this.musicStep + 1) % 64; // 4-bar loop (64 steps)
+    }
+  }
+
+  private playMusicStep(step: number, time: number) {
+    if (!this.ctx || !this.musicFilter) return;
+
+    // --- 1. DRUMS SECTION ---
+    // 4-on-the-floor Kick (beats 0, 4, 8, 12 in each 16-step bar)
+    const isKickStep = step % 4 === 0;
+    // Add syncopated pre-kick at steps 14, 30, 46, 62 for driving arcade feel
+    const isSyncopatedKick = step % 16 === 14;
+    if (isKickStep || isSyncopatedKick) {
+      this.playKick(time, isKickStep);
+    }
+
+    // Snare / Clap on beats 2 & 4 (steps 4, 12, 20, 28, 36, 44, 52, 60)
+    if (step % 8 === 4) {
+      this.playSnare(time);
+    }
+
+    // Hi-Hats: every 8th note, plus accents on offbeats
+    if (step % 2 === 0) {
+      const isOffbeat = step % 4 === 2;
+      this.playHiHat(time, isOffbeat);
+    }
+
+    // --- 2. BASSLINE SECTION (Rolling 16th-note synthwave bass) ---
+    const bassNote = this.getBassNoteForStep(step);
+    if (bassNote) {
+      const isAccent = step % 4 === 0 || step % 4 === 3;
+      this.playBass(bassNote, time, isAccent);
+    }
+
+    // --- 3. SYNTH ARPEGGIO / LEAD RIFF ---
+    const leadNote = this.getLeadNoteForStep(step);
+    if (leadNote) {
+      this.playLeadNote(leadNote, time, 0.095);
+    }
+  }
+
+  private playKick(time: number, isDownbeat: boolean) {
+    if (!this.ctx || !this.musicFilter) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(140, time);
+      osc.frequency.exponentialRampToValueAtTime(36, time + 0.08);
+
+      gain.gain.setValueAtTime(isDownbeat ? 0.32 : 0.22, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+
+      osc.connect(gain);
+      gain.connect(this.musicFilter);
+
+      osc.start(time);
+      osc.stop(time + 0.11);
+    } catch {}
+  }
+
+  private playSnare(time: number) {
+    if (!this.ctx || !this.musicFilter) return;
+    try {
+      // Noise burst
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.12);
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.03));
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const hp = this.ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.setValueAtTime(1000, time);
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.18, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.11);
+
+      // Body tone
+      const body = this.ctx.createOscillator();
+      const bodyGain = this.ctx.createGain();
+      body.type = 'triangle';
+      body.frequency.setValueAtTime(200, time);
+      body.frequency.exponentialRampToValueAtTime(80, time + 0.06);
+      bodyGain.gain.setValueAtTime(0.14, time);
+      bodyGain.gain.exponentialRampToValueAtTime(0.001, time + 0.07);
+
+      noise.connect(hp);
+      hp.connect(gain);
+      gain.connect(this.musicFilter);
+
+      body.connect(bodyGain);
+      bodyGain.connect(this.musicFilter);
+
+      noise.start(time);
+      noise.stop(time + 0.12);
+      body.start(time);
+      body.stop(time + 0.08);
+    } catch {}
+  }
+
+  private playHiHat(time: number, isOffbeat: boolean) {
+    if (!this.ctx || !this.musicFilter) return;
+    try {
+      const dur = isOffbeat ? 0.065 : 0.03;
+      const bufferSize = Math.floor(this.ctx.sampleRate * dur);
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * (isOffbeat ? 0.022 : 0.01)));
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const hp = this.ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.setValueAtTime(7500, time);
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(isOffbeat ? 0.12 : 0.06, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+      noise.connect(hp);
+      hp.connect(gain);
+      gain.connect(this.musicFilter);
+
+      noise.start(time);
+      noise.stop(time + dur);
+    } catch {}
+  }
+
+  private getBassNoteForStep(step: number): number | null {
+    // 4 bars progression (D minor -> F major -> G minor -> Bb/A turnaround)
+    const bar = Math.floor(step / 16);
+    const sub = step % 16;
+
+    // Leave subtle breathers on certain 16ths for rhythmic groove
+    if (sub === 7 || sub === 15) return null;
+
+    if (bar === 0) {
+      // D minor
+      return sub % 2 === 0 ? N.D2 : sub === 3 || sub === 11 ? N.D3 : N.D2;
+    } else if (bar === 1) {
+      // F major
+      return sub % 2 === 0 ? N.F2 : sub === 3 || sub === 11 ? N.F3 : N.C3;
+    } else if (bar === 2) {
+      // G minor
+      return sub % 2 === 0 ? N.G2 : sub === 3 || sub === 11 ? N.G3 : N.D3;
+    } else {
+      // Turnaround: Bb2 -> A2
+      if (sub < 8) {
+        return sub % 2 === 0 ? N.Bb2 : N.F2;
+      } else {
+        return sub % 2 === 0 ? N.A2 : N.E3;
+      }
+    }
+  }
+
+  private playBass(freq: number, time: number, isAccent: boolean) {
+    if (!this.ctx || !this.musicFilter) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const filter = this.ctx.createBiquadFilter();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, time);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(isAccent ? 580 : 380, time);
+      filter.frequency.exponentialRampToValueAtTime(140, time + 0.09);
+      filter.Q.setValueAtTime(2.8, time);
+
+      gain.gain.setValueAtTime(isAccent ? 0.2 : 0.14, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.musicFilter);
+
+      osc.start(time);
+      osc.stop(time + 0.11);
+    } catch {}
+  }
+
+  private getLeadNoteForStep(step: number): number | null {
+    // Catchy arcade synth lead sequence across 64 steps
+    const bar = Math.floor(step / 16);
+    const sub = step % 16;
+
+    // Bar 0: D minor heroic racing motif
+    if (bar === 0) {
+      const pattern = [N.D4, N.F4, N.A4, N.D5, N.C5, N.A4, N.F4, N.G4, N.A4, N.D4, N.F4, N.A4, N.C5, N.D5, null, null];
+      return pattern[sub];
+    }
+    // Bar 1: F major speed ascent
+    if (bar === 1) {
+      const pattern = [N.F4, N.A4, N.C5, N.F5, N.E5, N.C5, N.A4, N.Bb4, N.C5, N.F4, N.A4, N.C5, N.E5, N.F5, null, null];
+      return pattern[sub];
+    }
+    // Bar 2: G minor power rush
+    if (bar === 2) {
+      const pattern = [N.G4, N.Bb4, N.D5, N.G4, N.F4, N.D5, N.Bb4, N.C5, N.D5, N.G4, N.Bb4, N.D5, N.F5, N.G4, null, null];
+      return pattern[sub];
+    }
+    // Bar 3: Climactic climax & loop return
+    const pattern = [N.Bb4, N.D5, N.F5, N.D5, N.A4, N.C5, N.E5, N.C5, N.A4, N.E5, N.D5, N.C5, N.A4, N.F4, N.E4, null];
+    return pattern[sub];
+  }
+
+  private playLeadNote(freq: number, time: number, dur: number) {
+    if (!this.ctx || !this.musicFilter) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, time);
+
+      gain.gain.setValueAtTime(0.065, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+      osc.connect(gain);
+      gain.connect(this.musicFilter);
+
+      osc.start(time);
+      osc.stop(time + dur + 0.01);
+    } catch {}
+  }
+
+  // ==========================================
+  // Sound Effects (Engine, Nitro, Drift, Crash)
+  // ==========================================
   public startEngine() {
-    if (!this.enabled) return;
+    if (!this.sfxEnabled) return;
     this.initContext();
     if (!this.ctx || this.isEngineRunning) return;
 
     try {
       const now = this.ctx.currentTime;
-      // Main engine harmonic oscillator
       this.engineOsc = this.ctx.createOscillator();
       this.engineOsc.type = 'sawtooth';
       this.engineOsc.frequency.setValueAtTime(45, now);
 
-      // Low frequency rumbler
       this.engineSubOsc = this.ctx.createOscillator();
       this.engineSubOsc.type = 'triangle';
       this.engineSubOsc.frequency.setValueAtTime(28, now);
 
-      // Low pass filter to simulate muffler & engine body resonance
       this.engineFilter = this.ctx.createBiquadFilter();
       this.engineFilter.type = 'lowpass';
       this.engineFilter.frequency.setValueAtTime(220, now);
       this.engineFilter.Q.setValueAtTime(2.5, now);
 
-      // Gain control
       this.engineGain = this.ctx.createGain();
       this.engineGain.gain.setValueAtTime(0.08, now);
 
@@ -75,21 +498,18 @@ class SoundEngine {
       this.engineOsc.start();
       this.engineSubOsc.start();
       this.isEngineRunning = true;
-    } catch {
-      // Audio init safeguard
-    }
+    } catch {}
   }
 
   public updateEngine(speedNormalized: number, isAccelerating: boolean, isNitro: boolean) {
     if (!this.ctx || !this.isEngineRunning || !this.engineOsc || !this.engineFilter || !this.engineGain) return;
-    if (!this.enabled) {
+    if (!this.sfxEnabled) {
       this.engineGain.gain.setValueAtTime(0, this.ctx.currentTime);
       return;
     }
 
     try {
       const now = this.ctx.currentTime;
-      // Base frequency between 40Hz (idle) to 180Hz (top speed)
       const targetFreq = 42 + speedNormalized * 110 + (isNitro ? 30 : 0);
       const targetSubFreq = targetFreq * 0.55;
       const targetFilterFreq = 200 + speedNormalized * 650 + (isAccelerating ? 220 : 0);
@@ -101,9 +521,7 @@ class SoundEngine {
       }
       this.engineFilter.frequency.setTargetAtTime(targetFilterFreq, now, 0.08);
       this.engineGain.gain.setTargetAtTime(targetVol, now, 0.08);
-    } catch {
-      // Audio sync safe
-    }
+    } catch {}
   }
 
   public stopEngine() {
@@ -129,7 +547,7 @@ class SoundEngine {
   }
 
   public playCoin() {
-    if (!this.enabled) return;
+    if (!this.sfxEnabled) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -154,14 +572,13 @@ class SoundEngine {
   }
 
   public playNitroBoost() {
-    if (!this.enabled) return;
+    if (!this.sfxEnabled) return;
     this.initContext();
     if (!this.ctx) return;
 
     try {
       const now = this.ctx.currentTime;
-      // White noise burst with resonance
-      const bufferSize = this.ctx.sampleRate * 0.5;
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.5);
       const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
@@ -191,7 +608,7 @@ class SoundEngine {
   }
 
   public playDrift() {
-    if (!this.enabled) return;
+    if (!this.sfxEnabled) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -222,13 +639,13 @@ class SoundEngine {
   }
 
   public playCrash() {
-    if (!this.enabled) return;
+    if (!this.sfxEnabled) return;
     this.initContext();
     if (!this.ctx) return;
 
     try {
       const now = this.ctx.currentTime;
-      const bufferSize = this.ctx.sampleRate * 0.6;
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.6);
       const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
@@ -257,7 +674,7 @@ class SoundEngine {
   }
 
   public playNearMiss() {
-    if (!this.enabled) return;
+    if (!this.sfxEnabled) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -282,7 +699,7 @@ class SoundEngine {
   }
 
   public playClick() {
-    if (!this.enabled) return;
+    if (!this.sfxEnabled) return;
     this.initContext();
     if (!this.ctx) return;
 
