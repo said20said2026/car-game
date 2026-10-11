@@ -72,6 +72,52 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const [selectedCarId, setSelectedCarId] = useState<string>('red_rocket');
   const [carHealth, setCarHealth] = useState<number>(100);
 
+  // Mobile Device Detection
+  const isMobileDevice = typeof window !== 'undefined' && (
+    window.innerWidth < 768 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    ('ontouchstart' in window)
+  );
+
+  // Performance Mode (60 FPS High Speed for Mobile)
+  const [performanceMode, setPerformanceMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('fast_racing_perf_mode');
+      if (saved !== null) return saved === 'true';
+    } catch {}
+    return isMobileDevice;
+  });
+
+  const togglePerformanceMode = () => {
+    const next = !performanceMode;
+    setPerformanceMode(next);
+    try {
+      localStorage.setItem('fast_racing_perf_mode', String(next));
+    } catch {}
+  };
+
+  // FPS Counter
+  const [fps, setFps] = useState<number>(60);
+  const fpsFrameCountRef = useRef<number>(0);
+  const fpsLastTimeRef = useRef<number>(performance.now());
+
+  // Cached player stats and car specs to eliminate synchronous localStorage reads in 60 FPS animation loop
+  const activeCarStatsRef = useRef<{
+    stats: ReturnType<typeof loadPlayerStats>;
+    currentCar: (typeof CARS_DATA)[0];
+    effective: ReturnType<typeof getCarEffectiveStats>;
+  } | null>(null);
+
+  const refreshActiveCarStats = useCallback(() => {
+    const stats = loadPlayerStats();
+    const currentCar = CARS_DATA.find((c) => c.id === stats.selectedCarId) || CARS_DATA[0];
+    const effective = getCarEffectiveStats(currentCar, stats.upgrades[currentCar.id]);
+    activeCarStatsRef.current = { stats, currentCar, effective };
+    return activeCarStatsRef.current;
+  }, []);
+
+  const lastUiSyncRef = useRef<number>(0);
+
   // Active Key States
   const keysRef = useRef<{
     left: boolean;
@@ -275,9 +321,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
 
   // Setup / Reset Game Run
   const startGame = useCallback(() => {
-    const stats = loadPlayerStats();
-    const currentCar = CARS_DATA.find((c) => c.id === stats.selectedCarId) || CARS_DATA[0];
-    const effective = getCarEffectiveStats(currentCar, stats.upgrades[currentCar.id]);
+    const activeData = refreshActiveCarStats();
+    const effective = activeData.effective;
 
     playerRef.current = {
       x: 0,
@@ -401,7 +446,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = (canvas.getContext('2d', { alpha: false, desynchronized: true }) || canvas.getContext('2d')) as CanvasRenderingContext2D | null;
     if (!ctx) return;
 
     let nextTrafficSpawn = 0;
@@ -413,33 +458,53 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
       const dt = Math.min((timestamp - lastTimeRef.current) / 1000, 0.1);
       lastTimeRef.current = timestamp;
 
-      // Handle Resize dynamically
-      const dpr = window.devicePixelRatio || 1;
+      // Track FPS
+      fpsFrameCountRef.current++;
+      const now = performance.now();
+      if (now - fpsLastTimeRef.current >= 1000) {
+        setFps(Math.round((fpsFrameCountRef.current * 1000) / (now - fpsLastTimeRef.current)));
+        fpsFrameCountRef.current = 0;
+        fpsLastTimeRef.current = now;
+      }
+
+      // Handle Resize dynamically with Mobile-Optimized DPR
+      const targetMaxDpr = isMobileDevice
+        ? (performanceMode ? 1.0 : 1.25)
+        : (performanceMode ? 1.25 : Math.min(window.devicePixelRatio || 1, 2.0));
+      const dpr = Math.max(1.0, Math.min(window.devicePixelRatio || 1, targetMaxDpr));
       const width = canvas.parentElement?.clientWidth || 800;
       const height = Math.min(width * 0.65, 520);
-      if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
-        canvas.width = width * dpr;
-        canvas.height = height * dpr;
+      const targetWidth = Math.round(width * dpr);
+      const targetHeight = Math.round(height * dpr);
+      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
       }
       ctx.save();
       ctx.scale(dpr, dpr);
 
-      // Current player car config
-      const stats = loadPlayerStats();
-      const currentCar = CARS_DATA.find((c) => c.id === stats.selectedCarId) || CARS_DATA[0];
-      const effective = getCarEffectiveStats(currentCar, stats.upgrades[currentCar.id]);
+      // Current player car config from memory cache (NO synchronous localStorage in 60fps loop!)
+      if (!activeCarStatsRef.current) {
+        refreshActiveCarStats();
+      }
+      const activeData = activeCarStatsRef.current!;
+      const stats = activeData.stats;
+      const currentCar = activeData.currentCar;
+      const effective = activeData.effective;
 
-      // Initialize 3D Warp Tunnel Motion Blur Streaks if needed
-      if (warpLinesRef.current.length === 0) {
-        for (let i = 0; i < 52; i++) {
-          const angle = (i / 52) * Math.PI * 2 + (Math.random() - 0.5) * 0.14;
+      // Initialize 3D Warp Tunnel Motion Blur Streaks (Scaled down on mobile for high FPS)
+      const maxWarpCount = (isMobileDevice || performanceMode) ? 16 : 48;
+      if (warpLinesRef.current.length === 0 || warpLinesRef.current.length !== maxWarpCount) {
+        warpLinesRef.current = [];
+        for (let i = 0; i < maxWarpCount; i++) {
+          const angle = (i / maxWarpCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.14;
           warpLinesRef.current.push({
             angle,
             dist: Math.random() * 550,
-            length: 25 + Math.random() * 65,
+            length: 20 + Math.random() * 50,
             speed: 380 + Math.random() * 420,
             color: Math.random() > 0.35 ? '#38bdf8' : '#ffffff',
-            width: 1.5 + Math.random() * 2,
+            width: 1.5 + Math.random() * 1.5,
           });
         }
       }
@@ -618,17 +683,18 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             setCarHealth(Math.max(0, p.health));
             soundManager.playCrash();
 
-            // Spawn crash debris particles
-            for (let k = 0; k < 18; k++) {
+            // Spawn crash debris particles (optimized count on mobile)
+            const crashDebrisCount = (isMobileDevice || performanceMode) ? 8 : 16;
+            for (let k = 0; k < crashDebrisCount; k++) {
               particlesRef.current.push({
                 x: width / 2 + p.x * (width * 0.3),
                 y: height * 0.82,
                 vx: (Math.random() - 0.5) * 350,
                 vy: -Math.random() * 280,
-                life: 0.7,
-                maxLife: 0.7,
+                life: 0.6,
+                maxLife: 0.6,
                 color: Math.random() > 0.5 ? '#f97316' : '#ef4444',
-                size: 3 + Math.random() * 4,
+                size: 3 + Math.random() * 3,
               });
             }
 
@@ -666,17 +732,18 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               soundManager.playNitroBoost();
             }
 
-            // Spawn sparkly pickup particles
-            for (let k = 0; k < 10; k++) {
+            // Spawn sparkly pickup particles (optimized count on mobile)
+            const pickupParticleCount = (isMobileDevice || performanceMode) ? 5 : 10;
+            for (let k = 0; k < pickupParticleCount; k++) {
               particlesRef.current.push({
                 x: width / 2 + p.x * (width * 0.3),
                 y: height * 0.82,
                 vx: (Math.random() - 0.5) * 150,
                 vy: -Math.random() * 150 - 50,
-                life: 0.5,
-                maxLife: 0.5,
+                life: 0.45,
+                maxLife: 0.45,
                 color: item.type === 'coin' ? '#fbbf24' : '#38bdf8',
-                size: 2.5 + Math.random() * 3,
+                size: 2.5 + Math.random() * 2.5,
               });
             }
           }
@@ -841,7 +908,14 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           }
         }
 
-        // Record Motion Blur Afterimage Ghosts
+        // Particle budget enforcement (prevents particle explosion on mobile)
+        const maxActiveParticles = (isMobileDevice || performanceMode) ? 30 : 85;
+        if (particlesRef.current.length > maxActiveParticles) {
+          particlesRef.current.splice(0, particlesRef.current.length - maxActiveParticles);
+        }
+
+        // Record Motion Blur Afterimage Ghosts (capped for mobile)
+        const maxGhostCount = (isMobileDevice || performanceMode) ? 2 : 5;
         if (wantNitro || p.speed > 210) {
           carGhostsRef.current.unshift({
             x: curPlayerX,
@@ -851,19 +925,23 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             accentColor: currentCar.accentColor,
             speed: p.speed,
           });
-          if (carGhostsRef.current.length > 5) {
-            carGhostsRef.current.pop();
+          if (carGhostsRef.current.length > maxGhostCount) {
+            carGhostsRef.current.length = maxGhostCount;
           }
         } else if (carGhostsRef.current.length > 0) {
           carGhostsRef.current.pop();
         }
 
-        // Update state hooks (throttled to UI)
-        setCurrentSpeed(Math.round(p.speed));
-        setNitroAmount(Math.round((p.nitro / effective.nitro) * 100));
-        setCurrentScore(Math.floor(p.score));
-        setRunCoins(p.coinsCollected);
-        setRunDistance(Math.floor(p.distance));
+        // Update state hooks (throttled to 10-12 FPS to eliminate mobile React tree re-render overhead)
+        const nowUi = performance.now();
+        if (nowUi - lastUiSyncRef.current > (isMobileDevice ? 90 : 60)) {
+          lastUiSyncRef.current = nowUi;
+          setCurrentSpeed(Math.round(p.speed));
+          setNitroAmount(Math.round((p.nitro / effective.nitro) * 100));
+          setCurrentScore(Math.floor(p.score));
+          setRunCoins(p.coinsCollected);
+          setRunDistance(Math.floor(p.distance));
+        }
       }
 
       // ==========================================
@@ -1226,7 +1304,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         ctx.restore();
       });
 
-      // 7. PARTICLES (Smoke, fire, rain, debris, sparks, vortex streaks, rings)
+      // 7. PARTICLES (Batch-drawn for mobile performance without ctx.save/restore)
       for (let i = particlesRef.current.length - 1; i >= 0; i--) {
         const pt = particlesRef.current[i];
         pt.x += pt.vx * dt;
@@ -1239,7 +1317,6 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         }
 
         const alpha = Math.max(0, pt.life / pt.maxLife);
-        ctx.save();
         ctx.fillStyle = pt.color;
         ctx.strokeStyle = pt.color;
         ctx.globalAlpha = alpha;
@@ -1269,9 +1346,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           ctx.arc(pt.x, pt.y, Math.max(1, pt.size * alpha), 0, Math.PI * 2);
           ctx.fill();
         }
-
-        ctx.restore();
       }
+      ctx.globalAlpha = 1.0;
 
       // Rain Weather Effect
       if (selectedTrack === 'rain') {
@@ -1379,8 +1455,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
       // Active Taillights (Glow brighter when braking)
       const isBraking = keysRef.current.down;
       ctx.fillStyle = isBraking ? '#ff0000' : '#ef4444';
-      ctx.shadowColor = '#ef4444';
-      ctx.shadowBlur = isBraking ? 18 : 8;
+      if (!isMobileDevice && !performanceMode) {
+        ctx.shadowColor = '#ef4444';
+        ctx.shadowBlur = isBraking ? 18 : 8;
+      }
       ctx.fillRect(-pW * 0.45, -pH * 0.3, 16, 7);
       ctx.fillRect(pW * 0.45 - 16, -pH * 0.3, 16, 7);
       ctx.shadowBlur = 0;
@@ -1438,7 +1516,6 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           const distRatio = Math.min(1, line.dist / (maxDist * 0.55));
           const lineAlpha = (isNitro ? 0.8 : 0.35) * distRatio;
 
-          ctx.save();
           ctx.strokeStyle = isNitro ? line.color : 'rgba(255, 255, 255, 0.45)';
           ctx.lineWidth = isNitro ? line.width * 1.8 : line.width;
           ctx.globalAlpha = lineAlpha;
@@ -1446,8 +1523,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           ctx.moveTo(startX, startY);
           ctx.lineTo(endX, endY);
           ctx.stroke();
-          ctx.restore();
         });
+        ctx.globalAlpha = 1.0;
       }
 
       // 11. NITRO TUNNEL-VISION RADIAL VIGNETTE & SCREEN EDGE PULSE
@@ -1485,7 +1562,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [gameState, selectedTrack, gameOver, onCoinsChange, isNitroActive]);
+  }, [gameState, selectedTrack, gameOver, onCoinsChange, isNitroActive, performanceMode]);
 
   return (
     <div
@@ -1528,6 +1605,24 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
 
         {/* Right: Sound, Music, Fullscreen, Pause / Garage */}
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Mobile High-Performance Turbo Toggle */}
+          <button
+            type="button"
+            onClick={togglePerformanceMode}
+            className={`p-1.5 rounded-lg border transition-all cursor-pointer flex items-center gap-1 text-xs font-semibold ${
+              performanceMode
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-sm shadow-emerald-500/10'
+                : 'bg-slate-900/80 text-slate-400 border-slate-700/60 hover:text-white hover:bg-slate-800'
+            }`}
+            title={performanceMode ? 'نمط الأداء التوربو مفعّل (60 FPS)' : 'تفعيل نمط تسريع الأداء للجوال'}
+            aria-label="Toggle High Performance Mode"
+          >
+            <Zap className={`w-3.5 h-3.5 ${performanceMode ? 'text-emerald-400 fill-emerald-400' : 'text-slate-400'}`} />
+            <span className="text-[10px] sm:text-[11px] font-bold font-game">
+              {performanceMode ? `${fps} FPS ⚡` : 'توربو'}
+            </span>
+          </button>
+
           {/* Background Music Toggle Button */}
           <button
             type="button"
@@ -1607,21 +1702,21 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           className="w-full h-full block cursor-crosshair touch-none"
         />
 
-        {/* SPEEDOMETER & NITRO GAUGE (Bottom Left of Canvas) */}
+        {/* SPEEDOMETER & NITRO GAUGE (Top Left on Mobile, Bottom Left on Desktop) */}
         {gameState === 'PLAYING' && (
-          <div className="absolute bottom-3 left-3 sm:bottom-5 sm:left-5 z-20 pointer-events-none flex flex-col gap-2">
+          <div className="absolute top-12 left-3 sm:top-auto sm:bottom-5 sm:left-5 z-20 pointer-events-none flex flex-col gap-1.5 sm:gap-2">
             {/* Speed Gauge */}
-            <div className="flex items-center gap-3 px-3 py-2 bg-slate-950/80 backdrop-blur-md rounded-xl border border-slate-800/80 shadow-lg">
-              <Gauge className="w-5 h-5 text-sky-400" />
+            <div className="flex items-center gap-2.5 sm:gap-3 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-slate-950/80 backdrop-blur-md rounded-xl border border-slate-800/80 shadow-lg">
+              <Gauge className="w-4 h-4 sm:w-5 sm:h-5 text-sky-400" />
               <div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl sm:text-3xl font-black font-game tabular-nums text-white leading-none">
+                  <span className="text-xl sm:text-3xl font-black font-game tabular-nums text-white leading-none">
                     {currentSpeed}
                   </span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">كم/س</span>
+                  <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">كم/س</span>
                 </div>
                 {/* Health Bar */}
-                <div className="w-20 sm:w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
+                <div className="w-16 sm:w-24 h-1 sm:h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
                   <div
                     className={`h-full transition-all duration-200 ${
                       carHealth > 50 ? 'bg-emerald-500' : carHealth > 25 ? 'bg-amber-500' : 'bg-red-500'
@@ -1633,14 +1728,14 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             </div>
 
             {/* Nitro Booster Bar */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-950/80 backdrop-blur-md rounded-xl border border-slate-800/80 shadow-lg">
-              <Flame className={`w-4 h-4 ${isNitroActive ? 'text-amber-400 animate-pulse' : 'text-sky-400'}`} />
-              <div className="flex-1 w-20 sm:w-24">
-                <div className="flex justify-between text-[10px] text-slate-400 font-semibold mb-0.5">
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1.5 bg-slate-950/80 backdrop-blur-md rounded-xl border border-slate-800/80 shadow-lg">
+              <Flame className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isNitroActive ? 'text-amber-400 animate-pulse' : 'text-sky-400'}`} />
+              <div className="flex-1 w-16 sm:w-24">
+                <div className="flex justify-between text-[9px] sm:text-[10px] text-slate-400 font-semibold mb-0.5">
                   <span>نيترو</span>
                   <span className="tabular-nums">{nitroAmount}%</span>
                 </div>
-                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-1.5 sm:h-2 bg-slate-800 rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all duration-100 ${
                       isNitroActive ? 'bg-gradient-to-r from-amber-500 to-red-500' : 'bg-sky-500'
@@ -1653,78 +1748,90 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           </div>
         )}
 
-        {/* TOUCH CONTROLS OVERLAY (Visible on Mobile / Touchscreens) */}
+        {/* TOUCH CONTROLS OVERLAY: Left Thumb for Steering, Right Thumb for Nitro & Brake */}
         {gameState === 'PLAYING' && (
-          <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 flex items-center gap-2 sm:gap-3">
-            {/* Steering Left / Right */}
-            <div className="flex items-center gap-1.5 bg-slate-950/60 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800">
+          <>
+            {/* Steering Controls (Bottom Left for Left Thumb) */}
+            <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 flex items-center gap-1.5 bg-slate-950/75 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800/90 shadow-xl touch-none select-none">
               <button
-                onPointerDown={() => {
+                type="button"
+                onPointerDown={(e) => {
+                  try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
                   keysRef.current.left = true;
                 }}
-                onPointerUp={() => {
+                onPointerUp={(e) => {
+                  try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
                   keysRef.current.left = false;
                 }}
-                onPointerLeave={() => {
+                onPointerCancel={() => {
                   keysRef.current.left = false;
                 }}
-                className="w-12 h-12 rounded-xl bg-slate-900/90 active:bg-sky-600 text-white flex items-center justify-center font-bold text-lg border border-slate-700/60 shadow-md touch-none"
+                className="w-13 h-13 sm:w-12 sm:h-12 rounded-xl bg-slate-900/95 active:bg-sky-600 text-white flex items-center justify-center font-bold text-lg border border-slate-700/60 shadow-md touch-none select-none cursor-pointer"
                 aria-label="Steer Left"
               >
-                <ChevronRight className="w-6 h-6 rotate-180" />
+                <ChevronRight className="w-7 h-7 rotate-180" />
               </button>
               <button
-                onPointerDown={() => {
+                type="button"
+                onPointerDown={(e) => {
+                  try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
                   keysRef.current.right = true;
                 }}
-                onPointerUp={() => {
+                onPointerUp={(e) => {
+                  try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
                   keysRef.current.right = false;
                 }}
-                onPointerLeave={() => {
+                onPointerCancel={() => {
                   keysRef.current.right = false;
                 }}
-                className="w-12 h-12 rounded-xl bg-slate-900/90 active:bg-sky-600 text-white flex items-center justify-center font-bold text-lg border border-slate-700/60 shadow-md touch-none"
+                className="w-13 h-13 sm:w-12 sm:h-12 rounded-xl bg-slate-900/95 active:bg-sky-600 text-white flex items-center justify-center font-bold text-lg border border-slate-700/60 shadow-md touch-none select-none cursor-pointer"
                 aria-label="Steer Right"
               >
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="w-7 h-7" />
               </button>
             </div>
 
-            {/* Nitro & Gas */}
-            <div className="flex items-center gap-1.5 bg-slate-950/60 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800">
+            {/* Action Controls (Bottom Right for Right Thumb) */}
+            <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 flex items-center gap-1.5 bg-slate-950/75 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800/90 shadow-xl touch-none select-none">
               <button
-                onPointerDown={() => {
+                type="button"
+                onPointerDown={(e) => {
+                  try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
                   keysRef.current.nitro = true;
                 }}
-                onPointerUp={() => {
+                onPointerUp={(e) => {
+                  try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
                   keysRef.current.nitro = false;
                 }}
-                onPointerLeave={() => {
+                onPointerCancel={() => {
                   keysRef.current.nitro = false;
                 }}
-                className="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-600 to-red-600 active:scale-95 text-white flex items-center justify-center font-bold text-xs border border-amber-400/50 shadow-md touch-none"
+                className="w-13 h-13 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-amber-600 to-red-600 active:scale-95 text-white flex items-center justify-center font-bold text-xs border border-amber-400/50 shadow-md touch-none select-none cursor-pointer"
                 aria-label="Nitro Boost"
               >
-                <Flame className="w-5 h-5 fill-white" />
+                <Flame className="w-6 h-6 fill-white" />
               </button>
 
               <button
-                onPointerDown={() => {
+                type="button"
+                onPointerDown={(e) => {
+                  try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
                   keysRef.current.down = true;
                 }}
-                onPointerUp={() => {
+                onPointerUp={(e) => {
+                  try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
                   keysRef.current.down = false;
                 }}
-                onPointerLeave={() => {
+                onPointerCancel={() => {
                   keysRef.current.down = false;
                 }}
-                className="w-12 h-12 rounded-xl bg-slate-800 active:bg-red-700 text-white flex items-center justify-center font-bold text-xs border border-slate-600 shadow-md touch-none"
+                className="w-13 h-13 sm:w-12 sm:h-12 rounded-xl bg-slate-800 active:bg-red-700 text-white flex items-center justify-center font-bold text-xs border border-slate-600 shadow-md touch-none select-none cursor-pointer"
                 aria-label="Brake"
               >
                 فرامل
               </button>
             </div>
-          </div>
+          </>
         )}
 
         {/* TITLE MENU OVERLAY */}
@@ -1809,12 +1916,12 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 </div>
               )}
 
-              {/* Music Setting Quick Toggle in Menu */}
-              <div className="flex items-center justify-center pt-1">
+              {/* Quick Toggles: Music & High-Performance Mobile Mode */}
+              <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
                 <button
                   type="button"
                   onClick={toggleMusic}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                     musicEnabled
                       ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-sm shadow-amber-500/10'
                       : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800'
@@ -1825,10 +1932,20 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   ) : (
                     <Music2 className="w-3.5 h-3.5 text-slate-400" />
                   )}
-                  <span>موسيقى السباق الحماسية:</span>
-                  <span className={`font-bold ${musicEnabled ? 'text-amber-400' : 'text-slate-400'}`}>
-                    {musicEnabled ? 'مفعلة' : 'متوقفة'}
-                  </span>
+                  <span>الموسيقى: {musicEnabled ? 'مفعلة' : 'متوقفة'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={togglePerformanceMode}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                    performanceMode
+                      ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 shadow-sm shadow-emerald-500/10'
+                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <Zap className={`w-3.5 h-3.5 ${performanceMode ? 'text-emerald-400 fill-emerald-400' : 'text-slate-400'}`} />
+                  <span>تسريع الجوال (60 FPS): {performanceMode ? 'مفعّل ⚡' : 'عادي'}</span>
                 </button>
               </div>
 
