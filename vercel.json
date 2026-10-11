@@ -8,6 +8,14 @@
       "destination": "/ads.txt"
     },
     {
+      "source": "/ai-catalog.json",
+      "destination": "/ai-catalog.json"
+    },
+    {
+      "source": "/.well-known/:path*",
+      "destination": "/.well-known/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

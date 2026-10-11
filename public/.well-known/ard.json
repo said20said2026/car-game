@@ -1,0 +1,10 @@
+{
+  "$schema": "https://ai-catalog.io/schemas/v1.0/ai-catalog.schema.json",
+  "specVersion": "1.0",
+  "host": {
+    "identifier": "https://ais-dev-xiszs2tqjgd3gms2th7mfn-907368306233.europe-west2.run.app",
+    "displayName": "لعبة سباق سيارات المدينة السريعة",
+    "documentationUrl": "https://ais-dev-xiszs2tqjgd3gms2th7mfn-907368306233.europe-west2.run.app"
+  },
+  "entries": []
+}
