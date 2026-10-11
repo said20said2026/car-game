@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Check, Lock, Zap, Gauge, Wrench, Shield, Sparkles, Coins } from 'lucide-react';
 import { CarConfig } from '../types/game';
 import {
@@ -15,6 +15,7 @@ interface GarageModalProps {
   onClose: () => void;
   coins: number;
   onCoinsChange: (newCoins: number) => void;
+  selectedCarIdProp?: string;
 }
 
 export const GarageModal: React.FC<GarageModalProps> = ({
@@ -22,13 +23,32 @@ export const GarageModal: React.FC<GarageModalProps> = ({
   onClose,
   coins,
   onCoinsChange,
+  selectedCarIdProp,
 }) => {
   const [stats, setStats] = useState(loadPlayerStats);
   const [selectedCar, setSelectedCar] = useState<CarConfig>(() => {
     const s = loadPlayerStats();
+    if (selectedCarIdProp) {
+      const found = CARS_DATA.find((c) => c.id === selectedCarIdProp);
+      if (found) return found;
+    }
     return CARS_DATA.find((c) => c.id === s.selectedCarId) || CARS_DATA[0];
   });
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      const currentStats = loadPlayerStats();
+      setStats(currentStats);
+      if (selectedCarIdProp) {
+        const found = CARS_DATA.find((c) => c.id === selectedCarIdProp);
+        if (found) setSelectedCar(found);
+      } else {
+        const found = CARS_DATA.find((c) => c.id === currentStats.selectedCarId);
+        if (found) setSelectedCar(found);
+      }
+    }
+  }, [isOpen, selectedCarIdProp]);
 
   if (!isOpen) return null;
 

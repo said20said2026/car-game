@@ -4,19 +4,26 @@ import { PolicyTab } from './PolicyModal';
 
 interface FooterProps {
   onOpenPolicy: (tab: PolicyTab) => void;
+  theme?: 'dark' | 'light';
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenPolicy }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) => {
+  const isDark = theme === 'dark';
+
   return (
-    <footer className="w-full border-t border-slate-800 bg-slate-950 mt-16 py-10 text-slate-400 text-xs">
+    <footer className={`w-full border-t mt-16 py-10 text-xs transition-colors ${
+      isDark
+        ? 'border-slate-800 bg-slate-950 text-slate-400'
+        : 'border-slate-200 bg-white text-slate-600 shadow-xs'
+    }`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
         {/* Top Row: Brand & AdSense Status */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="space-y-1 text-center sm:text-start">
-            <div className="font-bold font-game text-white text-base">
+            <div className={`font-bold font-game text-base ${isDark ? 'text-white' : 'text-slate-900'}`}>
               لعبة سباق سيارات المدينة السريعة للأبطال
             </div>
-            <p className="text-slate-500 text-xs">
+            <p className={isDark ? 'text-slate-500 text-xs' : 'text-slate-500 text-xs'}>
               ألعاب سيارات للأطفال البالغين مجانية عبر المتصفح · جميع الحقوق محفوظة © 2026
             </p>
           </div>
@@ -26,64 +33,70 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy }) => {
               href="/ads.txt"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 hover:text-amber-400 transition-colors"
+              className="flex items-center gap-1.5 hover:text-amber-500 transition-colors"
             >
               <FileText className="w-3.5 h-3.5 text-slate-500" />
               <span>ملف ads.txt (معتمد)</span>
             </a>
-            <span className="text-slate-700">·</span>
-            <span className="flex items-center gap-1 text-slate-400">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span className={isDark ? 'text-slate-700' : 'text-slate-300'}>·</span>
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
               <span>متوافق مع سياسات AdSense و SEO</span>
             </span>
           </div>
         </div>
 
         {/* Middle Row: The Essential AdSense Legal Links (سياسة الخصوصية - شروط الخدمة - اتصل بنا - من نحن) */}
-        <div className="py-3 px-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-wrap items-center justify-center sm:justify-between gap-3 text-xs">
-          <span className="text-slate-400 font-semibold text-[11px] sm:text-xs">
+        <div className={`py-3 px-4 rounded-xl border flex flex-wrap items-center justify-center sm:justify-between gap-3 text-xs ${
+          isDark
+            ? 'bg-slate-900/60 border-slate-800/80 text-slate-300'
+            : 'bg-slate-50 border-slate-200 text-slate-800'
+        }`}>
+          <span className="font-semibold text-[11px] sm:text-xs opacity-80">
             الصفحات القانونية والتعريفية:
           </span>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-5">
             <button
               onClick={() => onOpenPolicy('privacy')}
-              className="flex items-center gap-1 text-slate-300 hover:text-amber-400 transition-colors cursor-pointer"
+              className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer"
             >
-              <Shield className="w-3.5 h-3.5 text-amber-400" />
+              <Shield className="w-3.5 h-3.5 text-amber-500" />
               <span>سياسة الخصوصية</span>
             </button>
-            <span className="text-slate-700 hidden sm:inline">|</span>
+            <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
 
             <button
               onClick={() => onOpenPolicy('terms')}
-              className="flex items-center gap-1 text-slate-300 hover:text-amber-400 transition-colors cursor-pointer"
+              className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer"
             >
-              <FileText className="w-3.5 h-3.5 text-sky-400" />
+              <FileText className="w-3.5 h-3.5 text-sky-500" />
               <span>شروط الخدمة</span>
             </button>
-            <span className="text-slate-700 hidden sm:inline">|</span>
+            <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
 
             <button
               onClick={() => onOpenPolicy('contact')}
-              className="flex items-center gap-1 text-slate-300 hover:text-amber-400 transition-colors cursor-pointer"
+              className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer"
             >
-              <Mail className="w-3.5 h-3.5 text-emerald-400" />
+              <Mail className="w-3.5 h-3.5 text-emerald-500" />
               <span>اتصل بنا</span>
             </button>
-            <span className="text-slate-700 hidden sm:inline">|</span>
+            <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
 
             <button
               onClick={() => onOpenPolicy('about')}
-              className="flex items-center gap-1 text-slate-300 hover:text-amber-400 transition-colors cursor-pointer"
+              className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer"
             >
-              <Info className="w-3.5 h-3.5 text-purple-400" />
+              <Info className="w-3.5 h-3.5 text-purple-500" />
               <span>من نحن</span>
             </button>
           </div>
         </div>
 
         {/* Bottom Disclaimer */}
-        <div className="text-center sm:text-start text-[11px] text-slate-600 border-t border-slate-900 pt-4 leading-relaxed">
+        <div className={`text-center sm:text-start text-[11px] border-t pt-4 leading-relaxed ${
+          isDark ? 'border-slate-900 text-slate-600' : 'border-slate-100 text-slate-500'
+        }`}>
           تم تصميم وبناء هذه اللعبة خصيصاً لموقع games-children.com لتوفير تجربة سباق تفاعلية آمنة وسلسة بدون إعلانات منبثقة مزعجة أو برمجيات ضارة. جميع العلامات التجارية وحقوق السيارات الرقمية مخصصة للأغراض الترفيهية.
         </div>
       </div>
