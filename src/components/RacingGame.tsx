@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
 import {
   Play,
   RotateCcw,
@@ -35,17 +35,21 @@ import {
 } from '../utils/storage';
 import { soundManager } from '../utils/audio';
 
+export interface RacingGameHandle {
+  startGame: () => void;
+  pauseGame: () => void;
+  resumeGame: () => void;
+  getGameState: () => GameState;
+}
+
 interface RacingGameProps {
   onOpenGarage: () => void;
   coins: number;
   onCoinsChange: (newCoins: number) => void;
 }
 
-export const RacingGame: React.FC<RacingGameProps> = ({
-  onOpenGarage,
-  coins,
-  onCoinsChange,
-}) => {
+export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, ref) => {
+  const { onOpenGarage, coins, onCoinsChange } = props;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -310,6 +314,13 @@ export const RacingGame: React.FC<RacingGameProps> = ({
     setGameState('PLAYING');
     soundManager.startEngine();
   };
+
+  useImperativeHandle(ref, () => ({
+    startGame,
+    pauseGame,
+    resumeGame,
+    getGameState: () => gameState,
+  }));
 
   const gameOver = useCallback(() => {
     setGameState('GAMEOVER');
@@ -1279,7 +1290,7 @@ export const RacingGame: React.FC<RacingGameProps> = ({
       </div>
 
       {/* CANVAS ELEMENT FOR 60FPS RACING */}
-      <div id="canvas-placeholder" className="relative w-full aspect-16/9 sm:aspect-21/10 min-h-[340px] max-h-[560px]">
+      <div id="canvas-placeholder" className="relative w-full min-h-[460px] sm:min-h-[520px] max-h-[640px] aspect-16/9 sm:aspect-21/10">
         <canvas
           ref={canvasRef}
           onPointerDown={handlePointerDown}
@@ -1409,8 +1420,8 @@ export const RacingGame: React.FC<RacingGameProps> = ({
 
         {/* TITLE MENU OVERLAY */}
         {gameState === 'MENU' && (
-          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
-            <div className="max-w-md w-full text-center space-y-5">
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 sm:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto">
+            <div className="max-w-md w-full text-center space-y-4 sm:space-y-5 my-auto">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold">
                 <span>أقوى ألعاب سباق سيارات الشوارع لعام 2026</span>
               </div>
@@ -1426,10 +1437,11 @@ export const RacingGame: React.FC<RacingGameProps> = ({
               {/* Track environment selector */}
               <div className="space-y-1.5">
                 <span className="text-xs font-medium text-slate-400">اختر مسار السباق والطقس:</span>
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-2 flex-wrap">
                   <button
+                    type="button"
                     onClick={() => handleTrackChange('day')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
                       selectedTrack === 'day'
                         ? 'bg-sky-500 text-white border-sky-400 shadow-sm'
                         : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
@@ -1440,8 +1452,9 @@ export const RacingGame: React.FC<RacingGameProps> = ({
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => handleTrackChange('sunset')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
                       selectedTrack === 'sunset'
                         ? 'bg-amber-600 text-white border-amber-500 shadow-sm'
                         : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
@@ -1452,8 +1465,9 @@ export const RacingGame: React.FC<RacingGameProps> = ({
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => handleTrackChange('night')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
                       selectedTrack === 'night'
                         ? 'bg-purple-600 text-white border-purple-500 shadow-sm'
                         : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
@@ -1464,8 +1478,9 @@ export const RacingGame: React.FC<RacingGameProps> = ({
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => handleTrackChange('rain')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
                       selectedTrack === 'rain'
                         ? 'bg-slate-600 text-white border-slate-400 shadow-sm'
                         : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
@@ -1485,19 +1500,27 @@ export const RacingGame: React.FC<RacingGameProps> = ({
                 </div>
               )}
 
-              {/* Action Buttons */}
+              {/* Action Buttons: Play Now / Garage */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                 <button
-                  onClick={startGame}
-                  className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-98 text-slate-950 font-black text-base rounded-xl shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startGame();
+                  }}
+                  className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-400 hover:from-emerald-300 hover:to-teal-300 active:scale-95 text-slate-950 font-black text-base sm:text-lg rounded-xl shadow-xl shadow-emerald-500/30 ring-2 ring-emerald-400/50 flex items-center justify-center gap-2.5 transition-all cursor-pointer"
                 >
                   <Play className="w-5 h-5 fill-slate-950" />
-                  <span>ابدأ السباق الآن</span>
+                  <span>العب الآن - انطلق بالسباق</span>
                 </button>
 
                 <button
-                  onClick={onOpenGarage}
-                  className="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl border border-slate-700/80 flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenGarage();
+                  }}
+                  className="w-full sm:w-auto px-6 py-3.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold text-sm rounded-xl border border-slate-700/80 flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
                   <Wrench className="w-4 h-4 text-amber-400" />
                   <span>المرآب والترقيات</span>
@@ -1505,7 +1528,7 @@ export const RacingGame: React.FC<RacingGameProps> = ({
               </div>
 
               {/* Quick Controls Guide */}
-              <div className="pt-2 text-[11px] text-slate-400 flex items-center justify-center gap-3">
+              <div className="pt-1 text-[11px] text-slate-400 flex items-center justify-center gap-3 flex-wrap">
                 <span>التوجيه: أسهم / WASD</span>
                 <span>•</span>
                 <span>النيترو: زر مسافة Space</span>
@@ -1615,4 +1638,6 @@ export const RacingGame: React.FC<RacingGameProps> = ({
       </div>
     </div>
   );
-};
+});
+
+RacingGame.displayName = 'RacingGame';

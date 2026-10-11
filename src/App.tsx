@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Play } from 'lucide-react';
 import { Header } from './components/Header';
-import { RacingGame } from './components/RacingGame';
+import { RacingGame, RacingGameHandle } from './components/RacingGame';
 import { GarageModal } from './components/GarageModal';
 import { PolicyModal, PolicyTab } from './components/PolicyModal';
 import { AdSlot } from './components/AdSlot';
@@ -14,6 +15,7 @@ import { Footer } from './components/Footer';
 import { loadPlayerStats } from './utils/storage';
 
 export default function App() {
+  const racingRef = useRef<RacingGameHandle | null>(null);
   const [isGarageOpen, setIsGarageOpen] = useState(false);
   const [isPolicyOpen, setIsPolicyOpen] = useState(false);
   const [policyTab, setPolicyTab] = useState<PolicyTab>('privacy');
@@ -49,20 +51,22 @@ export default function App() {
     }
   };
 
-  const handleScrollToGame = () => {
+  const handlePlayNow = () => {
     const el = document.getElementById('game-container');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
+    // Launch game immediately
+    racingRef.current?.startGame();
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
-      <Header onPlayClick={handleScrollToGame} />
+      <Header onPlayClick={handlePlayNow} />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* عنوان الصفحة الرئيسي (سيو) - بالضبط كما في متطلبات المستخدم */}
-        <div className="text-center sm:text-start space-y-2">
+        <div className="text-center sm:text-start space-y-3">
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-amber-400">
             <span>العاب سيارات مجانية على المتصفح</span>
             <span>·</span>
@@ -76,6 +80,16 @@ export default function App() {
           <p className="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed">
             العب الآن لعبة سباق السيارات الخارقة في المدينة مجاناً على المتصفح. اختبر مهاراتك في القيادة، وتجنب العقبات، واجمع النقاط لتطوير سيارتك. متوافقة تماماً مع الموبايل والكمبيوتر.
           </p>
+
+          <div className="pt-1">
+            <button
+              onClick={handlePlayNow}
+              className="px-6 sm:px-8 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 active:scale-95 text-slate-950 font-black text-sm sm:text-base rounded-xl shadow-lg shadow-amber-400/25 flex items-center justify-center gap-2 transition-all cursor-pointer inline-flex"
+            >
+              <Play className="w-5 h-5 fill-slate-950" />
+              <span>العب الآن - انطلق بالسباق</span>
+            </button>
+          </div>
         </div>
 
         {/* مساحة إعلانية علوية مهيأة لأدسنس */}
@@ -84,6 +98,7 @@ export default function App() {
         {/* حاوية اللعبة البرمجية - قسم اللعبة الرئيسي */}
         <section id="game-container" className="scroll-mt-20">
           <RacingGame
+            ref={racingRef}
             onOpenGarage={() => setIsGarageOpen(true)}
             coins={coins}
             onCoinsChange={setCoins}
