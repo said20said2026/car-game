@@ -116,6 +116,22 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const obstaclesRef = useRef<RoadObstacle[]>([]);
   const particlesRef = useRef<Particle[]>([]);
   const roadCurveRef = useRef({ current: 0, target: 0, timer: 0 });
+  const carGhostsRef = useRef<Array<{
+    x: number;
+    y: number;
+    tilt: number;
+    color: string;
+    accentColor: string;
+    speed: number;
+  }>>([]);
+  const warpLinesRef = useRef<Array<{
+    angle: number;
+    dist: number;
+    length: number;
+    speed: number;
+    color: string;
+    width: number;
+  }>>([]);
 
   // Sync initial player stats from storage
   useEffect(() => {
@@ -261,6 +277,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     collectiblesRef.current = [];
     obstaclesRef.current = [];
     particlesRef.current = [];
+    carGhostsRef.current = [];
+    warpLinesRef.current = [];
     roadCurveRef.current = { current: 0, target: 0, timer: 0 };
 
     // Initial traffic population ahead
@@ -378,6 +396,21 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
       const stats = loadPlayerStats();
       const currentCar = CARS_DATA.find((c) => c.id === stats.selectedCarId) || CARS_DATA[0];
       const effective = getCarEffectiveStats(currentCar, stats.upgrades[currentCar.id]);
+
+      // Initialize 3D Warp Tunnel Motion Blur Streaks if needed
+      if (warpLinesRef.current.length === 0) {
+        for (let i = 0; i < 52; i++) {
+          const angle = (i / 52) * Math.PI * 2 + (Math.random() - 0.5) * 0.14;
+          warpLinesRef.current.push({
+            angle,
+            dist: Math.random() * 550,
+            length: 25 + Math.random() * 65,
+            speed: 380 + Math.random() * 420,
+            color: Math.random() > 0.35 ? '#38bdf8' : '#ffffff',
+            width: 1.5 + Math.random() * 2,
+          });
+        }
+      }
 
       if (gameState === 'PLAYING') {
         const p = playerRef.current;
@@ -668,20 +701,128 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           });
         }
 
-        // Nitro flame particles
+        // Multi-Layer Dynamic Nitro Particle System & Motion Blur
+        const roadW = width * 0.85;
+        const curPlayerX = width / 2 + p.x * (roadW * 0.42);
+        const curPlayerY = height * 0.82;
+        const pW = 82;
+        const pH = 56;
+
         if (wantNitro) {
-          for (let f = 0; f < 3; f++) {
+          // Camera micro-rumble from intense rocket thrusters
+          p.shake = Math.max(p.shake, 4.5);
+
+          // 1. Dual exhaust ports (left and right)
+          const exhaustXOffsets = [-pW * 0.28, pW * 0.28];
+          exhaustXOffsets.forEach((exX) => {
+            // Core white-hot plasma fire sphere
             particlesRef.current.push({
-              x: width / 2 + (p.x + (Math.random() - 0.5) * 0.05) * (width * 0.35),
-              y: height * 0.88,
-              vx: (Math.random() - 0.5) * 60,
-              vy: Math.random() * 120 + 80,
+              x: curPlayerX + exX + (Math.random() - 0.5) * 5,
+              y: curPlayerY - 2,
+              vx: (Math.random() - 0.5) * 35 - p.vx * 40,
+              vy: 180 + Math.random() * 260,
+              life: 0.22,
+              maxLife: 0.22,
+              color: Math.random() > 0.3 ? '#ffffff' : '#38bdf8',
+              size: 6 + Math.random() * 8,
+              shape: 'circle',
+            });
+
+            // High-speed trailing plasma sparks
+            particlesRef.current.push({
+              x: curPlayerX + exX,
+              y: curPlayerY - 2,
+              vx: (Math.random() - 0.5) * 80 - p.vx * 60,
+              vy: 280 + Math.random() * 340,
               life: 0.2,
               maxLife: 0.2,
-              color: Math.random() > 0.5 ? '#38bdf8' : '#f97316',
-              size: 5 + Math.random() * 6,
+              color: Math.random() > 0.5 ? '#06b6d4' : '#f97316',
+              size: 2.5 + Math.random() * 3,
+              shape: 'spark',
+              length: 16 + Math.random() * 24,
+            });
+
+            // Shockwave rings
+            if (Math.random() < 0.45) {
+              particlesRef.current.push({
+                x: curPlayerX + exX,
+                y: curPlayerY + 8,
+                vx: 0,
+                vy: 90,
+                life: 0.18,
+                maxLife: 0.18,
+                color: '#38bdf8',
+                size: 9,
+                shape: 'ring',
+              });
+            }
+          });
+
+          // 2. Aerodynamic wingtip vortex streamers off rear spoiler corners
+          const spoilerXOffsets = [-pW * 0.52, pW * 0.52];
+          spoilerXOffsets.forEach((spX) => {
+            particlesRef.current.push({
+              x: curPlayerX + spX,
+              y: curPlayerY - pH - 6,
+              vx: (Math.random() - 0.5) * 20,
+              vy: 200 + Math.random() * 120,
+              life: 0.24,
+              maxLife: 0.24,
+              color: 'rgba(56, 189, 248, 0.85)',
+              size: 2,
+              shape: 'streak',
+              length: 30 + Math.random() * 35,
+            });
+          });
+
+          // 3. Asphalt friction embers
+          if (Math.random() < 0.65) {
+            particlesRef.current.push({
+              x: curPlayerX + (Math.random() - 0.5) * pW * 0.6,
+              y: curPlayerY + 6,
+              vx: (Math.random() - 0.5) * 120,
+              vy: 60 + Math.random() * 80,
+              life: 0.28,
+              maxLife: 0.28,
+              color: Math.random() > 0.5 ? '#f59e0b' : '#ef4444',
+              size: 2 + Math.random() * 3,
+              shape: 'spark',
+              length: 8 + Math.random() * 14,
             });
           }
+        } else if (p.speed > 190) {
+          // High-speed natural wind streamers
+          if (Math.random() < 0.45) {
+            particlesRef.current.push({
+              x: curPlayerX + (Math.random() > 0.5 ? -pW * 0.52 : pW * 0.52),
+              y: curPlayerY - pH - 4,
+              vx: 0,
+              vy: 150,
+              life: 0.2,
+              maxLife: 0.2,
+              color: 'rgba(255, 255, 255, 0.45)',
+              size: 1.5,
+              shape: 'streak',
+              length: 22,
+            });
+          }
+        }
+
+        // Record Motion Blur Afterimage Ghosts
+        if (wantNitro || p.speed > 210) {
+          carGhostsRef.current.unshift({
+            x: curPlayerX,
+            y: curPlayerY,
+            tilt: p.tilt,
+            color: currentCar.color,
+            accentColor: currentCar.accentColor,
+            speed: p.speed,
+          });
+          if (carGhostsRef.current.length > 5) {
+            carGhostsRef.current.pop();
+          }
+        } else if (carGhostsRef.current.length > 0) {
+          carGhostsRef.current.pop();
         }
 
         // Update state hooks (throttled to UI)
@@ -1052,7 +1193,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         ctx.restore();
       });
 
-      // 7. PARTICLES (Smoke, fire, rain, debris)
+      // 7. PARTICLES (Smoke, fire, rain, debris, sparks, vortex streaks, rings)
       for (let i = particlesRef.current.length - 1; i >= 0; i--) {
         const pt = particlesRef.current[i];
         pt.x += pt.vx * dt;
@@ -1065,12 +1206,38 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         }
 
         const alpha = Math.max(0, pt.life / pt.maxLife);
+        ctx.save();
         ctx.fillStyle = pt.color;
+        ctx.strokeStyle = pt.color;
         ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, pt.size * alpha, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
+
+        if (pt.shape === 'spark') {
+          const sparkLen = pt.length || 16;
+          ctx.lineWidth = pt.size;
+          ctx.beginPath();
+          ctx.moveTo(pt.x, pt.y);
+          ctx.lineTo(pt.x - pt.vx * 0.04, pt.y + sparkLen * alpha);
+          ctx.stroke();
+        } else if (pt.shape === 'streak') {
+          const streakLen = pt.length || 28;
+          ctx.lineWidth = pt.size;
+          ctx.beginPath();
+          ctx.moveTo(pt.x, pt.y);
+          ctx.lineTo(pt.x - pt.vx * 0.02, pt.y + streakLen);
+          ctx.stroke();
+        } else if (pt.shape === 'ring') {
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, Math.max(2, pt.size * (1 + (1 - alpha) * 2.8)), 0, Math.PI * 2);
+          ctx.stroke();
+        } else {
+          // Standard glowing circular particle
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, Math.max(1, pt.size * alpha), 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
       }
 
       // Rain Weather Effect
@@ -1087,16 +1254,41 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         }
       }
 
-      // 8. PLAYER SPORTS CAR (Anchored at bottom center with realistic steering tilt)
+      // 8. MOTION BLUR GHOST AFTERIMAGES (Trails behind car during Nitro or top speeds)
       const playerScreenX = roadBottomX + p.x * (roadBottomW * 0.42);
       const playerScreenY = height * 0.82;
+      const pW = 82;
+      const pH = 56;
 
+      if ((isNitroActive || p.speed > 210) && carGhostsRef.current.length > 0) {
+        carGhostsRef.current.forEach((ghost, idx) => {
+          const ghostAlpha = (0.35 - idx * 0.06) * (isNitroActive ? 1.0 : 0.65);
+          if (ghostAlpha <= 0) return;
+
+          ctx.save();
+          const dragY = (idx + 1) * (isNitroActive ? 7.5 : 4.0);
+          ctx.translate(ghost.x, ghost.y + dragY);
+          ctx.rotate(ghost.tilt);
+          ctx.globalAlpha = ghostAlpha;
+
+          // Glowing neon motion blur silhouette
+          ctx.fillStyle = isNitroActive ? '#38bdf8' : ghost.accentColor;
+          ctx.beginPath();
+          ctx.roundRect(-pW / 2, -pH, pW, pH, [14, 14, 8, 8]);
+          ctx.fill();
+
+          // Spoiler ghost
+          ctx.fillStyle = '#06b6d4';
+          ctx.fillRect(-pW * 0.52, -pH - 6, pW * 1.04, 7);
+
+          ctx.restore();
+        });
+      }
+
+      // 9. PLAYER SPORTS CAR (Anchored at bottom center with realistic steering tilt)
       ctx.save();
       ctx.translate(playerScreenX, playerScreenY);
       ctx.rotate(p.tilt);
-
-      const pW = 82;
-      const pH = 56;
 
       // Realistic Shadow
       ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
@@ -1182,17 +1374,71 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
 
       ctx.restore();
 
-      // 9. NITRO SPEED BLUR STREAKS
-      if (isNitroActive) {
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
-        ctx.lineWidth = 2.5;
-        for (let s = 0; s < 12; s++) {
-          const sx = (s * (width / 12) + (timestamp * 0.8) % 40) % width;
+      // 10. 3D RADIAL WARP TUNNEL & SPEED MOTION BLUR STREAKS
+      if (p.speed > 110 || isNitroActive) {
+        const centerOrigX = roadTopX;
+        const centerOrigY = horizonY;
+        const speedRatio = p.speed / effective.topSpeed;
+        const isNitro = isNitroActive;
+        const maxDist = Math.hypot(width, height) * 0.85;
+
+        warpLinesRef.current.forEach((line) => {
+          const speedMultiplier = isNitro ? 2.6 : 1.3;
+          line.dist += line.speed * (p.speed / 100) * speedMultiplier * dt;
+
+          if (line.dist > maxDist) {
+            line.dist = 18 + Math.random() * 45;
+            line.angle = Math.random() * Math.PI * 2;
+          }
+
+          if (line.dist < 40) return;
+
+          const cos = Math.cos(line.angle);
+          const sin = Math.sin(line.angle);
+
+          const startX = centerOrigX + cos * line.dist;
+          const startY = centerOrigY + sin * line.dist;
+          const curLen = line.length * (isNitro ? 2.4 : 1.1) * speedRatio;
+          const endX = centerOrigX + cos * (line.dist + curLen);
+          const endY = centerOrigY + sin * (line.dist + curLen);
+
+          const distRatio = Math.min(1, line.dist / (maxDist * 0.55));
+          const lineAlpha = (isNitro ? 0.8 : 0.35) * distRatio;
+
+          ctx.save();
+          ctx.strokeStyle = isNitro ? line.color : 'rgba(255, 255, 255, 0.45)';
+          ctx.lineWidth = isNitro ? line.width * 1.8 : line.width;
+          ctx.globalAlpha = lineAlpha;
           ctx.beginPath();
-          ctx.moveTo(sx, 0);
-          ctx.lineTo(sx + (roadCurveRef.current.current * 30), height);
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(endX, endY);
           ctx.stroke();
-        }
+          ctx.restore();
+        });
+      }
+
+      // 11. NITRO TUNNEL-VISION RADIAL VIGNETTE & SCREEN EDGE PULSE
+      if (isNitroActive) {
+        ctx.save();
+        const vigGrad = ctx.createRadialGradient(
+          width / 2,
+          height * 0.65,
+          width * 0.2,
+          width / 2,
+          height * 0.65,
+          width * 0.75
+        );
+        vigGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        vigGrad.addColorStop(0.65, 'rgba(14, 165, 233, 0.08)');
+        vigGrad.addColorStop(1, 'rgba(6, 182, 212, 0.38)');
+        ctx.fillStyle = vigGrad;
+        ctx.fillRect(0, 0, width, height);
+
+        // Electric neon edge pulse
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(0, 0, width, height);
+        ctx.restore();
       }
 
       ctx.restore(); // Undo translate shake

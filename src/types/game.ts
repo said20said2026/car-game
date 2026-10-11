@@ -75,4 +75,6 @@ export interface Particle {
   maxLife: number;
   color: string;
   size: number;
+  shape?: 'circle' | 'spark' | 'streak' | 'ring';
+  length?: number;
 }
