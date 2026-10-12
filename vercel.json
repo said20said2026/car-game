@@ -8,8 +8,20 @@
       "destination": "/ads.txt"
     },
     {
+      "source": "/robots.txt",
+      "destination": "/robots.txt"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/sitemap.xml"
+    },
+    {
       "source": "/ai-catalog.json",
       "destination": "/ai-catalog.json"
+    },
+    {
+      "source": "/googleba8a8f81976877d7.html",
+      "destination": "/googleba8a8f81976877d7.html"
     },
     {
       "source": "/.well-known/:path*",
