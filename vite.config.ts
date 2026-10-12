@@ -13,6 +13,16 @@ export default defineConfig(() => {
         name: 'serve-static-html-pages',
         configureServer(server) {
           server.middlewares.use((req, res, next) => {
+            res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+            res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+            res.setHeader('X-Content-Type-Options', 'nosniff');
+            res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+            res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+            res.setHeader(
+              'Content-Security-Policy',
+              "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.google-analytics.com https://*.doubleclick.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; connect-src 'self' https: wss:; frame-src 'self' https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.google.com; object-src 'none'; base-uri 'self';"
+            );
+
             if (req.url === '/googleba8a8f81976877d7.html') {
               res.setHeader('Content-Type', 'text/html; charset=utf-8');
               res.end('google-site-verification: googleba8a8f81976877d7.html\n');
