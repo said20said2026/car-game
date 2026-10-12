@@ -19,13 +19,35 @@ export default defineConfig(() => {
               return;
             }
             const cleanUrl = req.url?.split('?')[0];
-            const staticPages = ['/privacy', '/terms', '/about', '/contact', '/cars', '/instructions'];
-            if (cleanUrl && staticPages.includes(cleanUrl)) {
-              const filePath = path.resolve(__dirname, `public${cleanUrl}.html`);
-              if (fs.existsSync(filePath)) {
-                res.setHeader('Content-Type', 'text/html; charset=utf-8');
-                res.end(fs.readFileSync(filePath));
-                return;
+            if (cleanUrl && cleanUrl !== '/') {
+              const staticPages = ['/privacy', '/terms', '/about', '/contact', '/cars', '/instructions'];
+              if (staticPages.includes(cleanUrl)) {
+                const filePath = path.resolve(__dirname, `public${cleanUrl}.html`);
+                if (fs.existsSync(filePath)) {
+                  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+                  res.end(fs.readFileSync(filePath));
+                  return;
+                }
+              }
+              const publicFilePath = path.resolve(__dirname, `public${cleanUrl}`);
+              if (fs.existsSync(publicFilePath) && fs.statSync(publicFilePath).isFile()) {
+                const ext = path.extname(publicFilePath).toLowerCase();
+                const mimes: Record<string, string> = {
+                  '.jpg': 'image/jpeg',
+                  '.jpeg': 'image/jpeg',
+                  '.png': 'image/png',
+                  '.svg': 'image/svg+xml',
+                  '.ico': 'image/x-icon',
+                  '.xml': 'application/xml; charset=utf-8',
+                  '.txt': 'text/plain; charset=utf-8',
+                  '.json': 'application/json; charset=utf-8',
+                  '.html': 'text/html; charset=utf-8',
+                };
+                if (mimes[ext]) {
+                  res.setHeader('Content-Type', mimes[ext]);
+                  res.end(fs.readFileSync(publicFilePath));
+                  return;
+                }
               }
             }
             next();
