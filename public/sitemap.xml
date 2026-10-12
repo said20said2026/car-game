@@ -1,9 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- الصفحة الرئيسية ولعبة السباق الخارقة -->
   <url>
     <loc>https://www.games-children.com/</loc>
     <lastmod>2026-10-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+
+  <!-- صفحة واستعراض أنواع وتطوير السيارات -->
+  <url>
+    <loc>https://www.games-children.com/cars</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- صفحة طريقة اللعب والتحكم -->
+  <url>
+    <loc>https://www.games-children.com/instructions</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- صفحة سياسة الخصوصية الأساسية لأدسنس ومشرفي المواقع -->
+  <url>
+    <loc>https://www.games-children.com/privacy</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- صفحة شروط الاستخدام والخدمة -->
+  <url>
+    <loc>https://www.games-children.com/terms</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- صفحة من نحن ومعلومات الموقع -->
+  <url>
+    <loc>https://www.games-children.com/about</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- صفحة اتصل بنا ونموذج التواصل المباشر -->
+  <url>
+    <loc>https://www.games-children.com/contact</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

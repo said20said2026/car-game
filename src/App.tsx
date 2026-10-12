@@ -45,35 +45,91 @@ export default function App() {
     setIsGarageOpen(true);
   };
 
-  // Support direct hash navigation for policy pages (e.g. #privacy, #terms, #contact, #about)
+  // Support direct path and hash navigation for pages (e.g. /privacy, /terms, /contact, /about, /cars, /instructions)
   useEffect(() => {
-    const handleHash = () => {
+    const defaultTitle = 'لعبة سباق سيارات المدينة السريعة - ألعاب سيارات للأطفال البالغين';
+    const siteUrl = 'https://www.games-children.com';
+
+    const updateCanonical = (path: string) => {
+      let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+      if (!canonicalLink) {
+        canonicalLink = document.createElement('link');
+        canonicalLink.rel = 'canonical';
+        document.head.appendChild(canonicalLink);
+      }
+      canonicalLink.href = `${siteUrl}${path === '/' ? '' : path}`;
+    };
+
+    const handleRoute = () => {
+      const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
       const hash = window.location.hash.replace('#', '');
-      if (['privacy', 'terms', 'contact', 'about'].includes(hash)) {
-        setPolicyTab(hash as PolicyTab);
+      const target = path || hash;
+
+      if (['privacy', 'terms', 'contact', 'about'].includes(target)) {
+        setPolicyTab(target as PolicyTab);
         setIsPolicyOpen(true);
-      } else if (hash === 'cars') {
-        const el = document.getElementById('cars');
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
+        const titles: Record<string, string> = {
+          privacy: 'سياسة الخصوصية - لعبة سباق سيارات المدينة السريعة',
+          terms: 'شروط الخدمة والاستخدام - لعبة سباق سيارات المدينة السريعة',
+          contact: 'اتصل بنا ونموذج التواصل - لعبة سباق سيارات المدينة السريعة',
+          about: 'من نحن ورسالتنا - لعبة سباق سيارات المدينة السريعة',
+        };
+        document.title = titles[target] || defaultTitle;
+        updateCanonical(`/${target}`);
+      } else if (target === 'cars') {
+        setIsPolicyOpen(false);
+        document.title = 'أنواع وتطوير سيارات السباق - لعبة سباق سيارات المدينة';
+        updateCanonical('/cars');
+        setTimeout(() => {
+          document.getElementById('cars')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } else if (target === 'instructions') {
+        setIsPolicyOpen(false);
+        document.title = 'طريقة اللعب وإرشادات التحكم - لعبة سباق سيارات المدينة';
+        updateCanonical('/instructions');
+        setTimeout(() => {
+          document.getElementById('instructions')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } else {
+        document.title = defaultTitle;
+        updateCanonical('/');
       }
     };
 
-    handleHash();
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+    handleRoute();
+    window.addEventListener('hashchange', handleRoute);
+    window.addEventListener('popstate', handleRoute);
+    return () => {
+      window.removeEventListener('hashchange', handleRoute);
+      window.removeEventListener('popstate', handleRoute);
+    };
   }, []);
 
   const handleOpenPolicy = (tab: PolicyTab) => {
     setPolicyTab(tab);
     setIsPolicyOpen(true);
-    window.location.hash = tab;
+    try {
+      window.history.pushState({ tab }, '', `/${tab}`);
+    } catch {}
+    const titles: Record<string, string> = {
+      privacy: 'سياسة الخصوصية - لعبة سباق سيارات المدينة السريعة',
+      terms: 'شروط الخدمة والاستخدام - لعبة سباق سيارات المدينة السريعة',
+      contact: 'اتصل بنا ونموذج التواصل - لعبة سباق سيارات المدينة السريعة',
+      about: 'من نحن ورسالتنا - لعبة سباق سيارات المدينة السريعة',
+    };
+    document.title = titles[tab] || 'لعبة سباق سيارات المدينة السريعة';
+    const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (canonical) canonical.href = `https://www.games-children.com/${tab}`;
   };
 
   const handleClosePolicy = () => {
     setIsPolicyOpen(false);
-    if (['#privacy', '#terms', '#contact', '#about'].includes(window.location.hash)) {
-      history.pushState(null, '', window.location.pathname + window.location.search);
-    }
+    try {
+      window.history.pushState({}, '', '/');
+    } catch {}
+    document.title = 'لعبة سباق سيارات المدينة السريعة - ألعاب سيارات للأطفال البالغين';
+    const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (canonical) canonical.href = 'https://www.games-children.com';
   };
 
   const handlePlayNow = () => {

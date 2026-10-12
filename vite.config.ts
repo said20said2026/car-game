@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import fs from 'fs';
 import path from 'path';
 import {defineConfig} from 'vite';
 
@@ -9,13 +10,23 @@ export default defineConfig(() => {
       react(),
       tailwindcss(),
       {
-        name: 'serve-google-verification',
+        name: 'serve-static-html-pages',
         configureServer(server) {
           server.middlewares.use((req, res, next) => {
             if (req.url === '/googleba8a8f81976877d7.html') {
               res.setHeader('Content-Type', 'text/html; charset=utf-8');
               res.end('google-site-verification: googleba8a8f81976877d7.html\n');
               return;
+            }
+            const cleanUrl = req.url?.split('?')[0];
+            const staticPages = ['/privacy', '/terms', '/about', '/contact', '/cars', '/instructions'];
+            if (cleanUrl && staticPages.includes(cleanUrl)) {
+              const filePath = path.resolve(__dirname, `public${cleanUrl}.html`);
+              if (fs.existsSync(filePath)) {
+                res.setHeader('Content-Type', 'text/html; charset=utf-8');
+                res.end(fs.readFileSync(filePath));
+                return;
+              }
             }
             next();
           });

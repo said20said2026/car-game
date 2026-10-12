@@ -28,6 +28,30 @@
       "destination": "/.well-known/:path*"
     },
     {
+      "source": "/privacy",
+      "destination": "/privacy.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact.html"
+    },
+    {
+      "source": "/cars",
+      "destination": "/cars.html"
+    },
+    {
+      "source": "/instructions",
+      "destination": "/instructions.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

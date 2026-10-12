@@ -56,40 +56,67 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
             الصفحات القانونية والتعريفية:
           </span>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-5">
-            <button
-              onClick={() => onOpenPolicy('privacy')}
+            <a
+              href="/privacy"
+              onClick={(e) => {
+                e.preventDefault();
+                onOpenPolicy('privacy');
+              }}
               className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer"
             >
               <Shield className="w-3.5 h-3.5 text-amber-500" />
               <span>سياسة الخصوصية</span>
-            </button>
+            </a>
             <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
 
-            <button
-              onClick={() => onOpenPolicy('terms')}
+            <a
+              href="/terms"
+              onClick={(e) => {
+                e.preventDefault();
+                onOpenPolicy('terms');
+              }}
               className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer"
             >
               <FileText className="w-3.5 h-3.5 text-sky-500" />
               <span>شروط الخدمة</span>
-            </button>
+            </a>
             <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
 
-            <button
-              onClick={() => onOpenPolicy('contact')}
+            <a
+              href="/contact"
+              onClick={(e) => {
+                e.preventDefault();
+                onOpenPolicy('contact');
+              }}
               className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer"
             >
               <Mail className="w-3.5 h-3.5 text-emerald-500" />
               <span>اتصل بنا</span>
-            </button>
+            </a>
             <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
 
-            <button
-              onClick={() => onOpenPolicy('about')}
+            <a
+              href="/about"
+              onClick={(e) => {
+                e.preventDefault();
+                onOpenPolicy('about');
+              }}
               className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer"
             >
               <Info className="w-3.5 h-3.5 text-purple-500" />
               <span>من نحن</span>
-            </button>
+            </a>
+            <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
+
+            <a
+              href="/sitemap.xml"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1 hover:text-amber-500 transition-colors"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-slate-500" />
+              <span>خريطة الموقع (Sitemap)</span>
+            </a>
           </div>
         </div>
 
