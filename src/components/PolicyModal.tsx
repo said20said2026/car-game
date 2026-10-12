@@ -65,9 +65,9 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
         <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-800 bg-slate-950/50">
           <div className="flex items-center gap-2">
             <Globe className="w-5 h-5 text-amber-400" />
-            <h2 className="text-base sm:text-lg font-bold font-game text-white">
+            <div className="text-base sm:text-lg font-bold font-game text-white">
               بوابة المعلومات والسياسات القانونية · games-children.com
-            </h2>
+            </div>
           </div>
 
           <button
@@ -107,24 +107,24 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
           {activeTab === 'privacy' && (
             <div className="space-y-6 animate-fade-in">
               <div className="border-b border-slate-800 pb-4">
-                <h3 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
                   <Lock className="w-5 h-5 text-amber-400" />
                   <span>سياسة الخصوصية (Privacy Policy)</span>
-                </h3>
+                </h2>
                 <p className="text-xs text-slate-400 mt-1">
                   آخر تحديث: 2026 · تتوافق هذه السياسة مع معايير Google AdSense واللائحة العامة لحماية البيانات (GDPR)
                 </p>
               </div>
 
               <section className="space-y-3">
-                <h4 className="text-base font-bold text-white">1. التزامنا بخصوصيتك</h4>
+                <h3 className="text-base font-bold text-white">1. التزامنا بخصوصيتك</h3>
                 <p>
                   نحن في موقع <strong>games-children.com</strong> نولي أهمية قصوى لخصوصية زوارنا. توضح هذه الوثيقة أنواع المعلومات الشخصية التي يتم استلامها وجمعها عند استخدامك للعبة سباق سيارات المدينة السريعة وكيفية حمايتها واستخدامها.
                 </p>
               </section>
 
               <section className="space-y-3">
-                <h4 className="text-base font-bold text-white">2. ملفات تعريف الارتباط وإعلانات Google AdSense</h4>
+                <h3 className="text-base font-bold text-white">2. ملفات تعريف الارتباط وإعلانات Google AdSense</h3>
                 <p>
                   يستخدم موقعنا خدمات إعلانية مقدمة من أطراف ثالثة، وعلى رأسها <strong>Google AdSense</strong>:
                 </p>
@@ -142,21 +142,21 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
               </section>
 
               <section className="space-y-3">
-                <h4 className="text-base font-bold text-white">3. التخزين المحلي للعبة (LocalStorage)</h4>
+                <h3 className="text-base font-bold text-white">3. التخزين المحلي للعبة (LocalStorage)</h3>
                 <p>
                   تستخدم اللعبة خاصية التخزين المحلي في متصفحك (HTML5 LocalStorage) حصرياً لحفظ تقدمك الشخصي في اللعبة (مثل: عدد العملات المجمعة، السيارات المفتوحة، مستويات ترقية المحرك، وأعلى رقم قياسي محقق). هذه البيانات تُحفظ محلياً على جهازك ولا نقوم برفعها أو نقلها إلى أي خوادم خارجية.
                 </p>
               </section>
 
               <section className="space-y-3">
-                <h4 className="text-base font-bold text-white">4. خصوصية الأطفال واليافعين</h4>
+                <h3 className="text-base font-bold text-white">4. خصوصية الأطفال واليافعين</h3>
                 <p>
                   موقعنا آمن ومصمم لتقديم محتوى ترفيهي هادف ونظيف للأطفال البالغين والناشئين وجميع الفئات العمرية. لا نطلب تسجيل حساب، ولا نجمع أسماء المستخدمين الحقيقية أو عناوين منازلهم أو أرقام هواتفهم.
                 </p>
               </section>
 
               <section className="space-y-3">
-                <h4 className="text-base font-bold text-white">5. التواصل بشأن الخصوصية</h4>
+                <h3 className="text-base font-bold text-white">5. التواصل بشأن الخصوصية</h3>
                 <p>
                   إذا كانت لديك أي استفسارات أو أسئلة حول سياسة الخصوصية الخاصة بنا، يمكنك التواصل معنا مباشرة عبر البريد الإلكتروني الرسمي: <strong className="text-amber-400">samipico425@gmail.com</strong>.
                 </p>
@@ -168,31 +168,31 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
           {activeTab === 'terms' && (
             <div className="space-y-6 animate-fade-in">
               <div className="border-b border-slate-800 pb-4">
-                <h3 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
                   <FileText className="w-5 h-5 text-amber-400" />
                   <span>شروط الخدمة والاستخدام (Terms of Service)</span>
-                </h3>
+                </h2>
                 <p className="text-xs text-slate-400 mt-1">
                   شروط الاستخدام القانونية للعبة وموقع games-children.com
                 </p>
               </div>
 
               <section className="space-y-3">
-                <h4 className="text-base font-bold text-white">1. الموافقة على الشروط</h4>
+                <h3 className="text-base font-bold text-white">1. الموافقة على الشروط</h3>
                 <p>
                   بمجرد دخولك إلى هذا الموقع ولعب <strong>لعبة سباق سيارات المدينة السريعة</strong>، فإنك توافق على الالتزام بشروط وأحكام الاستخدام الموضحة هنا، وجميع القوانين واللوائح المعمول بها محلياً ودولياً.
                 </p>
               </section>
 
               <section className="space-y-3">
-                <h4 className="text-base font-bold text-white">2. حقوق الملكية الفكرية</h4>
+                <h3 className="text-base font-bold text-white">2. حقوق الملكية الفكرية</h3>
                 <p>
                   كافة الأصول البرمجية، والأكواد المصدرية، وتصميمات سيارات السباق، والمحرك الصوتي، والمحتوى النصي المنشور على الموقع هي ملك حصري لموقع <strong>games-children.com</strong>، ومحمية بموجب قوانين حقوق النشر والعلامات التجارية المعمول بها.
                 </p>
               </section>
 
               <section className="space-y-3">
-                <h4 className="text-base font-bold text-white">3. الاستخدام المقبول</h4>
+                <h3 className="text-base font-bold text-white">3. الاستخدام المقبول</h3>
                 <p>
                   يُسمح للمستخدمين بالاستمتاع باللعبة لأغراض الترفيه الشخصي غير التجاري. ويُحظر تماماً:
                 </p>
@@ -204,7 +204,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
               </section>
 
               <section className="space-y-3">
-                <h4 className="text-base font-bold text-white">4. إخلاء المسؤولية</h4>
+                <h3 className="text-base font-bold text-white">4. إخلاء المسؤولية</h3>
                 <p>
                   يتم تقديم اللعبة ومحتوى الموقع "كما هو" (AS IS) دون أي ضمانات صريحة أو ضمنية. نحن نسعى دائماً لضمان استقرار وسلاسة اللعب بدون انقطاع، ولكننا لا نتحمل المسؤولية عن أي انقطاع مفاجئ ناتج عن المتصفح أو مزودي خدمة الإنترنت.
                 </p>
@@ -216,10 +216,10 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
           {activeTab === 'contact' && (
             <div className="space-y-6 animate-fade-in">
               <div className="border-b border-slate-800 pb-4">
-                <h3 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
                   <Mail className="w-5 h-5 text-amber-400" />
                   <span>اتصل بنا (Contact Us)</span>
-                </h3>
+                </h2>
                 <p className="text-xs text-slate-400 mt-1">
                   يسعدنا استقبال استفساراتك واقتراحاتك حول اللعبة أو الشراكات الإعلانية
                 </p>
@@ -231,7 +231,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                   {contactSubmitted ? (
                     <div className="p-6 bg-emerald-950/60 border border-emerald-500/50 rounded-2xl text-center space-y-3">
                       <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
-                      <h4 className="text-base font-bold text-white">تم إرسال رسالتك بنجاح!</h4>
+                      <div className="text-base font-bold text-white">تم إرسال رسالتك بنجاح!</div>
                       <p className="text-xs text-slate-300">
                         شكراً لتواصلك معنا. سنقوم بمراجعة رسالتك والرد عليك عبر بريدك الإلكتروني في أقرب وقت.
                       </p>
@@ -310,10 +310,10 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
 
                 {/* Direct Contact Info (2 cols) */}
                 <div className="md:col-span-2 space-y-4 bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-slate-800/80">
-                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-amber-400" />
                     <span>معلومات التواصل المباشر</span>
-                  </h4>
+                  </h3>
 
                   <div className="space-y-3 text-xs">
                     <div>
@@ -349,24 +349,24 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
           {activeTab === 'about' && (
             <div className="space-y-6 animate-fade-in">
               <div className="border-b border-slate-800 pb-4">
-                <h3 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
                   <Info className="w-5 h-5 text-amber-400" />
                   <span>من نحن (About Us) · ألعاب سباق سيارات المدينة</span>
-                </h3>
+                </h2>
                 <p className="text-xs text-slate-400 mt-1">
                   رؤيتنا ورسالتنا في تقديم ألعاب متصفح عربية خفيفة واحترافية
                 </p>
               </div>
 
               <section className="space-y-3">
-                <h4 className="text-base font-bold text-white">من نحن؟</h4>
+                <h3 className="text-base font-bold text-white">من نحن؟</h3>
                 <p>
                   نحن فريق من مطوري الألعاب ومصممي تجارب الويب العرب، أنشأنا منصة <strong>games-children.com</strong> بهدف تقديم تجربة ألعاب أركيد تفاعلية متطورة للمستخدم العربي ومحبي السرعة من الأطفال البالغين والناشئين والشباب، دون تعقيدات التثبيت وبدون استهلاك مساحات الذاكرة.
                 </p>
               </section>
 
               <section className="space-y-3">
-                <h4 className="text-base font-bold text-white">رسالتنا وهدفنا</h4>
+                <h3 className="text-base font-bold text-white">رسالتنا وهدفنا</h3>
                 <p>
                   رسالتنا هي إثراء المحتوى الترفيهي العربي على شبكة الإنترنت بألعاب ذات أداء تقني عالٍ تنافس الألعاب العالمية:
                 </p>
@@ -388,7 +388,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
               </section>
 
               <section className="space-y-3">
-                <h4 className="text-base font-bold text-white">تقنيات تطوير اللعبة</h4>
+                <h3 className="text-base font-bold text-white">تقنيات تطوير اللعبة</h3>
                 <p>
                   تم بناء <strong>لعبة سباق سيارات المدينة السريعة</strong> باستخدام أحدث تقنيات الويب:
                 </p>

@@ -8,22 +8,42 @@
   Header always set Content-Security-Policy "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.google-analytics.com https://*.doubleclick.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; connect-src 'self' https: wss:; frame-src 'self' https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.google.com; object-src 'none'; base-uri 'self';"
 </IfModule>
 
-# Fallback Rewrite for SPA
+# إعدادات توجيه السيو لملف .htaccess (خوادم Apache / LiteSpeed)
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # 1. إجبار بروتوكول التشفير HTTPS لجميع الزوار
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # 2. إزالة الشرطة المائلة الأخيرة المزدوجة لمنع تكرار المحتوى
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} (.+)/$
+  RewriteRule ^ %1 [R=301,L]
+
+  # استثناء الملفات الثابتة المعرفة
   RewriteRule ^googleba8a8f81976877d7\.html$ - [L]
   RewriteRule ^ai-catalog\.json$ - [L]
   RewriteRule ^sitemap\.xml$ - [L]
   RewriteRule ^robots\.txt$ - [L]
   RewriteRule ^ads\.txt$ - [L]
+
+  # توجيه الصفحات الثابتة إلى ملفات HTML
   RewriteRule ^privacy$ privacy.html [L]
   RewriteRule ^terms$ terms.html [L]
   RewriteRule ^about$ about.html [L]
   RewriteRule ^contact$ contact.html [L]
   RewriteRule ^cars$ cars.html [L]
   RewriteRule ^instructions$ instructions.html [L]
+
+  # توجيه باقي المسارات إلى التطبيق الرئيسي (SPA Fallback)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
+</IfModule>
+
+# 3. تفعيل ضغط GZIP لتسريع الموقع
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json image/svg+xml
 </IfModule>

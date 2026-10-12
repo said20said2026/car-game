@@ -204,7 +204,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                     {!unlocked && <Lock className="w-3.5 h-3.5 text-slate-500" />}
                     {isActive && <Check className="w-4 h-4 text-emerald-400" />}
                   </div>
-                  <h4 className="text-xs font-bold text-white line-clamp-1">{car.arabicName}</h4>
+                  <div className="text-xs font-bold text-white line-clamp-1">{car.arabicName}</div>
                   <div className="text-[10px] text-slate-400">{car.baseSpeed} كم/س</div>
                 </div>
 
@@ -292,10 +292,10 @@ export const GarageModal: React.FC<GarageModalProps> = ({
 
           {/* Right / Performance Stats & Upgrades (7 cols) */}
           <div className="lg:col-span-7 space-y-4">
-            <h4 className="text-sm font-bold text-slate-300 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-400" />
               <span>مواصفات الأداء وترقيات القطع</span>
-            </h4>
+            </h3>
 
             {/* Upgrade 1: Top Speed */}
             <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">

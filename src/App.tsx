@@ -47,8 +47,19 @@ export default function App() {
 
   // Support direct path and hash navigation for pages (e.g. /privacy, /terms, /contact, /about, /cars, /instructions)
   useEffect(() => {
-    const defaultTitle = 'لعبة سباق سيارات المدينة السريعة - ألعاب سيارات للأطفال البالغين';
+    const defaultTitle = 'لعبة سباق سيارات المدينة السريعة - ألعاب سيارات للأطفال والبالغين';
+    const defaultDescription = 'العب لعبة سباق سيارات المدينة السريعة مجاناً على المتصفح. ألعاب سيارات للأطفال والبالغين، تفادَ العقبات وطور سيارتك. متوافقة مع الموبايل والكمبيوتر.';
     const siteUrl = 'https://www.games-children.com';
+
+    const updateMetaDescription = (desc: string) => {
+      let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.name = 'description';
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.content = desc;
+    };
 
     const updateCanonical = (path: string) => {
       let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
@@ -74,11 +85,19 @@ export default function App() {
           contact: 'اتصل بنا ونموذج التواصل - لعبة سباق سيارات المدينة السريعة',
           about: 'من نحن ورسالتنا - لعبة سباق سيارات المدينة السريعة',
         };
+        const descriptions: Record<string, string> = {
+          privacy: 'سياسة الخصوصية لموقع لعبة سباق سيارات المدينة السريعة ومعايير حماية البيانات وحقوق المستخدم.',
+          terms: 'شروط وأحكام استخدام لعبة سباق سيارات المدينة السريعة وقواعد الاستخدام العادل.',
+          contact: 'اتصل بنا وتواصل مع إدارة موقع سباق سيارات المدينة السريعة للاستفسارات والدعم الفني.',
+          about: 'من نحن - فريق تطوير لعبة سباق سيارات المدينة السريعة وأهدافنا في ألعاب المتصفح العربية.',
+        };
         document.title = titles[target] || defaultTitle;
+        updateMetaDescription(descriptions[target] || defaultDescription);
         updateCanonical(`/${target}`);
       } else if (target === 'cars') {
         setIsPolicyOpen(false);
         document.title = 'أنواع وتطوير سيارات السباق - لعبة سباق سيارات المدينة';
+        updateMetaDescription('تعرف على أنواع سيارات السباق الخارقة ومواصفات السرعة والتحكم والنيترو وكيفية ترقيتها.');
         updateCanonical('/cars');
         setTimeout(() => {
           document.getElementById('cars')?.scrollIntoView({ behavior: 'smooth' });
@@ -86,12 +105,14 @@ export default function App() {
       } else if (target === 'instructions') {
         setIsPolicyOpen(false);
         document.title = 'طريقة اللعب وإرشادات التحكم - لعبة سباق سيارات المدينة';
+        updateMetaDescription('دليل مفصل لطريقة قيادة السيارات وأزرار التحكم باللمس والأسهم وتفعيل النيترو لجمع النقاط.');
         updateCanonical('/instructions');
         setTimeout(() => {
           document.getElementById('instructions')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
       } else {
         document.title = defaultTitle;
+        updateMetaDescription(defaultDescription);
         updateCanonical('/');
       }
     };
@@ -127,7 +148,11 @@ export default function App() {
     try {
       window.history.pushState({}, '', '/');
     } catch {}
-    document.title = 'لعبة سباق سيارات المدينة السريعة - ألعاب سيارات للأطفال البالغين';
+    document.title = 'لعبة سباق سيارات المدينة السريعة - ألعاب سيارات للأطفال والبالغين';
+    const metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (metaDesc) {
+      metaDesc.content = 'العب لعبة سباق سيارات المدينة السريعة مجاناً على المتصفح. ألعاب سيارات للأطفال والبالغين، تفادَ العقبات وطور سيارتك. متوافقة مع الموبايل والكمبيوتر.';
+    }
     const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (canonical) canonical.href = 'https://www.games-children.com';
   };
@@ -168,7 +193,7 @@ export default function App() {
           </h1>
 
           <p className="text-sm sm:text-base opacity-85 max-w-2xl leading-relaxed">
-            العب الآن لعبة سباق السيارات الخارقة في المدينة مجاناً على المتصفح. اختبر مهاراتك في القيادة، وتجنب العقبات، واجمع النقاط لتطوير سيارتك. متوافقة تماماً مع الموبايل والكمبيوتر.
+            العب لعبة سباق سيارات المدينة السريعة مجاناً على المتصفح. ألعاب سيارات للأطفال والبالغين، تفادَ العقبات وطور سيارتك. متوافقة مع الموبايل والكمبيوتر.
           </p>
 
           <div className="pt-1 flex items-center gap-3 flex-wrap">

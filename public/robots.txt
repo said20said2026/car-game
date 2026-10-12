@@ -1,5 +1,19 @@
+# ملف توجيه عناكب محركات البحث (Robots.txt)
+# يوضع في المجلد الرئيسي لموقعك مباشرة (root directory)
+
 User-agent: *
 Allow: /
 
+# حظر المسارات الحساسة ولوحات التحكم الشائعة
+Disallow: /admin/
+Disallow: /wp-admin/
+Disallow: /login/
+Disallow: /checkout/
+Disallow: /search/
+Disallow: /cgi-bin/
+
+# السماح لملفات التنسيق والجافاسكربت المهمة للفهرسة
+Allow: /wp-admin/admin-ajax.php
+
+# مسار خريطة الموقع البرمجية
 Sitemap: https://www.games-children.com/sitemap.xml
-Sitemap: https://games-children.com/sitemap.xml

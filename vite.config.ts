@@ -47,6 +47,7 @@ export default defineConfig(() => {
                   '.jpeg': 'image/jpeg',
                   '.png': 'image/png',
                   '.svg': 'image/svg+xml',
+                  '.webp': 'image/webp',
                   '.ico': 'image/x-icon',
                   '.xml': 'application/xml; charset=utf-8',
                   '.txt': 'text/plain; charset=utf-8',

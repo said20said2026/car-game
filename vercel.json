@@ -2,19 +2,6 @@
   "framework": "vite",
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run build",
-  "redirects": [
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "games-children.com"
-        }
-      ],
-      "destination": "https://www.games-children.com/:path*",
-      "permanent": true
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -99,6 +86,10 @@
     {
       "source": "/.well-known/:path*",
       "destination": "/.well-known/:path*"
+    },
+    {
+      "source": "/assets/:path*",
+      "destination": "/assets/:path*"
     },
     {
       "source": "/privacy",

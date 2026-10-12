@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <!-- الصفحة الرئيسية ولعبة السباق الخارقة -->
   <url>
     <loc>https://www.games-children.com/</loc>
     <lastmod>2026-10-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://www.games-children.com/assets/social-cover.jpg</image:loc>
+      <image:title>لعبة سباق سيارات المدينة السريعة للأبطال</image:title>
+      <image:caption>لعبة سباق السيارات الخارقة في المدينة مجاناً على المتصفح للأطفال والبالغين</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.games-children.com/assets/social-cover.webp</image:loc>
+      <image:title>لعبة سباق سيارات المدينة السريعة للأبطال بصيغة WebP</image:title>
+      <image:caption>ألعاب سيارات ثلاثية الأبعاد خفيفة وسريعة التحميل بدون تنزيل</image:caption>
+    </image:image>
   </url>
 
   <!-- صفحة واستعراض أنواع وتطوير السيارات -->
@@ -14,6 +25,11 @@
     <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.games-children.com/assets/social-cover.webp</image:loc>
+      <image:title>أنواع سيارات السباق الخارقة في اللعبة</image:title>
+      <image:caption>دليل سيارات السباق وترقيات السرعة والمحرك والنيترو في المرآب</image:caption>
+    </image:image>
   </url>
 
   <!-- صفحة طريقة اللعب والتحكم -->
@@ -22,6 +38,11 @@
     <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.games-children.com/assets/gameplay-preview.webp</image:loc>
+      <image:title>طريقة اللعب وإرشادات التحكم</image:title>
+      <image:caption>إرشادات التحكم باللمس ولوحة المفاتيح في لعبة سباق سيارات المدينة</image:caption>
+    </image:image>
   </url>
 
   <!-- صفحة سياسة الخصوصية الأساسية لأدسنس ومشرفي المواقع -->
@@ -46,6 +67,11 @@
     <lastmod>2026-10-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+    <image:image>
+      <image:loc>https://www.games-children.com/assets/social-cover.webp</image:loc>
+      <image:title>فريق عمل لعبة سباق سيارات المدينة السريعة</image:title>
+      <image:caption>منصة ألعاب أركيد متطورة ومجانية للأطفال والبالغين</image:caption>
+    </image:image>
   </url>
 
   <!-- صفحة اتصل بنا ونموذج التواصل المباشر -->
