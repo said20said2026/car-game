@@ -206,3 +206,121 @@ export function recordDailyRace(): DailyRacesData {
   const current = loadDailyRaces();
   return saveDailyRaces(current.count + 1);
 }
+
+// ----------------------------------------------------
+// Leaderboard (أفضل 5 لاعبين) LocalStorage Management
+// ----------------------------------------------------
+
+export interface LeaderboardEntry {
+  id: string;
+  name: string;
+  score: number;
+  date: string;
+  carName?: string;
+  isCurrentPlayer?: boolean;
+}
+
+export const LEADERBOARD_STORAGE_KEY = 'fast_city_racing_leaderboard';
+export const PLAYER_NAME_STORAGE_KEY = 'fast_city_racing_player_name';
+
+export const DEFAULT_LEADERBOARD: LeaderboardEntry[] = [
+  { id: 'lb-1', name: 'شبح الحلبة ⚡', score: 18500, date: 'اليوم', carName: 'فايبر النيون' },
+  { id: 'lb-2', name: 'صقر المدينة 🦅', score: 14200, date: 'اليوم', carName: 'الوحش الكلاسيكي' },
+  { id: 'lb-3', name: 'توربو الرياض 🏎️', score: 11800, date: 'أمس', carName: 'البرق الذهبي' },
+  { id: 'lb-4', name: 'سائق الليل 🌙', score: 9500, date: 'أمس', carName: 'الصاروخ الأحمر' },
+  { id: 'lb-5', name: 'بطل السرعة 🔥', score: 7200, date: 'منذ يومين', carName: 'الصاروخ الأحمر' },
+];
+
+export function loadPlayerName(): string {
+  try {
+    const saved = localStorage.getItem(PLAYER_NAME_STORAGE_KEY);
+    if (saved && saved.trim()) {
+      return saved.trim();
+    }
+  } catch {}
+  return 'المتسابق البطل';
+}
+
+export function savePlayerName(name: string): string {
+  const clean = (name || '').trim() || 'المتسابق البطل';
+  try {
+    localStorage.setItem(PLAYER_NAME_STORAGE_KEY, clean);
+  } catch {}
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('player_name_changed', { detail: clean }));
+  }
+  return clean;
+}
+
+export function loadLeaderboard(): LeaderboardEntry[] {
+  try {
+    const raw = localStorage.getItem(LEADERBOARD_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Sort descending by score and keep top 5
+        const sorted = [...parsed]
+          .filter((item) => item && typeof item.score === 'number' && typeof item.name === 'string')
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 5);
+        if (sorted.length > 0) {
+          return sorted;
+        }
+      }
+    }
+  } catch {}
+  return [...DEFAULT_LEADERBOARD];
+}
+
+export function saveLeaderboard(entries: LeaderboardEntry[]): LeaderboardEntry[] {
+  const sorted = [...entries]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+
+  try {
+    localStorage.setItem(LEADERBOARD_STORAGE_KEY, JSON.stringify(sorted));
+  } catch {}
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('leaderboard_changed', { detail: sorted }));
+  }
+  return sorted;
+}
+
+export function addLeaderboardScore(
+  name: string,
+  score: number,
+  carName?: string
+): { entries: LeaderboardEntry[]; rank: number | null } {
+  const playerName = savePlayerName(name);
+  const currentEntries = loadLeaderboard();
+
+  const newEntry: LeaderboardEntry = {
+    id: `lb-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    name: playerName,
+    score: Math.max(0, Math.floor(score)),
+    date: 'اليوم',
+    carName: carName || 'سيارة السباق',
+    isCurrentPlayer: true,
+  };
+
+  // Combine and sort
+  const combined = [...currentEntries, newEntry].sort((a, b) => b.score - a.score);
+  const top5 = combined.slice(0, 5);
+  
+  // Find rank of new entry
+  const rankIndex = top5.findIndex((e) => e.id === newEntry.id);
+  const rank = rankIndex !== -1 ? rankIndex + 1 : null;
+
+  saveLeaderboard(top5);
+
+  return { entries: top5, rank };
+}
+
+export function resetLeaderboard(): LeaderboardEntry[] {
+  try {
+    localStorage.removeItem(LEADERBOARD_STORAGE_KEY);
+  } catch {}
+  return saveLeaderboard([...DEFAULT_LEADERBOARD]);
+}
+

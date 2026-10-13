@@ -29,6 +29,7 @@
 /* Neon Glow styles for Play button edges */
 #game-container .btn-play {
   position: relative;
+  overflow: visible;
   border: 2px solid #34d399 !important;
   box-shadow:
     0 0 6px rgba(52, 211, 153, 0.85),
@@ -39,6 +40,40 @@
   animation: breathing 2s ease-in-out infinite;
   will-change: transform;
   transition: all 0.25s ease-out;
+}
+
+/* Glow pulse animation overlay on pseudo-element (::after) */
+#game-container .btn-play::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  border: 2px solid rgba(52, 211, 153, 0.9);
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.15) 0%, transparent 75%);
+  pointer-events: none;
+  animation: glow-pulse 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  box-sizing: border-box;
+}
+
+/* Glow pulse animation: expands outward and fades periodically */
+@keyframes glow-pulse {
+  0% {
+    transform: scale(0.98);
+    opacity: 0.9;
+    box-shadow:
+      0 0 8px rgba(52, 211, 153, 0.9),
+      0 0 18px rgba(16, 185, 129, 0.75);
+  }
+  50% {
+    opacity: 0.45;
+  }
+  100% {
+    transform: scale(1.1, 1.28);
+    opacity: 0;
+    box-shadow:
+      0 0 25px rgba(52, 211, 153, 0),
+      0 0 50px rgba(16, 185, 129, 0);
+  }
 }
 
 /* Subtle 'breathing' animation keyframe (scales 1.0 to 1.05 for soft rhythmic heartbeat effect) */
@@ -72,6 +107,11 @@
     inset 0 0 14px rgba(255, 255, 255, 0.75) !important;
 }
 
+#game-container .btn-play:hover::after {
+  animation: glow-pulse 1.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  border-color: rgba(167, 243, 208, 0.95);
+}
+
 #game-container .btn-play:active {
   animation: none;
   transform: scale(0.97) translateY(0);
@@ -80,6 +120,11 @@
     0 0 8px rgba(52, 211, 153, 0.9),
     0 0 20px rgba(16, 185, 129, 0.75),
     0 0 35px rgba(16, 185, 129, 0.5) !important;
+}
+
+#game-container .btn-play:active::after {
+  opacity: 0;
+  animation: none;
 }
 
 .btn-play-pulse {

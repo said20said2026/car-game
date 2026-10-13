@@ -12,6 +12,7 @@ import { PolicyModal, PolicyTab } from './components/PolicyModal';
 import { AdSlot } from './components/AdSlot';
 import { GameArticle } from './components/GameArticle';
 import { Achievements } from './components/Achievements';
+import { Leaderboard } from './components/Leaderboard';
 import { Footer } from './components/Footer';
 import { loadPlayerStats } from './utils/storage';
 
@@ -234,6 +235,9 @@ export default function App() {
             onCoinsChange={setCoins}
           />
         </section>
+
+        {/* لوحة أفضل 5 متصدرين بناءً على مجموع النقاط في LocalStorage */}
+        <Leaderboard theme={theme} onPlayNow={handlePlayNow} />
 
         {/* قسم الإنجازات وشارات التميز */}
         <Achievements stats={loadPlayerStats()} />

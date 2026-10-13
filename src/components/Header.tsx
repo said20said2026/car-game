@@ -54,6 +54,9 @@ export const Header: React.FC<HeaderProps> = ({
           <a href="#game-container" className="hover:text-amber-500 transition-colors whitespace-nowrap shrink-0">
             شاشة اللعبة
           </a>
+          <a href="#leaderboard" className="hover:text-amber-500 transition-colors whitespace-nowrap shrink-0 font-bold text-amber-400">
+            لوحة المتصدرين 🏆
+          </a>
           <a href="#instructions" className="hover:text-amber-500 transition-colors whitespace-nowrap shrink-0">
             طريقة التحكم
           </a>

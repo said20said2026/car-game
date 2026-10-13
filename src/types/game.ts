@@ -76,6 +76,10 @@ export interface Particle {
   maxLife: number;
   color: string;
   size: number;
-  shape?: 'circle' | 'spark' | 'streak' | 'ring';
+  shape?: 'circle' | 'spark' | 'streak' | 'ring' | 'smoke';
   length?: number;
+  growth?: number; // Size expansion per second for smoke clouds
+  spin?: number;   // Rotation velocity in radians/sec
+  angle?: number;  // Current rotation angle
+  glow?: boolean;  // Optional glowing effect for nitro/fire smoke
 }

@@ -20,6 +20,7 @@ import {
   ChevronRight,
   ShieldAlert,
   Zap,
+  Trophy,
 } from 'lucide-react';
 import {
   GameState,
@@ -35,6 +36,8 @@ import {
   savePlayerStats,
   recordDailyRace,
   getCarEffectiveStats,
+  loadPlayerName,
+  addLeaderboardScore,
 } from '../utils/storage';
 import { soundManager, engineAudio } from '../utils/audio';
 
@@ -437,6 +440,13 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     savePlayerStats(stats);
     recordDailyRace();
 
+    // Auto-record score into Top 5 Leaderboard (LocalStorage)
+    if (finalScore > 0) {
+      const pName = loadPlayerName();
+      const car = CARS_DATA.find((c) => c.id === stats.selectedCarId) || CARS_DATA[0];
+      addLeaderboardScore(pName, finalScore, car.arabicName || car.name);
+    }
+
     onCoinsChange(finalCoins);
     setHighScore(newHigh);
     setCurrentScore(finalScore);
@@ -803,30 +813,67 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           });
         }
 
-        // Multi-Layer Dynamic Nitro Particle System & Motion Blur
+        // =========================================================================
+        // REALISTIC DUAL-EXHAUST SMOKE & NITRO PARTICLE SYSTEM (Canvas API)
+        // =========================================================================
         const roadW = width * 0.85;
         const curPlayerX = width / 2 + p.x * (roadW * 0.42);
         const curPlayerY = height * 0.82;
         const pW = 82;
         const pH = 56;
+        const exhaustXOffsets = [-pW * 0.28, pW * 0.28]; // Exact alignment with rear twin exhaust pipes
 
         if (wantNitro) {
-          // Camera micro-rumble from intense rocket thrusters
+          // Intense micro-shake from rocket propulsion
           p.shake = Math.max(p.shake, 4.5);
 
-          // 1. Dual exhaust ports (left and right)
-          const exhaustXOffsets = [-pW * 0.28, pW * 0.28];
+          // 1. High-Density Nitrous Exhaust Smoke (Glowing cyan/blue/fiery turbulent vapor plumes)
           exhaustXOffsets.forEach((exX) => {
-            // Core white-hot plasma fire sphere
+            // Nitro superheated vapor / glowing plume puff
             particlesRef.current.push({
-              x: curPlayerX + exX + (Math.random() - 0.5) * 5,
+              x: curPlayerX + exX + (Math.random() - 0.5) * 6,
+              y: curPlayerY - 2,
+              vx: (Math.random() - 0.5) * 60 - p.vx * 35,
+              vy: 140 + Math.random() * 220,
+              life: 0.38 + Math.random() * 0.18,
+              maxLife: 0.55,
+              color: Math.random() > 0.4 ? 'rgba(56, 189, 248, 0.75)' : 'rgba(147, 197, 253, 0.65)',
+              size: 5 + Math.random() * 6,
+              growth: 32 + Math.random() * 24, // Expands rapidly backwards
+              shape: 'smoke',
+              spin: (Math.random() - 0.5) * 8,
+              angle: Math.random() * Math.PI * 2,
+              glow: true,
+            });
+
+            // Darker smoky condensation ring around nitro plume edge
+            if (Math.random() < 0.6) {
+              particlesRef.current.push({
+                x: curPlayerX + exX + (Math.random() - 0.5) * 10,
+                y: curPlayerY + 2,
+                vx: (Math.random() - 0.5) * 75 - p.vx * 30,
+                vy: 110 + Math.random() * 160,
+                life: 0.4 + Math.random() * 0.2,
+                maxLife: 0.6,
+                color: 'rgba(75, 85, 99, 0.45)', // Grey outer smoke
+                size: 6 + Math.random() * 5,
+                growth: 28 + Math.random() * 20,
+                shape: 'smoke',
+                spin: (Math.random() - 0.5) * 6,
+                angle: Math.random() * Math.PI * 2,
+              });
+            }
+
+            // Core white-hot plasma fire jet
+            particlesRef.current.push({
+              x: curPlayerX + exX + (Math.random() - 0.5) * 4,
               y: curPlayerY - 2,
               vx: (Math.random() - 0.5) * 35 - p.vx * 40,
-              vy: 180 + Math.random() * 260,
+              vy: 200 + Math.random() * 280,
               life: 0.22,
               maxLife: 0.22,
-              color: Math.random() > 0.3 ? '#ffffff' : '#38bdf8',
-              size: 6 + Math.random() * 8,
+              color: Math.random() > 0.25 ? '#ffffff' : '#38bdf8',
+              size: 5 + Math.random() * 7,
               shape: 'circle',
             });
 
@@ -834,14 +881,14 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             particlesRef.current.push({
               x: curPlayerX + exX,
               y: curPlayerY - 2,
-              vx: (Math.random() - 0.5) * 80 - p.vx * 60,
+              vx: (Math.random() - 0.5) * 90 - p.vx * 60,
               vy: 280 + Math.random() * 340,
               life: 0.2,
               maxLife: 0.2,
               color: Math.random() > 0.5 ? '#06b6d4' : '#f97316',
               size: 2.5 + Math.random() * 3,
               shape: 'spark',
-              length: 16 + Math.random() * 24,
+              length: 18 + Math.random() * 24,
             });
 
             // Shockwave rings
@@ -860,7 +907,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             }
           });
 
-          // 2. Aerodynamic wingtip vortex streamers off rear spoiler corners
+          // Aerodynamic wingtip vortex streamers off rear spoiler corners
           const spoilerXOffsets = [-pW * 0.52, pW * 0.52];
           spoilerXOffsets.forEach((spX) => {
             particlesRef.current.push({
@@ -877,7 +924,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             });
           });
 
-          // 3. Asphalt friction embers
+          // Asphalt friction embers
           if (Math.random() < 0.65) {
             particlesRef.current.push({
               x: curPlayerX + (Math.random() - 0.5) * pW * 0.6,
@@ -890,6 +937,58 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               size: 2 + Math.random() * 3,
               shape: 'spark',
               length: 8 + Math.random() * 14,
+            });
+          }
+        } else if (wantAccel) {
+          // =========================================================================
+          // ACCELERATION EXHAUST SMOKE (Volumetric grey/white smoke puffs from twin pipes)
+          // Density & velocity scale with car speed and throttle engagement
+          // =========================================================================
+          const speedRatio = Math.min(1, Math.max(0.1, p.speed / effective.topSpeed));
+          const spawnProb = isMobileDevice ? 0.75 : 0.92;
+
+          if (Math.random() < spawnProb) {
+            exhaustXOffsets.forEach((exX) => {
+              // Primary billowy exhaust smoke puff
+              const smokeColors = [
+                'rgba(209, 213, 219, 0.48)', // light silver grey
+                'rgba(156, 163, 175, 0.42)', // medium carbon grey
+                'rgba(107, 114, 128, 0.38)', // dark exhaust residue
+                'rgba(243, 244, 246, 0.55)', // warm white vapor
+              ];
+              const smokeColor = smokeColors[Math.floor(Math.random() * smokeColors.length)];
+
+              // Spawn smoke puff from rear exhaust tip
+              particlesRef.current.push({
+                x: curPlayerX + exX + (Math.random() - 0.5) * 5,
+                y: curPlayerY - 1 + Math.random() * 3,
+                vx: (Math.random() - 0.5) * (25 + speedRatio * 30) - p.vx * 25,
+                vy: (40 + speedRatio * 90) + Math.random() * 40, // drifts backwards relative to forward motion
+                life: 0.35 + Math.random() * 0.25,
+                maxLife: 0.6,
+                color: smokeColor,
+                size: 4 + Math.random() * 4,
+                growth: 20 + speedRatio * 22, // Puffs expand naturally into road air
+                shape: 'smoke',
+                spin: (Math.random() - 0.5) * 5,
+                angle: Math.random() * Math.PI * 2,
+              });
+
+              // Occasional micro-backfire flame ember on heavy acceleration
+              if (speedRatio > 0.65 && Math.random() < 0.15) {
+                particlesRef.current.push({
+                  x: curPlayerX + exX + (Math.random() - 0.5) * 3,
+                  y: curPlayerY,
+                  vx: (Math.random() - 0.5) * 40,
+                  vy: 120 + Math.random() * 100,
+                  life: 0.14,
+                  maxLife: 0.14,
+                  color: Math.random() > 0.4 ? '#f97316' : '#eab308',
+                  size: 2.5 + Math.random() * 2,
+                  shape: 'spark',
+                  length: 10 + Math.random() * 10,
+                });
+              }
             });
           }
         } else if (p.speed > 190) {
@@ -910,8 +1009,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           }
         }
 
-        // Particle budget enforcement (prevents particle explosion on mobile)
-        const maxActiveParticles = (isMobileDevice || performanceMode) ? 30 : 85;
+        // Particle budget enforcement (smooth 60fps on mobile while rich on desktop)
+        const maxActiveParticles = (isMobileDevice || performanceMode) ? 45 : 120;
         if (particlesRef.current.length > maxActiveParticles) {
           particlesRef.current.splice(0, particlesRef.current.length - maxActiveParticles);
         }
@@ -1309,9 +1408,16 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
       // 7. PARTICLES (Batch-drawn for mobile performance without ctx.save/restore)
       for (let i = particlesRef.current.length - 1; i >= 0; i--) {
         const pt = particlesRef.current[i];
+        // Update position and growth
         pt.x += pt.vx * dt;
         pt.y += pt.vy * dt;
         pt.life -= dt;
+        if (pt.growth) {
+          pt.size += pt.growth * dt;
+        }
+        if (pt.spin) {
+          pt.angle = (pt.angle || 0) + pt.spin * dt;
+        }
 
         if (pt.life <= 0) {
           particlesRef.current.splice(i, 1);
@@ -1323,7 +1429,19 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         ctx.strokeStyle = pt.color;
         ctx.globalAlpha = alpha;
 
-        if (pt.shape === 'spark') {
+        if (pt.shape === 'smoke') {
+          // Volumetric soft exhaust smoke puff using Canvas API arc and radial gradient
+          const rad = Math.max(1, pt.size);
+          const smokeGrad = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, rad);
+          smokeGrad.addColorStop(0, pt.color);
+          smokeGrad.addColorStop(0.65, pt.color);
+          smokeGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ctx.fillStyle = smokeGrad;
+
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, rad, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (pt.shape === 'spark') {
           const sparkLen = pt.length || 16;
           ctx.lineWidth = pt.size;
           ctx.beginPath();
@@ -1976,6 +2094,19 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   <Wrench className="w-4 h-4 text-amber-400" />
                   <span>المرآب والترقيات</span>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    document.getElementById('leaderboard')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="w-full sm:w-auto px-5 py-3.5 bg-slate-900/90 hover:bg-slate-800 active:scale-95 text-amber-400 font-bold text-sm rounded-xl border border-amber-500/30 flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  title="عرض لوحة أفضل 5 لاعبين"
+                >
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  <span>لوحة المتصدرين</span>
+                </button>
               </div>
 
               {/* Quick Controls Guide */}
@@ -2081,11 +2212,11 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 </div>
               </div>
 
-              {/* Restart & Garage Buttons */}
-              <div className="flex items-center gap-2.5 pt-1">
+              {/* Restart, Garage & Leaderboard Buttons */}
+              <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
                 <button
                   onClick={startGame}
-                  className="btn-play flex-1 py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="btn-play w-full sm:flex-1 py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <RotateCcw className="w-4 h-4" />
                   <span>العب مجدداً</span>
@@ -2093,10 +2224,20 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
 
                 <button
                   onClick={onOpenGarage}
-                  className="py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl border border-slate-700 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl border border-slate-700 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Wrench className="w-4 h-4 text-amber-400" />
                   <span>تطوير السيارة</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    document.getElementById('leaderboard')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="w-full sm:w-auto py-3 px-4 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold rounded-xl border border-amber-500/40 transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-xs"
+                >
+                  <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                  <span>لوحة المتصدرين</span>
                 </button>
               </div>
             </div>
