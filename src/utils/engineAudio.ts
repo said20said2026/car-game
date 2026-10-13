@@ -273,13 +273,25 @@ export class EngineAudio {
     }
   }
 
+  private volumeMultiplier: number = 1.0;
+
+  /**
+   * Sets volume multiplier (0.0 to 1.0)
+   */
+  public setVolume(volume: number): void {
+    this.volumeMultiplier = Math.max(0, Math.min(1, volume));
+    if (this.ctx && this.masterGain && !this.isMuted) {
+      this.masterGain.gain.setTargetAtTime(0.08 * this.volumeMultiplier, this.ctx.currentTime, 0.05);
+    }
+  }
+
   /**
    * Sets mute state
    */
   public setMuted(muted: boolean): void {
     this.isMuted = muted;
     if (this.ctx && this.masterGain) {
-      this.masterGain.gain.setValueAtTime(muted ? 0 : 0.08, this.ctx.currentTime);
+      this.masterGain.gain.setValueAtTime(muted ? 0 : 0.08 * this.volumeMultiplier, this.ctx.currentTime);
     }
   }
 

@@ -101,6 +101,9 @@ export function loadPlayerStats(): PlayerStats {
         selectedTrack: parsed.selectedTrack ?? 'day',
         soundEnabled: parsed.soundEnabled ?? true,
         musicEnabled: parsed.musicEnabled ?? true,
+        musicVolume: parsed.musicVolume ?? 0.35,
+        soundVolume: parsed.soundVolume ?? 0.8,
+        speedPitchEnabled: parsed.speedPitchEnabled ?? true,
         upgrades: parsed.upgrades ?? {},
         unlockedCars: parsed.unlockedCars ?? ['red_rocket'],
       };
@@ -116,6 +119,9 @@ export function loadPlayerStats(): PlayerStats {
     selectedTrack: 'day',
     soundEnabled: true,
     musicEnabled: true,
+    musicVolume: 0.35,
+    soundVolume: 0.8,
+    speedPitchEnabled: true,
     upgrades: {
       red_rocket: { ...DEFAULT_UPGRADE },
     },

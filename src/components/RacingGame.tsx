@@ -21,6 +21,10 @@ import {
   ShieldAlert,
   Zap,
   Trophy,
+  Sliders,
+  Volume1,
+  X,
+  Activity,
 } from 'lucide-react';
 import {
   GameState,
@@ -64,12 +68,20 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const [selectedTrack, setSelectedTrack] = useState<TrackEnvironment>('day');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [musicEnabled, setMusicEnabled] = useState<boolean>(true);
+  const [musicVolume, setMusicVolume] = useState<number>(0.35);
+  const [soundVolume, setSoundVolume] = useState<number>(0.8);
+  const [speedPitchEnabled, setSpeedPitchEnabled] = useState<boolean>(true);
+  const [showAudioModal, setShowAudioModal] = useState<boolean>(false);
+  const [liveMusicBpm, setLiveMusicBpm] = useState<number>(126);
+  const [livePitchShift, setLivePitchShift] = useState<number>(0);
+  const showAudioModalRef = useRef<boolean>(false);
   const [currentScore, setCurrentScore] = useState<number>(0);
   const [runCoins, setRunCoins] = useState<number>(0);
   const [runDistance, setRunDistance] = useState<number>(0);
   const [currentSpeed, setCurrentSpeed] = useState<number>(0);
   const [nitroAmount, setNitroAmount] = useState<number>(100);
   const [isNitroActive, setIsNitroActive] = useState<boolean>(false);
+  const isNitroActiveRef = useRef<boolean>(false);
   const [comboMultiplier, setComboMultiplier] = useState<number>(1);
   const [comboMessage, setComboMessage] = useState<string | null>(null);
   const [highScore, setHighScore] = useState<number>(0);
@@ -129,12 +141,16 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     up: boolean;
     down: boolean;
     nitro: boolean;
+    space: boolean;
+    drift: boolean;
   }>({
     left: false,
     right: false,
     up: false,
     down: false,
     nitro: false,
+    space: false,
+    drift: false,
   });
 
   // Touch control state
@@ -195,8 +211,20 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     setSoundEnabled(stats.soundEnabled);
     const musicOn = stats.musicEnabled ?? true;
     setMusicEnabled(musicOn);
+
+    const musVol = stats.musicVolume ?? 0.35;
+    const sndVol = stats.soundVolume ?? 0.8;
+    const spdPitch = stats.speedPitchEnabled ?? true;
+
+    setMusicVolume(musVol);
+    setSoundVolume(sndVol);
+    setSpeedPitchEnabled(spdPitch);
+
     soundManager.setEnabled(stats.soundEnabled);
     soundManager.setMusicEnabled(musicOn);
+    soundManager.setMusicVolume(musVol);
+    soundManager.setVolume(sndVol);
+    soundManager.setInteractivePitchEnabled(spdPitch);
   }, []);
 
   // Sync sound effects settings
@@ -225,6 +253,60 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         soundManager.stopMusic();
       }
     }
+  };
+
+  // Music volume slider handler
+  const handleMusicVolumeChange = (newVol: number) => {
+    const clamped = Math.max(0, Math.min(1, newVol));
+    setMusicVolume(clamped);
+    soundManager.setMusicVolume(clamped);
+    if (!musicEnabled && clamped > 0) {
+      setMusicEnabled(true);
+      soundManager.setMusicEnabled(true);
+    }
+    const stats = loadPlayerStats();
+    stats.musicVolume = clamped;
+    stats.musicEnabled = clamped > 0 ? true : musicEnabled;
+    savePlayerStats(stats);
+  };
+
+  // SFX volume slider handler
+  const handleSoundVolumeChange = (newVol: number) => {
+    const clamped = Math.max(0, Math.min(1, newVol));
+    setSoundVolume(clamped);
+    soundManager.setVolume(clamped);
+    if (!soundEnabled && clamped > 0) {
+      setSoundEnabled(true);
+      soundManager.setEnabled(true);
+    }
+    const stats = loadPlayerStats();
+    stats.soundVolume = clamped;
+    stats.soundEnabled = clamped > 0 ? true : soundEnabled;
+    savePlayerStats(stats);
+  };
+
+  // Interactive speed pitch toggle handler
+  const handleSpeedPitchToggle = () => {
+    const next = !speedPitchEnabled;
+    setSpeedPitchEnabled(next);
+    soundManager.setInteractivePitchEnabled(next);
+    const stats = loadPlayerStats();
+    stats.speedPitchEnabled = next;
+    savePlayerStats(stats);
+  };
+
+  // Audio control modal toggle
+  const toggleAudioModal = () => {
+    setShowAudioModal(prev => {
+      const next = !prev;
+      showAudioModalRef.current = next;
+      if (next) {
+        const status = soundManager.getMusicStatus();
+        setLiveMusicBpm(status.bpm);
+        setLivePitchShift(status.pitchSemitones);
+      }
+      return next;
+    });
   };
 
   // Switch Track Environment
@@ -265,8 +347,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
       if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
         keysRef.current.down = true;
       }
-      if (e.key === ' ' || e.key === 'Shift') {
+      if (e.key === ' ' || e.code === 'Space' || e.key === 'Shift') {
         keysRef.current.nitro = true;
+        keysRef.current.space = true;
+        keysRef.current.drift = true;
       }
       if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
         if (gameState === 'PLAYING') {
@@ -290,8 +374,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
       if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
         keysRef.current.down = false;
       }
-      if (e.key === ' ' || e.key === 'Shift') {
+      if (e.key === ' ' || e.code === 'Space' || e.key === 'Shift') {
         keysRef.current.nitro = false;
+        keysRef.current.space = false;
+        keysRef.current.drift = false;
       }
     };
 
@@ -543,11 +629,17 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           maxSpeed = effective.topSpeed * 1.35;
           p.nitro = Math.max(0, p.nitro - dt * 25);
           if (Math.random() < 0.4) soundManager.playNitroBoost();
-          setIsNitroActive(true);
+          if (!isNitroActiveRef.current) {
+            isNitroActiveRef.current = true;
+            setIsNitroActive(true);
+          }
         } else {
           // Slow passive nitro recharge
           p.nitro = Math.min(effective.nitro, p.nitro + dt * 4);
-          setIsNitroActive(false);
+          if (isNitroActiveRef.current) {
+            isNitroActiveRef.current = false;
+            setIsNitroActive(false);
+          }
         }
 
         // Speed calculation
@@ -601,9 +693,17 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           }
         }
 
-        // Update sound engine & dynamic nitro music harmonics
-        soundManager.updateEngine(p.speed / effective.topSpeed, wantAccel, wantNitro);
+        // Update sound engine & dynamic interactive speed music harmonics
+        const speedRatio = p.speed / effective.topSpeed;
+        soundManager.updateEngine(speedRatio, wantAccel, wantNitro);
         soundManager.setNitroMusicMode(wantNitro);
+        soundManager.updateMusicSpeed(speedRatio, wantAccel, wantNitro);
+
+        if (showAudioModalRef.current && Math.random() < 0.12) {
+          const status = soundManager.getMusicStatus();
+          setLiveMusicBpm(status.bpm);
+          setLivePitchShift(status.pitchSemitones);
+        }
 
         // Spawn traffic
         nextTrafficSpawn -= dt;
@@ -789,38 +889,98 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           }
         }
 
-        // Tire drift smoke particles
-        if (Math.abs(p.vx) > 0.4 || p.speed > 220) {
-          particlesRef.current.push({
-            x: width / 2 + (p.x - 0.08) * (width * 0.35),
-            y: height * 0.86,
-            vx: (Math.random() - 0.5) * 40,
-            vy: Math.random() * 30 + 10,
-            life: 0.35,
-            maxLife: 0.35,
-            color: 'rgba(255, 255, 255, 0.45)',
-            size: 4 + Math.random() * 5,
-          });
-          particlesRef.current.push({
-            x: width / 2 + (p.x + 0.08) * (width * 0.35),
-            y: height * 0.86,
-            vx: (Math.random() - 0.5) * 40,
-            vy: Math.random() * 30 + 10,
-            life: 0.35,
-            maxLife: 0.35,
-            color: 'rgba(255, 255, 255, 0.45)',
-            size: 4 + Math.random() * 5,
-          });
-        }
-
         // =========================================================================
-        // REALISTIC DUAL-EXHAUST SMOKE & NITRO PARTICLE SYSTEM (Canvas API)
+        // BLACK TIRE DRIFT SMOKE PARTICLE SYSTEM (Space Key & Power Slide)
         // =========================================================================
         const roadW = width * 0.85;
         const curPlayerX = width / 2 + p.x * (roadW * 0.42);
         const curPlayerY = height * 0.82;
         const pW = 82;
         const pH = 56;
+
+        // Space key triggers drift; also active when power-sliding or high lateral-g steering
+        const isSpaceHeld = keysRef.current.space || keysRef.current.drift;
+        const isHardSteering = Math.abs(steerInput) > 0.35 || Math.abs(p.vx) > 0.38;
+        const isDrifting = (isSpaceHeld || isHardSteering) && p.speed > 30;
+
+        if (isDrifting) {
+          // Play drift tire screech audio periodically
+          if (Math.random() < 0.24) {
+            soundManager.playDrift();
+          }
+
+          // Camera micro-shudder from burning rubber friction on asphalt
+          p.shake = Math.max(p.shake, isSpaceHeld ? 3.0 : 2.0);
+
+          // Deep burnt-rubber black & charcoal smoke palette
+          const blackSmokeColors = [
+            'rgba(8, 8, 12, 0.92)',   // Deep pitch black
+            'rgba(18, 18, 24, 0.86)',  // Hot burnt rubber black
+            'rgba(28, 28, 36, 0.80)',  // Heavy charcoal black
+            'rgba(38, 38, 48, 0.72)',  // Billowy dark smoke
+          ];
+
+          // Tire contact patch positions on the road (exact alignment with wheels)
+          const tireLocations = [
+            { x: curPlayerX - pW * 0.48, y: curPlayerY - 4, isRear: true },  // Left rear tire
+            { x: curPlayerX + pW * 0.48, y: curPlayerY - 4, isRear: true },  // Right rear tire
+          ];
+
+          // During active lateral steering angle, outside front tire also skids
+          if (Math.abs(steerInput) > 0.12) {
+            const frontSkidX = steerInput < 0 ? curPlayerX + pW * 0.44 : curPlayerX - pW * 0.44;
+            tireLocations.push({ x: frontSkidX, y: curPlayerY - 24, isRear: false });
+          }
+
+          // Spawn volumetric billowing black smoke from tires
+          if (particlesRef.current.length < 220) {
+            tireLocations.forEach((tire) => {
+              const puffsPerTire = isSpaceHeld ? 2 : 1;
+
+              for (let k = 0; k < puffsPerTire; k++) {
+                const color = blackSmokeColors[Math.floor(Math.random() * blackSmokeColors.length)];
+                const life = 0.55 + Math.random() * 0.4;
+                const lateralThrow = (steerInput !== 0 ? -steerInput * 95 : (Math.random() - 0.5) * 60);
+
+                // 1. Billowing dense black tire smoke puff
+                particlesRef.current.push({
+                  x: tire.x + (Math.random() - 0.5) * 8,
+                  y: tire.y + (Math.random() - 0.5) * 5,
+                  vx: lateralThrow + (Math.random() - 0.5) * 45,
+                  vy: (p.speed / 3.6) * 1.5 + 45 + Math.random() * 55, // Drifts backwards relative to forward motion
+                  life,
+                  maxLife: life,
+                  color,
+                  size: 8 + Math.random() * 9,
+                  growth: 50 + Math.random() * 50, // Rapidly expands into billowy dark cloud
+                  spin: (Math.random() - 0.5) * 5.8,
+                  angle: Math.random() * Math.PI * 2,
+                  shape: 'smoke',
+                });
+
+                // 2. High-heat friction sparks flying from burning rubber (20% chance)
+                if (Math.random() < 0.22) {
+                  particlesRef.current.push({
+                    x: tire.x + (Math.random() - 0.5) * 8,
+                    y: tire.y + (Math.random() - 0.5) * 6,
+                    vx: lateralThrow * 1.6 + (Math.random() - 0.5) * 85,
+                    vy: (p.speed / 3.6) * 1.8 + 70 + Math.random() * 90,
+                    life: 0.18 + Math.random() * 0.14,
+                    maxLife: 0.3,
+                    color: Math.random() > 0.4 ? '#fbbf24' : '#f97316',
+                    size: 2,
+                    length: 12 + Math.random() * 12,
+                    shape: 'spark',
+                  });
+                }
+              }
+            });
+          }
+        }
+
+        // =========================================================================
+        // REALISTIC DUAL-EXHAUST SMOKE & NITRO PARTICLE SYSTEM (Canvas API)
+        // =========================================================================
         const exhaustXOffsets = [-pW * 0.28, pW * 0.28]; // Exact alignment with rear twin exhaust pipes
 
         if (wantNitro) {
@@ -1605,16 +1765,16 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
 
       ctx.restore();
 
-      // 10. 3D RADIAL WARP TUNNEL & SPEED MOTION BLUR STREAKS
-      if (p.speed > 110 || isNitroActive) {
+      // 10. 3D RADIAL WARP TUNNEL & OPTICAL SPEED MOTION BLUR STREAKS
+      const isNitro = isNitroActiveRef.current;
+      if (p.speed > 110 || isNitro) {
         const centerOrigX = roadTopX;
         const centerOrigY = horizonY;
         const speedRatio = p.speed / effective.topSpeed;
-        const isNitro = isNitroActive;
         const maxDist = Math.hypot(width, height) * 0.85;
 
         warpLinesRef.current.forEach((line) => {
-          const speedMultiplier = isNitro ? 2.6 : 1.3;
+          const speedMultiplier = isNitro ? 3.0 : 1.35;
           line.dist += line.speed * (p.speed / 100) * speedMultiplier * dt;
 
           if (line.dist > maxDist) {
@@ -1622,22 +1782,33 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             line.angle = Math.random() * Math.PI * 2;
           }
 
-          if (line.dist < 40) return;
+          if (line.dist < 35) return;
 
           const cos = Math.cos(line.angle);
           const sin = Math.sin(line.angle);
 
           const startX = centerOrigX + cos * line.dist;
           const startY = centerOrigY + sin * line.dist;
-          const curLen = line.length * (isNitro ? 2.4 : 1.1) * speedRatio;
+          const curLen = line.length * (isNitro ? 2.8 : 1.15) * speedRatio;
           const endX = centerOrigX + cos * (line.dist + curLen);
           const endY = centerOrigY + sin * (line.dist + curLen);
 
           const distRatio = Math.min(1, line.dist / (maxDist * 0.55));
-          const lineAlpha = (isNitro ? 0.8 : 0.35) * distRatio;
+          const lineAlpha = (isNitro ? 0.95 : 0.4) * distRatio;
 
-          ctx.strokeStyle = isNitro ? line.color : 'rgba(255, 255, 255, 0.45)';
-          ctx.lineWidth = isNitro ? line.width * 1.8 : line.width;
+          // Motion blur streak with optical gradient fade
+          const strokeGrad = ctx.createLinearGradient(startX, startY, endX, endY);
+          if (isNitro) {
+            strokeGrad.addColorStop(0, 'rgba(56, 189, 248, 0.15)');
+            strokeGrad.addColorStop(0.65, '#38bdf8');
+            strokeGrad.addColorStop(1, '#ffffff');
+          } else {
+            strokeGrad.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
+            strokeGrad.addColorStop(1, 'rgba(255, 255, 255, 0.65)');
+          }
+
+          ctx.strokeStyle = strokeGrad;
+          ctx.lineWidth = isNitro ? line.width * 2.2 : line.width;
           ctx.globalAlpha = lineAlpha;
           ctx.beginPath();
           ctx.moveTo(startX, startY);
@@ -1647,27 +1818,46 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         ctx.globalAlpha = 1.0;
       }
 
-      // 11. NITRO TUNNEL-VISION RADIAL VIGNETTE & SCREEN EDGE PULSE
-      if (isNitroActive) {
+      // 11. NITRO BLUE SCREEN BLOOM (وهج أزرق للشاشة) & PERIPHERAL MOTION BLUR
+      if (isNitro) {
         ctx.save();
-        const vigGrad = ctx.createRadialGradient(
-          width / 2,
-          height * 0.65,
-          width * 0.2,
-          width / 2,
-          height * 0.65,
-          width * 0.75
+        ctx.globalCompositeOperation = 'screen';
+
+        // Radiant blue screen bloom expanding from vanishing point
+        const bloomGrad = ctx.createRadialGradient(
+          roadTopX,
+          horizonY,
+          10,
+          roadTopX,
+          horizonY,
+          Math.hypot(width, height) * 0.75
         );
-        vigGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-        vigGrad.addColorStop(0.65, 'rgba(14, 165, 233, 0.08)');
-        vigGrad.addColorStop(1, 'rgba(6, 182, 212, 0.38)');
-        ctx.fillStyle = vigGrad;
+        bloomGrad.addColorStop(0, 'rgba(56, 189, 248, 0.45)');  // Electric cyan core
+        bloomGrad.addColorStop(0.35, 'rgba(14, 165, 233, 0.28)'); // Luminous azure
+        bloomGrad.addColorStop(0.7, 'rgba(2, 132, 199, 0.20)');  // Deep sapphire
+        bloomGrad.addColorStop(1, 'rgba(3, 105, 161, 0.45)');   // Outer blue vignette
+        ctx.fillStyle = bloomGrad;
         ctx.fillRect(0, 0, width, height);
 
-        // Electric neon edge pulse
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
-        ctx.lineWidth = 4;
+        // Anamorphic horizontal lens flare beam
+        const flareGrad = ctx.createLinearGradient(0, horizonY, width, horizonY);
+        flareGrad.addColorStop(0, 'rgba(56, 189, 248, 0)');
+        flareGrad.addColorStop(0.35, 'rgba(56, 189, 248, 0.35)');
+        flareGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.95)');
+        flareGrad.addColorStop(0.65, 'rgba(56, 189, 248, 0.35)');
+        flareGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        ctx.fillStyle = flareGrad;
+        ctx.fillRect(0, horizonY - 2.5, width, 5);
+
+        // Electric neon perimeter frame pulse
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.75)';
+        ctx.lineWidth = 5;
         ctx.strokeRect(0, 0, width, height);
+
+        ctx.strokeStyle = 'rgba(224, 242, 254, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(2, 2, width - 4, height - 4);
+
         ctx.restore();
       }
 
@@ -1682,7 +1872,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [gameState, selectedTrack, gameOver, onCoinsChange, isNitroActive, performanceMode]);
+  }, [gameState, selectedTrack, gameOver, onCoinsChange, performanceMode]);
 
   return (
     <div
@@ -1743,6 +1933,29 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             </span>
           </button>
 
+          {/* Audio Volume & Interactive Music Control Button */}
+          <button
+            type="button"
+            onClick={toggleAudioModal}
+            className={`p-1.5 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold ${
+              showAudioModal
+                ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/30'
+                : 'bg-slate-900/80 text-slate-300 border-slate-700/60 hover:text-white hover:bg-slate-800'
+            }`}
+            title="التحكم بمستوى الصوت والموسيقى التفاعلية"
+            aria-label="Audio and Interactive Music Controls"
+          >
+            <Sliders className={`w-4 h-4 ${showAudioModal ? 'text-slate-950' : 'text-amber-400'}`} />
+            <span className="hidden sm:inline text-[11px] font-bold">
+              التحكم بالصوت
+            </span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${
+              showAudioModal ? 'bg-black/20 text-slate-950' : 'bg-slate-800 text-amber-300'
+            }`}>
+              {musicEnabled ? `${Math.round(musicVolume * 100)}%` : 'كتم'}
+            </span>
+          </button>
+
           {/* Background Music Toggle Button */}
           <button
             type="button"
@@ -1760,7 +1973,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             ) : (
               <Music2 className="w-4 h-4 text-slate-400" />
             )}
-            <span className="hidden sm:inline text-[11px] font-bold">
+            <span className="hidden md:inline text-[11px] font-bold">
               {musicEnabled ? 'موسيقى السباق' : 'الموسيقى: متوقفة'}
             </span>
             {musicEnabled && (
@@ -1814,54 +2027,208 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
       </div>
 
       {/* CANVAS ELEMENT FOR 60FPS RACING */}
-      <div id="canvas-placeholder" className="relative w-full min-h-[460px] sm:min-h-[520px] max-h-[640px] aspect-16/9 sm:aspect-21/10">
+      <div id="canvas-placeholder" className="relative w-full min-h-[460px] sm:min-h-[520px] max-h-[640px] aspect-16/9 sm:aspect-21/10 overflow-hidden">
         <canvas
           ref={canvasRef}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
-          className="w-full h-full block cursor-crosshair touch-none"
+          className={`w-full h-full block cursor-crosshair touch-none transition-transform duration-100 origin-[50%_42%] ${
+            isNitroActive ? 'scale-[1.025] filter contrast-110 saturate-125' : 'scale-100'
+          }`}
         />
 
-        {/* SPEEDOMETER & NITRO GAUGE (Top Left on Mobile, Bottom Left on Desktop) */}
+        {/* FULL-SCREEN NITRO BLUE BLOOM & MOTION BLUR OVERLAY */}
+        {isNitroActive && gameState === 'PLAYING' && (
+          <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden animate-nitro-bloom">
+            {/* 1. Peripheral Motion Blur (Masked backdrop blur: clear center for steering, motion blurred periphery) */}
+            <div
+              className="absolute inset-0 backdrop-blur-[2.5px] backdrop-brightness-110"
+              style={{
+                WebkitMaskImage: 'radial-gradient(ellipse 65% 55% at 50% 42%, transparent 35%, black 85%)',
+                maskImage: 'radial-gradient(ellipse 65% 55% at 50% 42%, transparent 35%, black 85%)',
+              }}
+            />
+
+            {/* 2. Full-Screen Radiant Electric Blue Screen Bloom */}
+            <div
+              className="absolute inset-0 mix-blend-screen"
+              style={{
+                background:
+                  'radial-gradient(circle at 50% 42%, rgba(56, 189, 248, 0.25) 0%, rgba(14, 165, 233, 0.30) 45%, rgba(2, 132, 199, 0.45) 80%, rgba(3, 105, 161, 0.65) 100%)',
+              }}
+            />
+
+            {/* 3. Anamorphic Horizontal Blue Lens Flare Beam */}
+            <div className="absolute w-full h-1 top-[42%] -translate-y-1/2 bg-gradient-to-r from-transparent via-cyan-300 to-transparent opacity-85 shadow-[0_0_25px_#38bdf8]" />
+
+            {/* 4. Peripheral Motion Blur Speed Streaks */}
+            <svg
+              className="absolute inset-0 w-full h-full opacity-65 mix-blend-screen"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <radialGradient id="nitro-speed-grad" cx="50%" cy="42%" r="50%">
+                  <stop offset="30%" stopColor="#38bdf8" stopOpacity="0" />
+                  <stop offset="70%" stopColor="#38bdf8" stopOpacity="0.6" />
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0.95" />
+                </radialGradient>
+              </defs>
+              <line x1="8%" y1="12%" x2="0%" y2="0%" stroke="url(#nitro-speed-grad)" strokeWidth="3.5" />
+              <line x1="92%" y1="12%" x2="100%" y2="0%" stroke="url(#nitro-speed-grad)" strokeWidth="3.5" />
+              <line x1="5%" y1="45%" x2="0%" y2="48%" stroke="url(#nitro-speed-grad)" strokeWidth="4" />
+              <line x1="95%" y1="45%" x2="100%" y2="48%" stroke="url(#nitro-speed-grad)" strokeWidth="4" />
+              <line x1="12%" y1="85%" x2="0%" y2="100%" stroke="url(#nitro-speed-grad)" strokeWidth="4.5" />
+              <line x1="88%" y1="85%" x2="100%" y2="100%" stroke="url(#nitro-speed-grad)" strokeWidth="4.5" />
+              <line x1="28%" y1="92%" x2="18%" y2="100%" stroke="url(#nitro-speed-grad)" strokeWidth="3" />
+              <line x1="72%" y1="92%" x2="82%" y2="100%" stroke="url(#nitro-speed-grad)" strokeWidth="3" />
+            </svg>
+
+            {/* 5. Deep Neon Cyan/Blue Screen Border Bloom */}
+            <div className="absolute inset-0 border-2 sm:border-4 border-cyan-400/60 shadow-[inset_0_0_50px_rgba(56,189,248,0.7),inset_0_0_100px_rgba(14,165,233,0.5)]" />
+
+            {/* 6. Nitro Warp Acceleration Badge */}
+            <div className="absolute top-14 right-3 sm:top-14 sm:right-5 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/30 border border-cyan-400/80 backdrop-blur-md text-cyan-200 text-xs font-black uppercase tracking-wider animate-pulse shadow-[0_0_15px_rgba(56,189,248,0.8)]">
+              <span className="inline-block w-2 h-2 rounded-full bg-cyan-300 animate-ping" />
+              <span>NITRO HYPER-DRIVE ⚡</span>
+            </div>
+          </div>
+        )}
+
+        {/* SPEEDOMETER & DYNAMIC NITRO GAUGE CLUSTER (Side-by-side instrument panel) */}
         {gameState === 'PLAYING' && (
-          <div className="absolute top-12 left-3 sm:top-auto sm:bottom-5 sm:left-5 z-20 pointer-events-none flex flex-col gap-1.5 sm:gap-2">
-            {/* Speed Gauge */}
-            <div className="flex items-center gap-2.5 sm:gap-3 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-slate-950/80 backdrop-blur-md rounded-xl border border-slate-800/80 shadow-lg">
-              <Gauge className="w-4 h-4 sm:w-5 sm:h-5 text-sky-400" />
+          <div className="absolute top-12 left-3 sm:top-auto sm:bottom-5 sm:left-5 z-20 pointer-events-none flex flex-row items-center gap-2 sm:gap-2.5">
+            {/* 1. SPEED GAUGE & HEALTH */}
+            <div className="flex items-center gap-2 sm:gap-2.5 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-slate-950/85 backdrop-blur-md rounded-xl border border-slate-800/80 shadow-lg">
+              <div className="p-1 sm:p-1.5 rounded-lg bg-sky-500/15 border border-sky-500/30">
+                <Gauge className="w-4 h-4 sm:w-5 sm:h-5 text-sky-400" />
+              </div>
               <div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-3xl font-black font-game tabular-nums text-white leading-none">
+                  <span className="text-xl sm:text-2xl font-black font-game tabular-nums text-white leading-none">
                     {currentSpeed}
                   </span>
                   <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">كم/س</span>
                 </div>
                 {/* Health Bar */}
-                <div className="w-16 sm:w-24 h-1 sm:h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
-                  <div
-                    className={`h-full transition-all duration-200 ${
-                      carHealth > 50 ? 'bg-emerald-500' : carHealth > 25 ? 'bg-amber-500' : 'bg-red-500'
-                    }`}
-                    style={{ width: `${carHealth}%` }}
-                  />
+                <div className="flex items-center gap-1.5 mt-1">
+                  <div className="w-14 sm:w-18 h-1 sm:h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-200 ${
+                        carHealth > 50 ? 'bg-emerald-500' : carHealth > 25 ? 'bg-amber-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${carHealth}%` }}
+                    />
+                  </div>
+                  <span className="text-[8px] sm:text-[9px] text-slate-400 font-mono font-bold">
+                    {carHealth}%
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Nitro Booster Bar */}
-            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1.5 bg-slate-950/80 backdrop-blur-md rounded-xl border border-slate-800/80 shadow-lg">
-              <Flame className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isNitroActive ? 'text-amber-400 animate-pulse' : 'text-sky-400'}`} />
-              <div className="flex-1 w-16 sm:w-24">
-                <div className="flex justify-between text-[9px] sm:text-[10px] text-slate-400 font-semibold mb-0.5">
-                  <span>نيترو</span>
-                  <span className="tabular-nums">{nitroAmount}%</span>
-                </div>
-                <div className="h-1.5 sm:h-2 bg-slate-800 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-100 ${
-                      isNitroActive ? 'bg-gradient-to-r from-amber-500 to-red-500' : 'bg-sky-500'
-                    }`}
-                    style={{ width: `${nitroAmount}%` }}
+            {/* 2. DYNAMIC NITRO VISUAL GAUGE (بجانب شريط سرعة السيارة) */}
+            <div
+              className={`flex items-center gap-2 sm:gap-2.5 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-slate-950/85 backdrop-blur-md rounded-xl border transition-all duration-200 shadow-lg ${
+                isNitroActive
+                  ? 'border-amber-500/60 shadow-amber-500/20'
+                  : nitroAmount >= 25
+                  ? 'border-cyan-500/50 shadow-cyan-500/15'
+                  : 'border-slate-800/80'
+              }`}
+            >
+              {/* Circular SVG Radial Gauge Meter */}
+              <div className="relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 48 48">
+                  {/* Background Track Circle */}
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r="19"
+                    className="stroke-slate-800/90"
+                    strokeWidth="4"
+                    fill="none"
                   />
+                  {/* 25% Threshold Indicator Marker */}
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r="19"
+                    className="stroke-slate-700"
+                    strokeWidth="4"
+                    strokeDasharray="2 117"
+                    strokeDashoffset={-(119.38 * 0.25)}
+                    fill="none"
+                  />
+                  {/* Active Animated Nitro Progress Arc */}
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r="19"
+                    stroke={
+                      isNitroActive
+                        ? '#f59e0b'
+                        : nitroAmount >= 25
+                        ? '#06b6d4'
+                        : '#64748b'
+                    }
+                    strokeWidth="4"
+                    strokeDasharray={119.38}
+                    strokeDashoffset={119.38 - (119.38 * (nitroAmount / 100))}
+                    strokeLinecap="round"
+                    fill="none"
+                    className="transition-all duration-150 ease-out"
+                  />
+                </svg>
+
+                {/* Inner Icon */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Flame
+                    className={`w-4 h-4 transition-all ${
+                      isNitroActive
+                        ? 'text-amber-400 animate-pulse scale-110'
+                        : nitroAmount >= 25
+                        ? 'text-cyan-400'
+                        : 'text-slate-500'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Nitro Level & Status Info */}
+              <div>
+                <div className="flex items-baseline gap-1">
+                  <span
+                    className={`text-base sm:text-lg font-black font-game tabular-nums leading-none ${
+                      isNitroActive
+                        ? 'text-amber-400'
+                        : nitroAmount >= 25
+                        ? 'text-cyan-300'
+                        : 'text-slate-400'
+                    }`}
+                  >
+                    {nitroAmount}
+                  </span>
+                  <span className="text-[9px] font-bold text-slate-400">%</span>
+                </div>
+
+                {/* Dynamic Status Pill */}
+                <div className="mt-0.5">
+                  {isNitroActive ? (
+                    <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded font-black bg-amber-500/25 text-amber-300 border border-amber-500/40 animate-pulse flex items-center gap-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping inline-block" />
+                      منطلق 🔥
+                    </span>
+                  ) : nitroAmount >= 25 ? (
+                    <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block" />
+                      جاهز ⚡
+                    </span>
+                  ) : (
+                    <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded font-bold bg-slate-800/90 text-slate-400 border border-slate-700/60 flex items-center gap-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse inline-block" />
+                      شحن ⏳
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -1918,13 +2285,19 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 onPointerDown={(e) => {
                   try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
                   keysRef.current.nitro = true;
+                  keysRef.current.space = true;
+                  keysRef.current.drift = true;
                 }}
                 onPointerUp={(e) => {
                   try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
                   keysRef.current.nitro = false;
+                  keysRef.current.space = false;
+                  keysRef.current.drift = false;
                 }}
                 onPointerCancel={() => {
                   keysRef.current.nitro = false;
+                  keysRef.current.space = false;
+                  keysRef.current.drift = false;
                 }}
                 className="w-13 h-13 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-amber-600 to-red-600 active:scale-95 text-white flex items-center justify-center font-bold text-xs border border-amber-400/50 shadow-md touch-none select-none cursor-pointer"
                 aria-label="Nitro Boost"
@@ -2105,7 +2478,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   title="عرض لوحة أفضل 5 لاعبين"
                 >
                   <Trophy className="w-4 h-4 text-amber-400" />
-                  <span>لوحة المتصدرين</span>
+                  <span>لوحة المتصدرين 🏆</span>
                 </button>
               </div>
 
@@ -2132,6 +2505,16 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg transition-colors cursor-pointer"
                 >
                   متابعة القيادة
+                </button>
+
+                {/* Audio & Music Control Button in Pause Menu */}
+                <button
+                  type="button"
+                  onClick={toggleAudioModal}
+                  className="w-full py-2 px-4 rounded-lg border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm shadow-amber-500/10"
+                >
+                  <Sliders className="w-4 h-4 text-amber-400" />
+                  <span>التحكم في الصوت والموسيقى 🎚️ ({Math.round(musicVolume * 100)}%)</span>
                 </button>
 
                 {/* Music toggle during pause */}
@@ -2237,9 +2620,217 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   className="w-full sm:w-auto py-3 px-4 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold rounded-xl border border-amber-500/40 transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-xs"
                 >
                   <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                  <span>لوحة المتصدرين</span>
+                  <span>لوحة المتصدرين 🏆</span>
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* INTERACTIVE AUDIO & MUSIC CONTROL MODAL */}
+        {showAudioModal && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="bg-slate-900/95 border border-amber-500/40 rounded-2xl p-4 sm:p-5 max-w-md w-full shadow-2xl shadow-amber-500/10 space-y-4 text-right">
+              {/* Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <button
+                  type="button"
+                  onClick={toggleAudioModal}
+                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  title="إغلاق لوحة الصوت"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base sm:text-lg font-bold font-game text-white flex items-center gap-2">
+                    التحكم بالصوت والموسيقى 🎚️
+                  </h3>
+                  <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                    <Sliders className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Interactive Pitch & Speed Telemetry */}
+              <div className="p-3 rounded-xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-500/30">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
+                    <Activity className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                    <span>تفاعل الموسيقى المباشر مع السرعة</span>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    {speedPitchEnabled ? 'متصل بالمحرك ⚡' : 'ثابت 🔒'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                    <div className="text-[10px] text-slate-400 font-medium">إيقاع الموسيقى</div>
+                    <div className="text-sm font-bold font-mono text-amber-400">
+                      {musicEnabled ? `${liveMusicBpm} BPM` : 'متوقف'}
+                    </div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                    <div className="text-[10px] text-slate-400 font-medium">حدة النغمة (Pitch)</div>
+                    <div className="text-sm font-bold font-mono text-amber-400">
+                      {livePitchShift >= 0 ? `+${livePitchShift}` : livePitchShift} st
+                    </div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                    <div className="text-[10px] text-slate-400 font-medium">سرعة السيارة</div>
+                    <div className="text-sm font-bold font-mono text-emerald-400">
+                      {Math.round(currentSpeed)} كم/س
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                  🎶 ترتفع نغمة الموسيقى وحدتها وإيقاعها طردياً كلما ضغطت على دواسة الوقود أو النيترو، وتهدأ عند الفرملة!
+                </p>
+              </div>
+
+              {/* Music Volume Section */}
+              <div className="space-y-2 p-3 rounded-xl bg-slate-950/50 border border-slate-800/80">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={toggleMusic}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors flex items-center gap-1.5 cursor-pointer ${
+                        musicEnabled
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                          : 'bg-slate-800 text-slate-400 border-slate-700'
+                      }`}
+                    >
+                      {musicEnabled ? <Music className="w-3.5 h-3.5 text-amber-400" /> : <Music2 className="w-3.5 h-3.5 text-slate-400" />}
+                      <span>{musicEnabled ? 'تشغيل' : 'كتم'}</span>
+                    </button>
+                    <span className="font-mono text-xs font-bold text-amber-400">
+                      {Math.round(musicVolume * 100)}%
+                    </span>
+                  </div>
+                  <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <span>موسيقى السباق الحماسية</span>
+                    <Music className="w-4 h-4 text-amber-400" />
+                  </label>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={musicVolume}
+                  onChange={(e) => handleMusicVolumeChange(parseFloat(e.target.value))}
+                  className="w-full accent-amber-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
+                />
+
+                {/* Speed Pitch Feature Toggle */}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-800/60">
+                  <button
+                    type="button"
+                    onClick={handleSpeedPitchToggle}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      speedPitchEnabled ? 'bg-amber-500' : 'bg-slate-700'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        speedPitchEnabled ? 'translate-x-0' : 'translate-x-4'
+                      }`}
+                    />
+                  </button>
+                  <span className="text-xs text-slate-300">
+                    تغيير حدة النغمات مع سرعة السيارة (Pitch Reaction)
+                  </span>
+                </div>
+              </div>
+
+              {/* Sound Effects Volume Section */}
+              <div className="space-y-2 p-3 rounded-xl bg-slate-950/50 border border-slate-800/80">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={toggleSound}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors flex items-center gap-1.5 cursor-pointer ${
+                        soundEnabled
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
+                          : 'bg-slate-800 text-slate-400 border-slate-700'
+                      }`}
+                    >
+                      {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-emerald-400" /> : <VolumeX className="w-3.5 h-3.5 text-slate-400" />}
+                      <span>{soundEnabled ? 'تشغيل' : 'كتم'}</span>
+                    </button>
+                    <span className="font-mono text-xs font-bold text-emerald-400">
+                      {Math.round(soundVolume * 100)}%
+                    </span>
+                  </div>
+                  <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <span>صوت المحرك والمؤثرات (SFX)</span>
+                    <Volume2 className="w-4 h-4 text-emerald-400" />
+                  </label>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={soundVolume}
+                  onChange={(e) => handleSoundVolumeChange(parseFloat(e.target.value))}
+                  className="w-full accent-emerald-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
+                />
+              </div>
+
+              {/* Quick Preset Buttons */}
+              <div className="flex items-center justify-between gap-1.5 pt-1 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleMusicVolumeChange(0);
+                    handleSoundVolumeChange(0);
+                  }}
+                  className="flex-1 py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-center cursor-pointer"
+                >
+                  كتم الكل 🔇
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleMusicVolumeChange(0.3);
+                    handleSoundVolumeChange(0.4);
+                  }}
+                  className="flex-1 py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-center cursor-pointer"
+                >
+                  هادئ 🔉
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleMusicVolumeChange(0.5);
+                    handleSoundVolumeChange(0.8);
+                  }}
+                  className="flex-1 py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-center cursor-pointer"
+                >
+                  متوازن 🔊
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleMusicVolumeChange(1.0);
+                    handleSoundVolumeChange(1.0);
+                  }}
+                  className="flex-1 py-1 px-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors text-center cursor-pointer font-bold"
+                >
+                  أقصى حماس ⚡
+                </button>
+              </div>
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={toggleAudioModal}
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-500/20"
+              >
+                حفظ وإغلاق
+              </button>
             </div>
           </div>
         )}

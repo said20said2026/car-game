@@ -34,6 +34,9 @@ export interface PlayerStats {
   selectedTrack: TrackEnvironment;
   soundEnabled: boolean;
   musicEnabled?: boolean;
+  musicVolume?: number;
+  soundVolume?: number;
+  speedPitchEnabled?: boolean;
   upgrades: Record<string, CarUpgrades>;
   unlockedCars: string[];
 }

@@ -53,7 +53,17 @@ class SoundEngine {
   private musicNextTime: number = 0;
   private musicStep: number = 0;
   private musicVolume: number = 0.35;
+  private sfxVolume: number = 0.8;
   private isNitroMusicActive: boolean = false;
+
+  // Dynamic Speed & Pitch Modulation System
+  private interactivePitchEnabled: boolean = true;
+  private baseBpm: number = 126;
+  private currentBpm: number = 126;
+  private targetBpm: number = 126;
+  private pitchMultiplier: number = 1.0;
+  private targetPitchMultiplier: number = 1.0;
+  private currentSpeedNormalized: number = 0;
 
   constructor() {
     // Sound initializes on user gesture to obey browser autoplay policies
@@ -74,7 +84,7 @@ class SoundEngine {
   }
 
   // ==========================================
-  // Master SFX Controls
+  // Master SFX Controls & Volume
   // ==========================================
   public setEnabled(enabled: boolean) {
     this.sfxEnabled = enabled;
@@ -88,8 +98,17 @@ class SoundEngine {
     return this.sfxEnabled;
   }
 
+  public setVolume(volume: number) {
+    this.sfxVolume = Math.max(0, Math.min(1, volume));
+    engineAudio.setVolume(this.sfxVolume);
+  }
+
+  public getVolume(): number {
+    return this.sfxVolume;
+  }
+
   // ==========================================
-  // High-Energy Background Music Controls
+  // Interactive Speed-Responsive Background Music
   // ==========================================
   public setMusicEnabled(enabled: boolean) {
     this.musicEnabled = enabled;
@@ -124,6 +143,84 @@ class SoundEngine {
     }
   }
 
+  public getMusicVolume(): number {
+    return this.musicVolume;
+  }
+
+  public setInteractivePitchEnabled(enabled: boolean) {
+    this.interactivePitchEnabled = enabled;
+    if (!enabled) {
+      this.targetPitchMultiplier = 1.0;
+      this.targetBpm = this.baseBpm;
+    }
+  }
+
+  public isInteractivePitchEnabled(): boolean {
+    return this.interactivePitchEnabled;
+  }
+
+  /**
+   * Dynamically modulates background music pitch, tempo, and timbre
+   * according to the vehicle's real-time speed, throttle, and nitro state.
+   */
+  public updateMusicSpeed(speedNormalized: number, isAccelerating: boolean, isNitro: boolean) {
+    this.currentSpeedNormalized = Math.max(0, speedNormalized);
+    if (!this.interactivePitchEnabled) {
+      this.pitchMultiplier = 1.0;
+      this.currentBpm = this.baseBpm;
+      return;
+    }
+
+    const clampedSpeed = Math.min(1.35, this.currentSpeedNormalized);
+
+    // Dynamic Pitch Ratio:
+    // Speed 0: 1.00 (Base key)
+    // Speed 1.0 (Top speed): ~1.19 (+3 semitones / exciting minor third shift)
+    // Nitro (1.0 - 1.35): up to 1.28 - 1.33 (+4.5 semitones / perfect fourth rush)
+    let targetPitch = 1.0 + Math.min(1.0, clampedSpeed) * 0.18;
+    let targetTempo = this.baseBpm + Math.min(1.0, clampedSpeed) * 26; // 126 -> 152 BPM
+
+    if (isNitro) {
+      targetPitch += 0.10; // Extra pitch spike for high-octane nitrous surge
+      targetTempo += 16;   // Turbo tempo surge up to ~168 BPM
+    } else if (isAccelerating && clampedSpeed > 0.05) {
+      targetPitch += 0.03; // Throttle bite
+    }
+
+    this.targetPitchMultiplier = targetPitch;
+    this.targetBpm = targetTempo;
+
+    // Smooth inertia smoothing (faster rise on acceleration, smooth musical descent on deceleration)
+    const pitchLerpSpeed = isAccelerating ? 0.14 : 0.06;
+    const tempoLerpSpeed = isAccelerating ? 0.12 : 0.05;
+
+    this.pitchMultiplier += (this.targetPitchMultiplier - this.pitchMultiplier) * pitchLerpSpeed;
+    this.currentBpm += (this.targetBpm - this.currentBpm) * tempoLerpSpeed;
+
+    // Modulate lowpass filter cutoff dynamically
+    if (this.musicFilter && this.ctx) {
+      // Cutoff opens from 3400 Hz up to 9500 Hz (or 11500 Hz during nitro)
+      const targetFilterFreq = 3400 + Math.min(1.0, clampedSpeed) * 4800 + (isNitro ? 3200 : 0);
+      this.musicFilter.frequency.setTargetAtTime(targetFilterFreq, this.ctx.currentTime, 0.08);
+    }
+  }
+
+  /**
+   * Retrieves current interactive music status for HUD meters and telemetry
+   */
+  public getMusicStatus() {
+    const semitones = +(12 * Math.log2(Math.max(0.01, this.pitchMultiplier))).toFixed(1);
+    return {
+      isPlaying: this.isMusicPlaying,
+      bpm: Math.round(this.currentBpm),
+      pitchMultiplier: +(this.pitchMultiplier).toFixed(2),
+      pitchSemitones: semitones,
+      speedPercent: Math.round(this.currentSpeedNormalized * 100),
+      volume: Math.round(this.musicVolume * 100),
+      interactivePitchEnabled: this.interactivePitchEnabled,
+    };
+  }
+
   private initMusicChain() {
     if (!this.ctx) return;
     if (!this.musicGain) {
@@ -136,7 +233,7 @@ class SoundEngine {
       this.musicFilter = this.ctx.createBiquadFilter();
       this.musicFilter.type = 'lowpass';
       this.musicFilter.frequency.setValueAtTime(4500, this.ctx.currentTime);
-      this.musicFilter.Q.setValueAtTime(1.2, this.ctx.currentTime);
+      this.musicFilter.Q.setValueAtTime(1.4, this.ctx.currentTime);
       this.musicFilter.connect(this.musicGain);
     }
   }
@@ -200,6 +297,9 @@ class SoundEngine {
     }
     this.isMusicPlaying = false;
     this.musicStep = 0;
+    this.pitchMultiplier = 1.0;
+    this.targetPitchMultiplier = 1.0;
+    this.currentBpm = this.baseBpm;
   }
 
   public setNitroMusicMode(active: boolean) {
@@ -210,8 +310,8 @@ class SoundEngine {
     const now = this.ctx.currentTime;
     if (active) {
       // Excite filter cutoff & volume surge during nitro
-      this.musicFilter.frequency.setTargetAtTime(9000, now, 0.08);
-      this.musicGain.gain.setTargetAtTime(this.musicVolume * 1.2, now, 0.08);
+      this.musicFilter.frequency.setTargetAtTime(10500, now, 0.06);
+      this.musicGain.gain.setTargetAtTime(Math.min(1, this.musicVolume * 1.25), now, 0.06);
     } else {
       this.musicFilter.frequency.setTargetAtTime(4500, now, 0.15);
       this.musicGain.gain.setTargetAtTime(this.musicVolume, now, 0.15);
@@ -221,10 +321,11 @@ class SoundEngine {
   private scheduler() {
     if (!this.ctx || !this.isMusicPlaying) return;
 
-    // 132 BPM racing tempo
-    // 1 beat = 60 / 132 = 0.4545s
-    // 16th step = 0.4545 / 4 = 0.1136s
-    const stepDuration = 60 / 132 / 4;
+    // Interactive Dynamic BPM tied to vehicle speed!
+    // 1 beat = 60 / currentBpm
+    // 16th step = (60 / currentBpm) / 4
+    const effectiveBpm = Math.max(90, Math.min(200, this.currentBpm));
+    const stepDuration = 60 / effectiveBpm / 4;
     const lookahead = 0.12;
 
     while (this.musicNextTime < this.ctx.currentTime + lookahead) {
@@ -398,16 +499,19 @@ class SoundEngine {
   private playBass(freq: number, time: number, isAccent: boolean) {
     if (!this.ctx || !this.musicFilter) return;
     try {
+      const dynamicPitch = this.interactivePitchEnabled ? this.pitchMultiplier : 1.0;
+      const pitchedFreq = freq * dynamicPitch;
+
       const osc = this.ctx.createOscillator();
       const filter = this.ctx.createBiquadFilter();
       const gain = this.ctx.createGain();
 
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(freq, time);
+      osc.frequency.setValueAtTime(pitchedFreq, time);
 
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(isAccent ? 580 : 380, time);
-      filter.frequency.exponentialRampToValueAtTime(140, time + 0.09);
+      filter.frequency.setValueAtTime((isAccent ? 580 : 380) * dynamicPitch, time);
+      filter.frequency.exponentialRampToValueAtTime(140 * dynamicPitch, time + 0.09);
       filter.Q.setValueAtTime(2.8, time);
 
       gain.gain.setValueAtTime(isAccent ? 0.2 : 0.14, time);
@@ -450,20 +554,43 @@ class SoundEngine {
   private playLeadNote(freq: number, time: number, dur: number) {
     if (!this.ctx || !this.musicFilter) return;
     try {
+      const dynamicPitch = this.interactivePitchEnabled ? this.pitchMultiplier : 1.0;
+      const pitchedFreq = freq * dynamicPitch;
+      const tempoScale = Math.min(1.3, 126 / Math.max(100, this.currentBpm));
+      const adjustedDur = dur * tempoScale;
+
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
       osc.type = 'square';
-      osc.frequency.setValueAtTime(freq, time);
+      osc.frequency.setValueAtTime(pitchedFreq, time);
 
       gain.gain.setValueAtTime(0.065, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + adjustedDur);
 
       osc.connect(gain);
       gain.connect(this.musicFilter);
 
       osc.start(time);
-      osc.stop(time + dur + 0.01);
+      osc.stop(time + adjustedDur + 0.01);
+
+      // Add unison detuned supersaw layer when speeding or during nitro
+      if (this.currentSpeedNormalized > 0.45 || this.isNitroMusicActive) {
+        const osc2 = this.ctx.createOscillator();
+        const gain2 = this.ctx.createGain();
+        osc2.type = 'sawtooth';
+        osc2.frequency.setValueAtTime(pitchedFreq, time);
+        osc2.detune.setValueAtTime(this.isNitroMusicActive ? 14 : 9, time);
+
+        gain2.gain.setValueAtTime(0.035, time);
+        gain2.gain.exponentialRampToValueAtTime(0.001, time + adjustedDur);
+
+        osc2.connect(gain2);
+        gain2.connect(this.musicFilter);
+
+        osc2.start(time);
+        osc2.stop(time + adjustedDur + 0.01);
+      }
     } catch {}
   }
 

@@ -112,35 +112,39 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
           : 'bg-white border-slate-200 text-slate-900 shadow-xl'
       }`}
     >
-      {/* رأس المكون */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-800/80">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 flex items-center justify-center shadow-lg shadow-amber-500/25 ring-2 ring-amber-400/30 shrink-0">
-            <Trophy className="w-6 h-6 text-slate-950" />
+      {/* رأس المكون - متمركز في وسط الصفحة */}
+      <div className="flex flex-col items-center text-center pb-6 border-b border-slate-800/80">
+        {/* أيقونة كأس لوحة المتصدرين 🏆 متمركزة في وسط الصفحة */}
+        <div className="relative mb-3.5 flex items-center justify-center">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-br from-amber-300 via-amber-500 to-yellow-600 flex items-center justify-center shadow-2xl shadow-amber-500/40 ring-4 ring-amber-400/40 transform hover:scale-105 transition-all">
+            <Trophy className="w-8 h-8 sm:w-10 sm:h-10 text-slate-950 drop-shadow-md" />
           </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl sm:text-2xl font-black font-game tracking-tight">
-                لوحة المتصدرين (Leaderboard)
-              </h2>
-              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1">
-                <Crown className="w-3 h-3 text-amber-400" />
-                أفضل 5 أبطال
-              </span>
-            </div>
-            <p className={`text-xs sm:text-sm mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              سجل أرقامك القياسية وتنافس للوصول إلى قمة المتصدرين في شوارع المدينة السريعة
-            </p>
-          </div>
+          {/* تأثير توهج نيون خلف أيقونة الكأس في الوسط */}
+          <div className="absolute -inset-3 bg-amber-500/25 blur-xl rounded-full -z-10 pointer-events-none" />
         </div>
 
-        {/* أزرار الإجراءات العلوية */}
-        <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
+        <div className="flex flex-col items-center">
+          <div className="flex items-center justify-center gap-2 flex-wrap mb-1.5">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-black font-game tracking-tight">
+              لوحة المتصدرين 🏆 (Leaderboard)
+            </h2>
+            <span className="text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1 shadow-sm">
+              <Crown className="w-3.5 h-3.5 text-amber-400" />
+              أفضل 5 أبطال
+            </span>
+          </div>
+          <p className={`text-xs sm:text-sm max-w-lg mx-auto leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+            سجل أرقامك القياسية وتنافس للوصول إلى قمة المتصدرين في شوارع المدينة السريعة
+          </p>
+        </div>
+
+        {/* أزرار الإجراءات العلوية متمركزة في وسط الصفحة */}
+        <div className="flex items-center justify-center gap-2.5 mt-4 flex-wrap">
           {currentHighScore > 0 && (
             <button
               type="button"
               onClick={() => handleSubmitScore(currentHighScore)}
-              className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
               title="إدراج رقمك القياسي الحالي في القائمة"
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -151,7 +155,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
           <button
             type="button"
             onClick={() => setShowAddScoreModal(!showAddScoreModal)}
-            className={`px-3 py-2 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 cursor-pointer ${
               isDark
                 ? 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 border-slate-700'
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
