@@ -1,6 +1,7 @@
-import React from 'react';
-import { Trophy, Award, Flame, Zap, Coins, Flag, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Trophy, Award, Flame, Zap, Coins, Flag, Sparkles, Calendar, Target, CheckCircle2 } from 'lucide-react';
 import { PlayerStats } from '../types/game';
+import { loadDailyRaces, DailyRacesData } from '../utils/storage';
 
 interface AchievementsProps {
   stats: PlayerStats;
@@ -18,6 +19,37 @@ interface Achievement {
 }
 
 export const Achievements: React.FC<AchievementsProps> = ({ stats }) => {
+  const [dailyData, setDailyData] = useState<DailyRacesData>(() => loadDailyRaces());
+
+  useEffect(() => {
+    const handleDailyUpdate = () => {
+      setDailyData(loadDailyRaces());
+    };
+
+    window.addEventListener('daily_races_changed', handleDailyUpdate);
+    window.addEventListener('storage', handleDailyUpdate);
+    return () => {
+      window.removeEventListener('daily_races_changed', handleDailyUpdate);
+      window.removeEventListener('storage', handleDailyUpdate);
+    };
+  }, []);
+
+  // Format today's date in Arabic
+  const todayFormatted = (() => {
+    try {
+      const [y, m, d] = dailyData.date.split('-').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      return dateObj.toLocaleDateString('ar-EG', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return dailyData.date;
+    }
+  })();
+
   const achievements: Achievement[] = [
     {
       id: 'first_race',
@@ -30,9 +62,19 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats }) => {
       reward: 50,
     },
     {
+      id: 'daily_racer',
+      title: 'بطل السباقات اليومية',
+      description: 'خُض 3 سباقات على الأقل خلال نفس اليوم',
+      icon: <Flame className="w-5 h-5 text-amber-400" />,
+      current: Math.min(3, dailyData.count),
+      max: 3,
+      unlocked: dailyData.count >= 3,
+      reward: 200,
+    },
+    {
       id: 'ten_races',
       title: 'متسابق محترف',
-      description: 'شارك في 10 سباقات مختلفة',
+      description: 'شارك في 10 سباقات مختلفة في مسيرتك',
       icon: <Trophy className="w-5 h-5 text-amber-400" />,
       current: Math.min(10, stats.racesCount || 0),
       max: 10,
@@ -85,6 +127,7 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats }) => {
 
   return (
     <section className="bg-slate-900/60 dark:bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-6 backdrop-blur-xs">
+      {/* Header section with total progress */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-slate-800/80 pb-4">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
@@ -113,6 +156,86 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats }) => {
           </div>
           <span className="text-xs font-bold text-amber-400 tabular-nums">
             {Math.round((unlockedCount / achievements.length) * 100)}%
+          </span>
+        </div>
+      </div>
+
+      {/* ميزة عداد السباقات اليومية المحفوظ في LocalStorage */}
+      <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-amber-500/30 shadow-lg shadow-amber-500/5 relative overflow-hidden">
+        {/* خلفية تزيينية متوهجة */}
+        <div className="absolute top-0 right-0 w-44 h-44 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* تفاصيل العداد واليوم */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-bold text-xs border border-amber-500/30">
+                <Calendar className="w-3.5 h-3.5" />
+                <span>عداد السباقات اليومية</span>
+              </span>
+              <span className="text-[11px] text-slate-400 font-medium">
+                {todayFormatted}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              {dailyData.count === 0
+                ? 'لم تخض أي سباق اليوم بعد. انطلق الآن وتحدَّ أرقامك القياسية!'
+                : dailyData.count < 3
+                ? 'بداية رائعة اليوم! استمر في القيادة لجمع المكافآت وكسر الأرقام.'
+                : dailyData.count < 5
+                ? 'أداء بطولي! اقتربت جداً من تحقيق هدف اليوم (5 سباقات).'
+                : 'بطل شوارع المدينة اليوم! حققت وتجاوزت الهدف اليومي بجدارة.'}
+            </p>
+          </div>
+
+          {/* لوحة عرض الرقم وهدف اليوم */}
+          <div className="flex items-center gap-4 sm:gap-6 shrink-0 bg-slate-900/90 border border-slate-800 rounded-xl px-4 py-3">
+            <div className="text-center sm:text-start">
+              <div className="text-[11px] text-slate-400 font-semibold">خاضها اليوم</div>
+              <div className="flex items-baseline gap-1.5 justify-center sm:justify-start">
+                <span className="text-3xl sm:text-4xl font-black font-game text-amber-400 tracking-tight tabular-nums">
+                  {dailyData.count}
+                </span>
+                <span className="text-xs font-bold text-slate-400">
+                  {dailyData.count === 1 ? 'سباق' : dailyData.count === 2 ? 'سباقان' : 'سباقات'}
+                </span>
+              </div>
+            </div>
+
+            <div className="h-10 w-px bg-slate-800" />
+
+            {/* شريط هدف اليوم */}
+            <div className="space-y-1 min-w-[120px]">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-slate-400 font-medium">هدف اليوم:</span>
+                <span className="font-bold text-white tabular-nums">{Math.min(dailyData.count, 5)} / 5</span>
+              </div>
+              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-500 ${
+                    dailyData.count >= 5
+                      ? 'bg-emerald-400'
+                      : 'bg-gradient-to-r from-amber-500 to-amber-300'
+                  }`}
+                  style={{ width: `${Math.min(100, (dailyData.count / 5) * 100)}%` }}
+                />
+              </div>
+              <div className="text-[10px] text-slate-400 text-center font-semibold">
+                {dailyData.count >= 5 ? '✓ اكتمل هدف اليوم' : `${Math.round(Math.min(100, (dailyData.count / 5) * 100))}% من الهدف`}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* إشعار حفظ التخزين المحلي والمهام */}
+        <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 flex-wrap gap-2">
+          <div className="flex items-center gap-1.5">
+            <Target className="w-3.5 h-3.5 text-amber-400" />
+            <span>تحديات اليوم: 1 سباق (انطلاق) · 3 سباقات (تحدي) · 5 سباقات (احتراف)</span>
+          </div>
+          <span className="text-[10px] text-slate-400 flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+            محفوظ في التخزين المحلي (LocalStorage) · يُجدد تلقائياً كل يوم
           </span>
         </div>
       </div>

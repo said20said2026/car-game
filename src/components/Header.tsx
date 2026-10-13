@@ -33,11 +33,18 @@ export const Header: React.FC<HeaderProps> = ({
         : 'border-slate-200 bg-white/90 text-slate-900 shadow-xs'
     }`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 sm:gap-8">
-        {/* Zone 1: Brand title wordmark */}
         <a
           href="/"
           className="text-lg sm:text-xl font-black font-game tracking-tight whitespace-nowrap shrink-0 flex items-center gap-2"
         >
+          <img
+            src="/assets/logo.webp"
+            alt="شعار لعبة سباق سيارات المدينة السريعة للأبطال"
+            width={36}
+            height={36}
+            className="w-9 h-9 rounded-lg object-contain shadow-xs border border-amber-500/20"
+            loading="eager"
+          />
           <span className="text-amber-500">سباق</span>
           <span>سيارات المدينة</span>
         </a>

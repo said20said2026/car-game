@@ -308,6 +308,24 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
           )}
         </div>
 
+        {/* صورة أسطول سيارات السباق بصيغة WebP مع وسم Alt غني بالسيو */}
+        <figure className="my-6 rounded-2xl overflow-hidden border border-slate-800 shadow-xl bg-slate-950">
+          <picture>
+            <source srcSet="/assets/social-cover.webp" type="image/webp" />
+            <img
+              src="/assets/social-cover.jpg"
+              alt="أسطول سيارات السباق الخارقة في مرآب لعبة سباق سيارات المدينة السريعة للأطفال والبالغين"
+              width={1200}
+              height={630}
+              loading="lazy"
+              className="w-full h-auto object-cover max-h-[360px]"
+            />
+          </picture>
+          <figcaption className="text-center text-xs opacity-70 py-2.5 px-4 bg-slate-900/60 border-t border-slate-800/80">
+            أسطول السيارات الرياضية الخارقة المتاحة للاختيار والترقية في مرآب سباق سيارات المدينة السريعة
+          </figcaption>
+        </figure>
+
         {/* كروت تفاعلية لأنواع السيارات */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {CARS_DATA.map((car) => (

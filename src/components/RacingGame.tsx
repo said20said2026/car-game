@@ -33,6 +33,7 @@ import {
   CARS_DATA,
   loadPlayerStats,
   savePlayerStats,
+  recordDailyRace,
   getCarEffectiveStats,
 } from '../utils/storage';
 import { soundManager } from '../utils/audio';
@@ -434,6 +435,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     stats.maxDistance = newMaxDist;
     stats.racesCount = (stats.racesCount || 0) + 1;
     savePlayerStats(stats);
+    recordDailyRace();
 
     onCoinsChange(finalCoins);
     setHighScore(newHigh);

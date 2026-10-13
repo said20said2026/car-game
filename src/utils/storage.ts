@@ -151,3 +151,58 @@ export const UPGRADE_COSTS: Record<number, number> = {
   4: 1200,
   5: 2500,
 };
+
+export interface DailyRacesData {
+  date: string; // YYYY-MM-DD
+  count: number;
+  lastUpdated: number;
+}
+
+export const DAILY_RACES_STORAGE_KEY = 'fast_city_racing_daily_races';
+
+export function getTodayDateString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function loadDailyRaces(): DailyRacesData {
+  const today = getTodayDateString();
+  try {
+    const raw = localStorage.getItem(DAILY_RACES_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.date === today && typeof parsed.count === 'number') {
+        return {
+          date: today,
+          count: Math.max(0, parsed.count),
+          lastUpdated: parsed.lastUpdated || Date.now(),
+        };
+      }
+    }
+  } catch {}
+  return { date: today, count: 0, lastUpdated: Date.now() };
+}
+
+export function saveDailyRaces(count: number): DailyRacesData {
+  const today = getTodayDateString();
+  const data: DailyRacesData = {
+    date: today,
+    count: Math.max(0, count),
+    lastUpdated: Date.now(),
+  };
+  try {
+    localStorage.setItem(DAILY_RACES_STORAGE_KEY, JSON.stringify(data));
+  } catch {}
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('daily_races_changed', { detail: data }));
+  }
+  return data;
+}
+
+export function recordDailyRace(): DailyRacesData {
+  const current = loadDailyRaces();
+  return saveDailyRaces(current.count + 1);
+}

@@ -29,16 +29,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
           </div>
 
           <div className="flex items-center gap-4 sm:gap-6 text-xs">
-            <a
-              href="/ads.txt"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 hover:text-amber-500 transition-colors"
-            >
-              <FileText className="w-3.5 h-3.5 text-slate-500" />
-              <span>ملف ads.txt (معتمد)</span>
-            </a>
-            <span className={isDark ? 'text-slate-700' : 'text-slate-300'}>·</span>
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
               <span>متوافق مع سياسات AdSense و SEO</span>
@@ -105,17 +95,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
             >
               <Info className="w-3.5 h-3.5 text-purple-500" />
               <span>من نحن</span>
-            </a>
-            <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
-
-            <a
-              href="/sitemap.xml"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1 hover:text-amber-500 transition-colors"
-            >
-              <HelpCircle className="w-3.5 h-3.5 text-slate-500" />
-              <span>خريطة الموقع (Sitemap)</span>
             </a>
           </div>
         </div>

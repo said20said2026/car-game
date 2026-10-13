@@ -363,6 +363,20 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                 <p>
                   نحن فريق من مطوري الألعاب ومصممي تجارب الويب العرب، أنشأنا منصة <strong>games-children.com</strong> بهدف تقديم تجربة ألعاب أركيد تفاعلية متطورة للمستخدم العربي ومحبي السرعة من الأطفال البالغين والناشئين والشباب، دون تعقيدات التثبيت وبدون استهلاك مساحات الذاكرة.
                 </p>
+
+                <figure className="my-4 rounded-xl overflow-hidden border border-slate-800 bg-slate-950">
+                  <picture>
+                    <source srcSet="/assets/social-cover.webp" type="image/webp" />
+                    <img
+                      src="/assets/social-cover.jpg"
+                      alt="فريق تطوير لعبة سباق سيارات المدينة السريعة للأبطال ومضمار السباق التفاعلي"
+                      width={1200}
+                      height={630}
+                      className="w-full h-auto object-cover max-h-[220px]"
+                      loading="lazy"
+                    />
+                  </picture>
+                </figure>
               </section>
 
               <section className="space-y-3">
