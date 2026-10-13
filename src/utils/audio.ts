@@ -4,6 +4,8 @@
  * coin bells, crash impacts, AND a high-octane procedural racing soundtrack.
  */
 
+import { engineAudio } from './engineAudio';
+
 // Note frequency definitions (Hz)
 const N = {
   // Bass octave 2 & 3
@@ -76,6 +78,7 @@ class SoundEngine {
   // ==========================================
   public setEnabled(enabled: boolean) {
     this.sfxEnabled = enabled;
+    engineAudio.setMuted(!enabled);
     if (!enabled && this.engineGain) {
       this.engineGain.gain.setValueAtTime(0, this.ctx?.currentTime || 0);
     }
@@ -470,80 +473,22 @@ class SoundEngine {
   public startEngine() {
     if (!this.sfxEnabled) return;
     this.initContext();
-    if (!this.ctx || this.isEngineRunning) return;
-
-    try {
-      const now = this.ctx.currentTime;
-      this.engineOsc = this.ctx.createOscillator();
-      this.engineOsc.type = 'sawtooth';
-      this.engineOsc.frequency.setValueAtTime(45, now);
-
-      this.engineSubOsc = this.ctx.createOscillator();
-      this.engineSubOsc.type = 'triangle';
-      this.engineSubOsc.frequency.setValueAtTime(28, now);
-
-      this.engineFilter = this.ctx.createBiquadFilter();
-      this.engineFilter.type = 'lowpass';
-      this.engineFilter.frequency.setValueAtTime(220, now);
-      this.engineFilter.Q.setValueAtTime(2.5, now);
-
-      this.engineGain = this.ctx.createGain();
-      this.engineGain.gain.setValueAtTime(0.08, now);
-
-      this.engineOsc.connect(this.engineFilter);
-      this.engineSubOsc.connect(this.engineFilter);
-      this.engineFilter.connect(this.engineGain);
-      this.engineGain.connect(this.ctx.destination);
-
-      this.engineOsc.start();
-      this.engineSubOsc.start();
-      this.isEngineRunning = true;
-    } catch {}
+    engineAudio.start();
+    this.isEngineRunning = true;
   }
 
   public updateEngine(speedNormalized: number, isAccelerating: boolean, isNitro: boolean) {
-    if (!this.ctx || !this.isEngineRunning || !this.engineOsc || !this.engineFilter || !this.engineGain) return;
     if (!this.sfxEnabled) {
-      this.engineGain.gain.setValueAtTime(0, this.ctx.currentTime);
+      engineAudio.setMuted(true);
       return;
     }
-
-    try {
-      const now = this.ctx.currentTime;
-      const targetFreq = 42 + speedNormalized * 110 + (isNitro ? 30 : 0);
-      const targetSubFreq = targetFreq * 0.55;
-      const targetFilterFreq = 200 + speedNormalized * 650 + (isAccelerating ? 220 : 0);
-      const targetVol = 0.05 + speedNormalized * 0.09 + (isAccelerating ? 0.03 : 0);
-
-      this.engineOsc.frequency.setTargetAtTime(targetFreq, now, 0.08);
-      if (this.engineSubOsc) {
-        this.engineSubOsc.frequency.setTargetAtTime(targetSubFreq, now, 0.08);
-      }
-      this.engineFilter.frequency.setTargetAtTime(targetFilterFreq, now, 0.08);
-      this.engineGain.gain.setTargetAtTime(targetVol, now, 0.08);
-    } catch {}
+    engineAudio.setMuted(false);
+    engineAudio.update(speedNormalized, isAccelerating, isNitro);
   }
 
   public stopEngine() {
-    if (!this.ctx || !this.isEngineRunning) return;
-    try {
-      if (this.engineGain) {
-        this.engineGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.05);
-      }
-      setTimeout(() => {
-        try {
-          this.engineOsc?.stop();
-          this.engineSubOsc?.stop();
-          this.engineOsc?.disconnect();
-          this.engineSubOsc?.disconnect();
-        } catch {}
-        this.engineOsc = null;
-        this.engineSubOsc = null;
-        this.isEngineRunning = false;
-      }, 80);
-    } catch {
-      this.isEngineRunning = false;
-    }
+    engineAudio.stop();
+    this.isEngineRunning = false;
   }
 
   public playCoin() {
@@ -725,3 +670,4 @@ class SoundEngine {
 }
 
 export const soundManager = new SoundEngine();
+export { engineAudio, EngineAudio } from './engineAudio';

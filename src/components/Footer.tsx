@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShieldCheck, FileText, Shield, HelpCircle, Mail, Info } from 'lucide-react';
 import { PolicyTab } from './PolicyModal';
+import { SocialShare } from './SocialShare';
 
 interface FooterProps {
   onOpenPolicy: (tab: PolicyTab) => void;
@@ -35,6 +36,9 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
             </span>
           </div>
         </div>
+
+        {/* أزرار وأيقونات المشاركة لوسائل التواصل الاجتماعي العشرة */}
+        <SocialShare theme={theme} />
 
         {/* Middle Row: The Essential AdSense Legal Links (سياسة الخصوصية - شروط الخدمة - اتصل بنا - من نحن) */}
         <div className={`py-3 px-4 rounded-xl border flex flex-wrap items-center justify-center sm:justify-between gap-3 text-xs ${

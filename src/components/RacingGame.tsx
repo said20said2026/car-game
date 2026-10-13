@@ -36,7 +36,7 @@ import {
   recordDailyRace,
   getCarEffectiveStats,
 } from '../utils/storage';
-import { soundManager } from '../utils/audio';
+import { soundManager, engineAudio } from '../utils/audio';
 
 export interface RacingGameHandle {
   startGame: () => void;
@@ -1959,7 +1959,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                     e.stopPropagation();
                     startGame();
                   }}
-                  className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-400 hover:from-emerald-300 hover:to-teal-300 active:scale-95 text-slate-950 font-black text-base sm:text-lg rounded-xl shadow-xl shadow-emerald-500/30 ring-2 ring-emerald-400/50 flex items-center justify-center gap-2.5 transition-all cursor-pointer"
+                  className="btn-play w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-400 hover:from-emerald-300 hover:to-teal-300 active:scale-95 text-slate-950 font-black text-base sm:text-lg rounded-xl flex items-center justify-center gap-2.5 transition-all cursor-pointer"
                 >
                   <Play className="w-5 h-5 fill-slate-950" />
                   <span>العب الآن - انطلق بالسباق</span>
@@ -2085,7 +2085,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               <div className="flex items-center gap-2.5 pt-1">
                 <button
                   onClick={startGame}
-                  className="flex-1 py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="btn-play flex-1 py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <RotateCcw className="w-4 h-4" />
                   <span>العب مجدداً</span>

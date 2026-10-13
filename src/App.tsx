@@ -199,7 +199,7 @@ export default function App() {
           <div className="pt-1 flex items-center gap-3 flex-wrap">
             <button
               onClick={handlePlayNow}
-              className="px-6 sm:px-8 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 active:scale-95 text-slate-950 font-black text-sm sm:text-base rounded-xl shadow-lg shadow-amber-400/25 flex items-center justify-center gap-2 transition-all cursor-pointer inline-flex"
+              className="btn-play-pulse px-6 sm:px-8 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 active:scale-95 text-slate-950 font-black text-sm sm:text-base rounded-xl shadow-lg shadow-amber-400/25 flex items-center justify-center gap-2 transition-all cursor-pointer inline-flex"
             >
               <Play className="w-5 h-5 fill-slate-950" />
               <span>العب الآن - انطلق بالسباق</span>
