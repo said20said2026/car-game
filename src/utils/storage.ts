@@ -87,6 +87,8 @@ const DEFAULT_UPGRADE: CarUpgrades = {
 
 const STORAGE_KEY = 'fast_city_racing_v1';
 
+export const CAR_WASH_COST = 25;
+
 export function loadPlayerStats(): PlayerStats {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -106,6 +108,9 @@ export function loadPlayerStats(): PlayerStats {
         speedPitchEnabled: parsed.speedPitchEnabled ?? true,
         upgrades: parsed.upgrades ?? {},
         unlockedCars: parsed.unlockedCars ?? ['red_rocket'],
+        carDirt: parsed.carDirt ?? {
+          red_rocket: 0,
+        },
       };
     }
   } catch {}
@@ -126,6 +131,9 @@ export function loadPlayerStats(): PlayerStats {
       red_rocket: { ...DEFAULT_UPGRADE },
     },
     unlockedCars: ['red_rocket'],
+    carDirt: {
+      red_rocket: 0,
+    },
   };
 }
 
@@ -133,6 +141,18 @@ export function savePlayerStats(stats: PlayerStats) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
   } catch {}
+}
+
+export function getCarDirtLevel(carId: string): number {
+  const stats = loadPlayerStats();
+  return Math.max(0, Math.min(100, stats.carDirt?.[carId] ?? 0));
+}
+
+export function saveCarDirtLevel(carId: string, dirt: number) {
+  const stats = loadPlayerStats();
+  if (!stats.carDirt) stats.carDirt = {};
+  stats.carDirt[carId] = Math.max(0, Math.min(100, Math.round(dirt)));
+  savePlayerStats(stats);
 }
 
 export function getCarEffectiveStats(car: CarConfig, upgrades?: CarUpgrades) {

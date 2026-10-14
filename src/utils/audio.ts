@@ -794,6 +794,86 @@ class SoundEngine {
       osc.stop(now + 0.05);
     } catch {}
   }
+
+  /**
+   * High-pressure water spray, foam bubble wash, and gleaming sparkle chime sound
+   */
+  public playCarWash() {
+    if (!this.sfxEnabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const ctx = this.ctx;
+
+      // 1. High-pressure water spray & foam whoosh (Filtered noise burst)
+      const bufferSize = Math.floor(ctx.sampleRate * 0.45);
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      const whiteNoise = ctx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1400, now);
+      filter.frequency.exponentialRampToValueAtTime(750, now + 0.4);
+      filter.Q.setValueAtTime(2.2, now);
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.001, now);
+      noiseGain.gain.linearRampToValueAtTime(0.22, now + 0.08);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+
+      whiteNoise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+
+      whiteNoise.start(now);
+      whiteNoise.stop(now + 0.46);
+
+      // 2. Water bubble splash swooshes
+      [0.05, 0.14, 0.22].forEach((offset, idx) => {
+        const bubble = ctx.createOscillator();
+        const bGain = ctx.createGain();
+        bubble.type = 'sine';
+        const startF = 350 + idx * 120;
+        const endF = 800 + idx * 150;
+        bubble.frequency.setValueAtTime(startF, now + offset);
+        bubble.frequency.exponentialRampToValueAtTime(endF, now + offset + 0.08);
+
+        bGain.gain.setValueAtTime(0.08, now + offset);
+        bGain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.09);
+
+        bubble.connect(bGain);
+        bGain.connect(ctx.destination);
+        bubble.start(now + offset);
+        bubble.stop(now + offset + 0.1);
+      });
+
+      // 3. Sparkling crystalline clean chime (Ding!)
+      const chimeTime = now + 0.35;
+      const pitches = [1318.5, 1760.0, 2637.0]; // E6, A6, E7
+      pitches.forEach((freq, i) => {
+        const chime = ctx.createOscillator();
+        const cGain = ctx.createGain();
+        chime.type = 'triangle';
+        chime.frequency.setValueAtTime(freq, chimeTime + i * 0.06);
+
+        cGain.gain.setValueAtTime(0.12, chimeTime + i * 0.06);
+        cGain.gain.exponentialRampToValueAtTime(0.001, chimeTime + i * 0.06 + 0.55);
+
+        chime.connect(cGain);
+        cGain.connect(ctx.destination);
+        chime.start(chimeTime + i * 0.06);
+        chime.stop(chimeTime + i * 0.06 + 0.6);
+      });
+    } catch {}
+  }
 }
 
 export const soundManager = new SoundEngine();

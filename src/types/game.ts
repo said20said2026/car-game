@@ -39,6 +39,7 @@ export interface PlayerStats {
   speedPitchEnabled?: boolean;
   upgrades: Record<string, CarUpgrades>;
   unlockedCars: string[];
+  carDirt?: Record<string, number>;
 }
 
 export interface TrafficVehicle {

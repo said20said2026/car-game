@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Lock, Zap, Gauge, Wrench, Shield, Sparkles, Coins } from 'lucide-react';
+import { X, Check, Lock, Zap, Gauge, Wrench, Shield, Sparkles, Coins, Droplets } from 'lucide-react';
 import { CarConfig } from '../types/game';
 import {
   CARS_DATA,
@@ -7,6 +7,7 @@ import {
   savePlayerStats,
   getCarEffectiveStats,
   UPGRADE_COSTS,
+  CAR_WASH_COST,
 } from '../utils/storage';
 import { soundManager } from '../utils/audio';
 
@@ -35,6 +36,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
     return CARS_DATA.find((c) => c.id === s.selectedCarId) || CARS_DATA[0];
   });
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isWashing, setIsWashing] = useState<boolean>(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -62,6 +64,8 @@ export const GarageModal: React.FC<GarageModalProps> = ({
   const effectiveStats = getCarEffectiveStats(selectedCar, currentUpgrades);
   const isUnlocked = stats.unlockedCars.includes(selectedCar.id);
   const isCurrentActive = stats.selectedCarId === selectedCar.id;
+  const carDirt = stats.carDirt?.[selectedCar.id] ?? 0;
+  const cleanliness = Math.max(0, Math.min(100, 100 - carDirt));
 
   const handleSelectCar = (car: CarConfig) => {
     setSelectedCar(car);
@@ -106,6 +110,42 @@ export const GarageModal: React.FC<GarageModalProps> = ({
     soundManager.playCoin();
     setStatusMessage('مبروك! تم فتح السيارة بنجاح وتجهيزها للسباق.');
     setTimeout(() => setStatusMessage(null), 3000);
+  };
+
+  const handleWashCar = () => {
+    if (carDirt <= 0) {
+      setStatusMessage('السيارة نظيفة ولامعة بالفعل كأنها جديدة! ✨');
+      setTimeout(() => setStatusMessage(null), 2500);
+      return;
+    }
+
+    if (coins < CAR_WASH_COST) {
+      setStatusMessage(`تحتاج إلى ${CAR_WASH_COST} عملة ذهبية لغسيل وتلميع السيارة!`);
+      setTimeout(() => setStatusMessage(null), 2500);
+      return;
+    }
+
+    setIsWashing(true);
+    soundManager.playCarWash();
+
+    const newCoins = coins - CAR_WASH_COST;
+    onCoinsChange(newCoins);
+
+    setTimeout(() => {
+      const updated = {
+        ...stats,
+        coins: newCoins,
+        carDirt: {
+          ...(stats.carDirt || {}),
+          [selectedCar.id]: 0,
+        },
+      };
+      savePlayerStats(updated);
+      setStats(updated);
+      setIsWashing(false);
+      setStatusMessage('تم غسيل وتلميع السيارة بنجاح! عادت السيارة تلمع كأنها خرجت من المصنع ✨🚿');
+      setTimeout(() => setStatusMessage(null), 3500);
+    }, 1100);
   };
 
   const handleUpgrade = (type: 'speedLevel' | 'accelLevel' | 'handlingLevel' | 'nitroLevel') => {
@@ -187,6 +227,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
             const unlocked = stats.unlockedCars.includes(car.id);
             const isSelected = selectedCar.id === car.id;
             const isActive = stats.selectedCarId === car.id;
+            const carD = stats.carDirt?.[car.id] ?? 0;
 
             return (
               <button
@@ -201,8 +242,15 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <span className="w-3 h-3 rounded-full" style={{ backgroundColor: car.color }} />
-                    {!unlocked && <Lock className="w-3.5 h-3.5 text-slate-500" />}
-                    {isActive && <Check className="w-4 h-4 text-emerald-400" />}
+                    <div className="flex items-center gap-1">
+                      {carD > 25 && (
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60 font-mono" title={`مستوى الاتساخ: ${carD}%`}>
+                          🍂 {carD}%
+                        </span>
+                      )}
+                      {!unlocked && <Lock className="w-3.5 h-3.5 text-slate-500" />}
+                      {isActive && <Check className="w-4 h-4 text-emerald-400" />}
+                    </div>
                   </div>
                   <div className="text-xs font-bold text-white line-clamp-1">{car.arabicName}</div>
                   <div className="text-[10px] text-slate-400">{car.baseSpeed} كم/س</div>
@@ -245,22 +293,190 @@ export const GarageModal: React.FC<GarageModalProps> = ({
               </p>
             </div>
 
-            {/* Visual Preview Badge */}
-            <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800/80 flex flex-col items-center justify-center relative overflow-hidden">
+            {/* Visual Preview Badge with Realistic Mud & Water Wash Foam */}
+            <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800/80 flex flex-col items-center justify-center relative overflow-hidden min-h-[160px]">
+              {/* High-pressure Water Spray Streams Animation when Washing */}
+              {isWashing && (
+                <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden flex flex-col justify-between p-2">
+                  <div className="absolute inset-0 bg-sky-500/10 backdrop-blur-[1px] animate-pulse" />
+                  {/* Water jets streaming down */}
+                  <div className="flex justify-around w-full opacity-80">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <div
+                        key={i}
+                        className="w-1 bg-gradient-to-b from-sky-300 via-sky-400 to-transparent rounded-full animate-bounce"
+                        style={{
+                          height: `${40 + (i % 3) * 20}px`,
+                          animationDuration: `${0.3 + (i % 4) * 0.15}s`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  {/* Sudsy Soap foam bubbles */}
+                  <div className="flex justify-center items-center gap-2 mt-auto pb-2">
+                    {[1, 2, 3, 4, 5].map((b) => (
+                      <span
+                        key={b}
+                        className="w-3.5 h-3.5 rounded-full bg-white/80 border border-sky-300 shadow-sm animate-ping"
+                        style={{ animationDuration: `${0.6 + b * 0.2}s` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Status Pill on Top of Preview */}
+              <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 text-[11px] px-2.5 py-0.5 rounded-full border bg-slate-900/90 font-medium">
+                {isWashing ? (
+                  <span className="text-sky-300 flex items-center gap-1">
+                    <Droplets className="w-3 h-3 animate-spin" />
+                    <span>جاري ضخ الماء والغسيل...</span>
+                  </span>
+                ) : carDirt <= 10 ? (
+                  <span className="text-emerald-400 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" />
+                    <span>نظيفة ولامعة 100%</span>
+                  </span>
+                ) : carDirt <= 40 ? (
+                  <span className="text-amber-400 flex items-center gap-1">
+                    <span>💨 غبار طريق ({carDirt}%)</span>
+                  </span>
+                ) : carDirt <= 75 ? (
+                  <span className="text-orange-400 flex items-center gap-1">
+                    <span>🍂 أوساخ وطين ({carDirt}%)</span>
+                  </span>
+                ) : (
+                  <span className="text-rose-400 flex items-center gap-1">
+                    <span>🧽 موحلة بشدة ({carDirt}%)</span>
+                  </span>
+                )}
+              </div>
+
+              {/* The Styled Sports Car Preview */}
               <div
-                className="w-24 h-12 rounded-lg relative shadow-xl transition-all"
+                className="w-32 h-16 rounded-xl relative shadow-2xl transition-all flex flex-col justify-between p-1.5 overflow-hidden border border-white/10"
                 style={{ backgroundColor: selectedCar.color }}
               >
-                {/* Windshield */}
-                <div className="absolute inset-x-3 top-2 bottom-4 bg-slate-950 rounded-sm" />
-                {/* Lights */}
-                <div className="absolute -left-1 bottom-1 w-2 h-2 rounded-full bg-red-500 shadow-sm shadow-red-500" />
-                <div className="absolute -right-1 bottom-1 w-2 h-2 rounded-full bg-red-500 shadow-sm shadow-red-500" />
+                {/* Gloss / Sheen Highlight when clean */}
+                {carDirt <= 10 && !isWashing && (
+                  <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white/25 to-transparent rotate-12 animate-pulse pointer-events-none" />
+                )}
+
+                {/* Spoiler */}
+                <div className="w-full h-1.5 bg-slate-950 rounded-full mb-1 opacity-90 shadow-sm" />
+
+                {/* Windshield / Cabin */}
+                <div className="h-6 mx-3 bg-slate-950/90 rounded border border-sky-500/20 relative overflow-hidden flex items-center justify-center">
+                  <div className="w-full h-1 bg-sky-400/30 -rotate-12 transform" />
+                </div>
+
+                {/* Rear Lights & Exhaust */}
+                <div className="flex items-center justify-between px-1">
+                  <div className="w-2.5 h-2 rounded bg-red-500 shadow-sm shadow-red-500" />
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-800" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-800" />
+                  </div>
+                  <div className="w-2.5 h-2 rounded bg-red-500 shadow-sm shadow-red-500" />
+                </div>
+
+                {/* MUD & DIRT ACCUMULATION OVERLAY */}
+                {carDirt > 0 && !isWashing && (
+                  <div
+                    className="absolute inset-0 rounded-xl pointer-events-none transition-opacity duration-500"
+                    style={{
+                      background: `linear-gradient(to top, rgba(78, 48, 25, ${Math.min(0.92, (carDirt / 100) * 0.95)}) 0%, rgba(105, 70, 38, ${Math.min(0.75, (carDirt / 100) * 0.7)}) 55%, rgba(140, 95, 50, ${Math.min(0.5, (carDirt / 100) * 0.45)}) 100%)`,
+                    }}
+                  >
+                    {/* Procedural Mud Splotches on Body & Bumper */}
+                    <div className="absolute bottom-0 inset-x-0 h-4 bg-amber-950/80 rounded-b-xl" />
+                    <div className="absolute bottom-1 left-2 w-3.5 h-2.5 rounded-full bg-amber-950/90 blur-[0.5px]" />
+                    <div className="absolute bottom-2 right-3 w-4 h-3 rounded-full bg-stone-900/80 blur-[0.5px]" />
+                    <div className="absolute top-2 left-4 w-2 h-2 rounded-full bg-amber-950/70" />
+                    <div className="absolute bottom-3 left-8 w-2.5 h-2 rounded-full bg-yellow-950/75" />
+                    {carDirt > 50 && (
+                      <>
+                        <div className="absolute top-4 right-5 w-3 h-2 rounded-full bg-amber-950/85" />
+                        <div className="absolute inset-x-2 bottom-2 h-2 bg-yellow-950/90 rounded" />
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
+
+              {/* Car Underglow */}
               <div
-                className="w-28 h-3 rounded-full blur-md mt-2 opacity-60"
+                className="w-36 h-3 rounded-full blur-md mt-2 opacity-60 transition-all"
                 style={{ backgroundColor: selectedCar.accentColor }}
               />
+            </div>
+
+            {/* VEHICLE CLEANLINESS & CAR WASH CARD */}
+            <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                  <Droplets className="w-4 h-4 text-sky-400" />
+                  <span>نظافة هيكل السيارة</span>
+                </div>
+                <span
+                  className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                    carDirt <= 10
+                      ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
+                      : carDirt <= 40
+                      ? 'text-amber-400 bg-amber-500/10 border-amber-500/30'
+                      : carDirt <= 75
+                      ? 'text-orange-400 bg-orange-500/10 border-orange-500/30'
+                      : 'text-rose-400 bg-rose-500/10 border-rose-500/30'
+                  }`}
+                >
+                  {cleanliness}% نظافة
+                </span>
+              </div>
+
+              {/* Cleanliness Progress Bar */}
+              <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    cleanliness > 75
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                      : cleanliness > 40
+                      ? 'bg-gradient-to-r from-amber-500 to-yellow-400'
+                      : 'bg-gradient-to-r from-rose-500 to-orange-500'
+                  }`}
+                  style={{ width: `${cleanliness}%` }}
+                />
+              </div>
+
+              {/* Wash Action Button */}
+              <button
+                type="button"
+                onClick={handleWashCar}
+                disabled={carDirt <= 0 || isWashing}
+                className={`w-full py-2 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  carDirt <= 0
+                    ? 'bg-slate-800/80 text-emerald-400/70 border border-emerald-500/20 cursor-default'
+                    : isWashing
+                    ? 'bg-sky-600 text-white animate-pulse'
+                    : 'bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white shadow-md shadow-sky-500/20 border border-sky-400/40'
+                }`}
+              >
+                {isWashing ? (
+                  <>
+                    <Droplets className="w-3.5 h-3.5 animate-spin" />
+                    <span>جاري ضخ الماء ورغوة الغسيل...</span>
+                  </>
+                ) : carDirt <= 0 ? (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>السيارة نظيفة ولامعة تماماً ✨</span>
+                  </>
+                ) : (
+                  <>
+                    <Droplets className="w-3.5 h-3.5 text-sky-200" />
+                    <span>غسيل وتلميع السيارة ({CAR_WASH_COST} عملة) 🧽</span>
+                  </>
+                )}
+              </button>
             </div>
 
             {/* Unlock or Activate Button */}

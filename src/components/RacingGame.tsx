@@ -25,6 +25,8 @@ import {
   Volume1,
   X,
   Activity,
+  Droplets,
+  Sparkles,
 } from 'lucide-react';
 import {
   GameState,
@@ -78,6 +80,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const [currentScore, setCurrentScore] = useState<number>(0);
   const [runCoins, setRunCoins] = useState<number>(0);
   const [runDistance, setRunDistance] = useState<number>(0);
+  const [runDirt, setRunDirt] = useState<number>(0);
+  const carDirtRef = useRef<number>(0);
   const [currentSpeed, setCurrentSpeed] = useState<number>(0);
   const [nitroAmount, setNitroAmount] = useState<number>(100);
   const [isNitroActive, setIsNitroActive] = useState<boolean>(false);
@@ -129,6 +133,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     const currentCar = CARS_DATA.find((c) => c.id === stats.selectedCarId) || CARS_DATA[0];
     const effective = getCarEffectiveStats(currentCar, stats.upgrades[currentCar.id]);
     activeCarStatsRef.current = { stats, currentCar, effective };
+    carDirtRef.current = stats.carDirt?.[currentCar.id] ?? 0;
     return activeCarStatsRef.current;
   }, []);
 
@@ -512,17 +517,20 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     soundManager.stopMusic();
     soundManager.playCrash();
 
-    // Persist scores and coins
+    // Persist scores, coins, and car dirt accumulation
     const stats = loadPlayerStats();
     const finalCoins = stats.coins + playerRef.current.coinsCollected;
     const finalScore = Math.floor(playerRef.current.score);
     const newHigh = Math.max(stats.highScore, finalScore);
     const newMaxDist = Math.max(stats.maxDistance, Math.floor(playerRef.current.distance));
+    const finalDirt = Math.min(100, Math.round(carDirtRef.current));
 
     stats.coins = finalCoins;
     stats.highScore = newHigh;
     stats.maxDistance = newMaxDist;
     stats.racesCount = (stats.racesCount || 0) + 1;
+    if (!stats.carDirt) stats.carDirt = {};
+    stats.carDirt[stats.selectedCarId] = finalDirt;
     savePlayerStats(stats);
     recordDailyRace();
 
@@ -538,6 +546,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     setCurrentScore(finalScore);
     setRunCoins(playerRef.current.coinsCollected);
     setRunDistance(Math.floor(playerRef.current.distance));
+    setRunDirt(finalDirt);
   }, [onCoinsChange]);
 
   // Main Canvas Render & Physics Loop
@@ -682,6 +691,29 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         const distanceStep = (p.speed / 3.6) * dt;
         p.distance += distanceStep;
         p.score += (distanceStep * (p.speed / 100) * p.combo);
+
+        // Realistic Dirt & Mud Accumulation during Race
+        const speedNorm = p.speed / 100;
+        let dirtRate = 0.22 * speedNorm; // Baseline highway road dust
+
+        // Rain track: road water puddles & mud spray accumulate 2.6x faster
+        if (selectedTrack === 'rain') {
+          dirtRate *= 2.6;
+        } else if (selectedTrack === 'sunset') {
+          dirtRate *= 1.25;
+        }
+
+        // Off-road / road shoulder kicking up dirt, gravel & curb dust
+        if (Math.abs(p.x) > 0.88) {
+          dirtRate += 2.5;
+        }
+
+        // Drifting kicks up hot rubber residue & road grit
+        if (keysRef.current.drift || keysRef.current.space) {
+          dirtRate += 1.8;
+        }
+
+        carDirtRef.current = Math.min(100, carDirtRef.current + dirtRate * dt);
 
         // Combo timer
         if (p.comboTimer > 0) {
@@ -1165,6 +1197,28 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               size: 1.5,
               shape: 'streak',
               length: 22,
+            });
+          }
+        }
+
+        // Mud & Dirt Flecks flying off tires at high speeds or off-road if car has accumulated dirt
+        if (carDirtRef.current > 30 && (p.speed > 80 || Math.abs(p.x) > 0.85)) {
+          const spawnMudProb = selectedTrack === 'rain' ? 0.35 : 0.18;
+          if (Math.random() < spawnMudProb && particlesRef.current.length < 110) {
+            const tireSide = Math.random() > 0.5 ? 1 : -1;
+            particlesRef.current.push({
+              x: curPlayerX + tireSide * (pW * 0.45) + (Math.random() - 0.5) * 8,
+              y: curPlayerY - 4 + Math.random() * 4,
+              vx: (Math.random() - 0.5) * 35 - p.vx * 15,
+              vy: 70 + Math.random() * 90,
+              life: 0.25 + Math.random() * 0.15,
+              maxLife: 0.4,
+              color: Math.random() > 0.5 ? 'rgba(92, 58, 33, 0.75)' : 'rgba(62, 38, 16, 0.8)',
+              size: 2.5 + Math.random() * 3,
+              growth: 4 + Math.random() * 6,
+              shape: 'smoke',
+              spin: (Math.random() - 0.5) * 4,
+              angle: Math.random() * Math.PI * 2,
             });
           }
         }
@@ -1763,6 +1817,66 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         ctx.fillRect(-16, -pH * 0.98, 32, 8);
       }
 
+      // MUD & DIRT ACCUMULATION ON PLAYER CAR (Reacts to distance, rain, off-road, and drift)
+      const currentDirt = carDirtRef.current;
+      if (currentDirt > 0) {
+        const dirtRatio = Math.min(1, currentDirt / 100);
+
+        // 1. Mud gradient spray coating over rear bumper, wheel fenders and diffuser
+        const mudGrad = ctx.createLinearGradient(0, -pH * 0.45, 0, 0);
+        mudGrad.addColorStop(0, `rgba(120, 85, 45, ${0.1 * dirtRatio})`);
+        mudGrad.addColorStop(0.45, `rgba(92, 58, 28, ${0.68 * dirtRatio})`);
+        mudGrad.addColorStop(1, `rgba(55, 34, 15, ${0.92 * dirtRatio})`);
+
+        ctx.fillStyle = mudGrad;
+        ctx.beginPath();
+        ctx.roundRect(-pW * 0.48, -pH * 0.45, pW * 0.96, pH * 0.45, [4, 4, 8, 8]);
+        ctx.fill();
+
+        // 2. Grimy dust film over rear window (dims glass reflection)
+        ctx.fillStyle = `rgba(105, 75, 42, ${0.52 * dirtRatio})`;
+        ctx.beginPath();
+        ctx.roundRect(-pW * 0.28, -pH * 0.78, pW * 0.56, pH * 0.32, [6, 6, 2, 2]);
+        ctx.fill();
+
+        // 3. Mud Splatters and Spray Droplets on body & bumper
+        ctx.fillStyle = `rgba(50, 30, 12, ${0.85 * dirtRatio})`;
+        ctx.beginPath();
+        // Left wheel splash dots
+        ctx.arc(-pW * 0.38, -6, 4.5 * dirtRatio, 0, Math.PI * 2);
+        ctx.arc(-pW * 0.32, -12, 3.5 * dirtRatio, 0, Math.PI * 2);
+        ctx.arc(-pW * 0.42, -16, 2.5 * dirtRatio, 0, Math.PI * 2);
+        // Right wheel splash dots
+        ctx.arc(pW * 0.38, -6, 4.5 * dirtRatio, 0, Math.PI * 2);
+        ctx.arc(pW * 0.32, -12, 3.5 * dirtRatio, 0, Math.PI * 2);
+        ctx.arc(pW * 0.42, -16, 2.5 * dirtRatio, 0, Math.PI * 2);
+        // Center bumper & diffuser splatters
+        ctx.arc(-6, -7, 3 * dirtRatio, 0, Math.PI * 2);
+        ctx.arc(7, -5, 2.5 * dirtRatio, 0, Math.PI * 2);
+        ctx.arc(-16, -4, 3 * dirtRatio, 0, Math.PI * 2);
+        ctx.arc(15, -8, 3.5 * dirtRatio, 0, Math.PI * 2);
+        ctx.arc(0, -11, 2 * dirtRatio, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 4. Heavy Mud Caking if dirt > 55%
+        if (currentDirt > 55) {
+          ctx.fillStyle = `rgba(40, 22, 8, ${0.92 * dirtRatio})`;
+          ctx.beginPath();
+          ctx.arc(-pW * 0.22, -2, 4.2 * dirtRatio, 0, Math.PI * 2);
+          ctx.arc(pW * 0.22, -2, 4.2 * dirtRatio, 0, Math.PI * 2);
+          ctx.arc(0, -3, 3.8 * dirtRatio, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else {
+        // Pristine showroom shine gleam
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(-pW * 0.32, -pH * 0.85);
+        ctx.lineTo(-pW * 0.14, -pH * 0.85);
+        ctx.stroke();
+      }
+
       ctx.restore();
 
       // 10. 3D RADIAL WARP TUNNEL & OPTICAL SPEED MOTION BLUR STREAKS
@@ -2007,12 +2121,23 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           )}
 
           <button
-            onClick={onOpenGarage}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700/60 text-xs font-medium transition-colors"
-            title="المرآب لتطوير السيارات"
+            onClick={() => {
+              const s = loadPlayerStats();
+              if (!s.carDirt) s.carDirt = {};
+              s.carDirt[s.selectedCarId] = Math.min(100, Math.round(carDirtRef.current));
+              savePlayerStats(s);
+              onOpenGarage();
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700/60 text-xs font-medium transition-colors relative"
+            title="المرآب لتطوير وغسيل السيارات"
           >
             <Wrench className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">المرآب</span>
+            {carDirtRef.current > 20 && (
+              <span className="text-[10px] px-1 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60 font-mono" title="السيارة متسخة وبحاجة لغسيل">
+                🧽
+              </span>
+            )}
           </button>
 
           <button
@@ -2593,6 +2718,35 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                     {highScore.toLocaleString()}
                   </div>
                 </div>
+
+                {/* Car Dirt & Cleanliness Summary */}
+                <div className="col-span-2 p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 text-slate-300 font-medium">
+                    <Droplets className="w-3.5 h-3.5 text-sky-400" />
+                    <span>حالة هيكل السيارة:</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {runDirt <= 15 ? (
+                      <span className="text-emerald-400 font-bold flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>نظيفة ولامعة ({runDirt}%)</span>
+                      </span>
+                    ) : runDirt <= 50 ? (
+                      <span className="text-amber-400 font-bold flex items-center gap-1">
+                        <span>💨 غبار طريق ({runDirt}%)</span>
+                      </span>
+                    ) : (
+                      <span className="text-orange-400 font-bold flex items-center gap-1">
+                        <span>🍂 متسخة بالطين ({runDirt}%)</span>
+                      </span>
+                    )}
+                    {runDirt > 25 && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                        اغسلها في المرآب 🧽
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Restart, Garage & Leaderboard Buttons */}
@@ -2610,7 +2764,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   className="w-full sm:w-auto py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl border border-slate-700 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Wrench className="w-4 h-4 text-amber-400" />
-                  <span>تطوير السيارة</span>
+                  <span>المرآب وغسيل السيارة 🧽</span>
                 </button>
 
                 <button
