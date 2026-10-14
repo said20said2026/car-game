@@ -40,6 +40,7 @@ export interface PlayerStats {
   upgrades: Record<string, CarUpgrades>;
   unlockedCars: string[];
   carDirt?: Record<string, number>;
+  ghostCarEnabled?: boolean;
 }
 
 export interface TrafficVehicle {

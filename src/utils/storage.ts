@@ -111,6 +111,7 @@ export function loadPlayerStats(): PlayerStats {
         carDirt: parsed.carDirt ?? {
           red_rocket: 0,
         },
+        ghostCarEnabled: parsed.ghostCarEnabled ?? true,
       };
     }
   } catch {}
@@ -134,6 +135,7 @@ export function loadPlayerStats(): PlayerStats {
     carDirt: {
       red_rocket: 0,
     },
+    ghostCarEnabled: true,
   };
 }
 

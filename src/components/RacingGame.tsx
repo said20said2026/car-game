@@ -27,6 +27,9 @@ import {
   Activity,
   Droplets,
   Sparkles,
+  Target,
+  Gift,
+  Ghost,
 } from 'lucide-react';
 import {
   GameState,
@@ -45,6 +48,24 @@ import {
   loadPlayerName,
   addLeaderboardScore,
 } from '../utils/storage';
+import {
+  recordDailyChallengeProgress,
+  getDailyChallengesSummary,
+} from '../utils/dailyChallenges';
+import {
+  GhostTelemetryFrame,
+  GhostRunData,
+  InterpolatedGhost,
+  loadGhostRun,
+  saveGhostRun,
+  checkIsNewGhostRecord,
+  isGhostCarEnabled,
+  setGhostCarEnabled,
+  interpolateGhost,
+  calculateGhostDelta,
+  clearGhostRuns,
+} from '../utils/ghostCar';
+import { DailyChallengesModal } from './DailyChallengesModal';
 import { soundManager, engineAudio } from '../utils/audio';
 
 export interface RacingGameHandle {
@@ -58,10 +79,148 @@ interface RacingGameProps {
   onOpenGarage: () => void;
   coins: number;
   onCoinsChange: (newCoins: number) => void;
+  onOpenDailyChallenges?: () => void;
+}
+
+/**
+ * Renders the ethereal, translucent holographic Ghost Car (Best Personal Run)
+ */
+function renderGhostVehicle(
+  ctx: CanvasRenderingContext2D,
+  screenX: number,
+  screenY: number,
+  scale: number,
+  ghostData: InterpolatedGhost,
+  timeVal: number
+) {
+  ctx.save();
+  ctx.translate(screenX, screenY);
+  ctx.scale(scale, scale);
+  ctx.rotate(ghostData.tilt);
+
+  // Ethereal breathing translucency (0.34 - 0.50)
+  const pulse = Math.sin(timeVal / 170) * 0.08;
+  ctx.globalAlpha = Math.max(0.28, Math.min(0.58, 0.42 + pulse));
+
+  const gW = 82;
+  const gH = 56;
+
+  // 1. Holographic ground glow under Ghost Car
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+  ctx.beginPath();
+  ctx.ellipse(0, 6, gW * 0.55, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 2. Cyan holographic shadow blur
+  ctx.shadowColor = '#38bdf8';
+  ctx.shadowBlur = 16;
+
+  // 3. Translucent Aerodynamic Ghost Body
+  const bodyGrad = ctx.createLinearGradient(0, -gH, 0, 0);
+  bodyGrad.addColorStop(0, 'rgba(56, 189, 248, 0.55)');
+  bodyGrad.addColorStop(0.5, 'rgba(14, 165, 233, 0.42)');
+  bodyGrad.addColorStop(1, 'rgba(2, 132, 199, 0.62)');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.roundRect(-gW / 2, -gH, gW, gH, [14, 14, 8, 8]);
+  ctx.fill();
+
+  // 4. Cyan holographic wireframe edges
+  ctx.strokeStyle = '#7dd3fc';
+  ctx.lineWidth = 1.8;
+  ctx.stroke();
+
+  // 5. Holographic horizontal scanlines across body
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = 'rgba(224, 242, 254, 0.35)';
+  ctx.lineWidth = 1;
+  for (let ly = -gH + 6; ly < 0; ly += 7) {
+    ctx.beginPath();
+    ctx.moveTo(-gW * 0.42, ly);
+    ctx.lineTo(gW * 0.42, ly);
+    ctx.stroke();
+  }
+
+  // 6. Ghost Cabin & Windows
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.38)';
+  ctx.beginPath();
+  ctx.roundRect(-gW * 0.35, -gH * 0.9, gW * 0.7, gH * 0.5, [10, 10, 4, 4]);
+  ctx.fill();
+  ctx.strokeStyle = '#bae6fd';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // 7. Ghost Carbon Rear Spoiler
+  ctx.fillStyle = 'rgba(3, 105, 161, 0.75)';
+  ctx.fillRect(-gW * 0.52, -gH - 6, gW * 1.04, 7);
+  ctx.strokeStyle = '#38bdf8';
+  ctx.strokeRect(-gW * 0.52, -gH - 6, gW * 1.04, 7);
+
+  // 8. Ghost Luminous Cyan Taillights
+  ctx.fillStyle = '#67e8f9';
+  ctx.shadowColor = '#06b6d4';
+  ctx.shadowBlur = 14;
+  ctx.fillRect(-gW * 0.45, -gH * 0.3, 16, 7);
+  ctx.fillRect(gW * 0.45 - 16, -gH * 0.3, 16, 7);
+  ctx.shadowBlur = 0;
+
+  // 9. Ghost Tires
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.55)';
+  ctx.fillRect(-gW * 0.55, -22, 10, 20);
+  ctx.fillRect(gW * 0.55 - 10, -22, 10, 20);
+  ctx.strokeStyle = '#38bdf8';
+  ctx.strokeRect(-gW * 0.55, -22, 10, 20);
+  ctx.strokeRect(gW * 0.55 - 10, -22, 10, 20);
+
+  // 10. Twin Ghost Nitro Flames if ghost was boosting
+  if (ghostData.nitro) {
+    ctx.fillStyle = '#38bdf8';
+    ctx.shadowColor = '#0284c7';
+    ctx.shadowBlur = 18;
+    const flameH = 16 + Math.random() * 12;
+    ctx.beginPath();
+    ctx.moveTo(-gW * 0.28 - 4, 0);
+    ctx.lineTo(-gW * 0.28 + 4, 0);
+    ctx.lineTo(-gW * 0.28, flameH);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(gW * 0.28 - 4, 0);
+    ctx.lineTo(gW * 0.28 + 4, 0);
+    ctx.lineTo(gW * 0.28, flameH);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  // 11. Floating Holographic Badge above Ghost Car
+  ctx.save();
+  ctx.rotate(-ghostData.tilt); // Keep badge horizontal
+  const tagY = -gH - 18;
+  const tagText = `👻 شبح أفضل جولة (${Math.round(ghostData.speed)} كم/س)`;
+  ctx.font = 'bold 9px sans-serif';
+  const tagW = ctx.measureText(tagText).width + 14;
+
+  ctx.fillStyle = 'rgba(8, 47, 73, 0.88)';
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.roundRect(-tagW / 2, tagY - 11, tagW, 16, 6);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#e0f2fe';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(tagText, 0, tagY - 3);
+  ctx.restore();
+
+  ctx.restore();
 }
 
 export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, ref) => {
-  const { onOpenGarage, coins, onCoinsChange } = props;
+  const { onOpenGarage, coins, onCoinsChange, onOpenDailyChallenges } = props;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -74,6 +233,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const [soundVolume, setSoundVolume] = useState<number>(0.8);
   const [speedPitchEnabled, setSpeedPitchEnabled] = useState<boolean>(true);
   const [showAudioModal, setShowAudioModal] = useState<boolean>(false);
+  const [showDailyModal, setShowDailyModal] = useState<boolean>(false);
+  const [dailySummary, setDailySummary] = useState(() => getDailyChallengesSummary());
   const [liveMusicBpm, setLiveMusicBpm] = useState<number>(126);
   const [livePitchShift, setLivePitchShift] = useState<number>(0);
   const showAudioModalRef = useRef<boolean>(false);
@@ -91,6 +252,51 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const [highScore, setHighScore] = useState<number>(0);
   const [selectedCarId, setSelectedCarId] = useState<string>('red_rocket');
   const [carHealth, setCarHealth] = useState<number>(100);
+
+  // Ghost Car System State & Telemetry Refs
+  const [ghostEnabled, setGhostEnabled] = useState<boolean>(() => isGhostCarEnabled());
+  const [ghostDelta, setGhostDelta] = useState<{ meters: number; status: 'ahead' | 'behind' | 'tied'; text: string } | null>(null);
+  const [ghostRunInfo, setGhostRunInfo] = useState<GhostRunData | null>(null);
+  const [ghostNotification, setGhostNotification] = useState<string | null>(null);
+  const [isNewRecordBroken, setIsNewRecordBroken] = useState<boolean>(false);
+  const activeGhostRef = useRef<GhostRunData | null>(null);
+  const recordedFramesRef = useRef<GhostTelemetryFrame[]>([]);
+  const raceTimeRef = useRef<number>(0);
+  const lastRecordTimeRef = useRef<number>(0);
+  const hasOvertakenGhostRef = useRef<boolean>(false);
+  const ghostPrevAheadRef = useRef<boolean | null>(null);
+
+  useEffect(() => {
+    const handleGhostSettings = (e: Event) => {
+      const customEvent = e as CustomEvent<{ enabled: boolean }>;
+      if (customEvent.detail && typeof customEvent.detail.enabled === 'boolean') {
+        setGhostEnabled(customEvent.detail.enabled);
+      }
+    };
+    const handleGhostRecord = (e: Event) => {
+      const customEvent = e as CustomEvent<{ run: GhostRunData | null }>;
+      if (customEvent.detail) {
+        setGhostRunInfo(customEvent.detail.run);
+        activeGhostRef.current = customEvent.detail.run;
+      }
+    };
+    window.addEventListener('ghost_settings_changed', handleGhostSettings);
+    window.addEventListener('ghost_record_updated', handleGhostRecord);
+    return () => {
+      window.removeEventListener('ghost_settings_changed', handleGhostSettings);
+      window.removeEventListener('ghost_record_updated', handleGhostRecord);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleDailyUpdate = () => {
+      setDailySummary(getDailyChallengesSummary());
+    };
+    window.addEventListener('daily_challenges_changed', handleDailyUpdate);
+    return () => {
+      window.removeEventListener('daily_challenges_changed', handleDailyUpdate);
+    };
+  }, []);
 
   // Mobile Device Detection
   const isMobileDevice = typeof window !== 'undefined' && (
@@ -177,6 +383,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     distance: 0,
     score: 0,
     coinsCollected: 0,
+    nearMissesCount: 0,
+    nitroBoostCount: 0,
     tilt: 0,
     shake: 0,
     curveOffset: 0,
@@ -230,6 +438,11 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     soundManager.setMusicVolume(musVol);
     soundManager.setVolume(sndVol);
     soundManager.setInteractivePitchEnabled(spdPitch);
+
+    // Load Ghost Run for initial track
+    const ghost = loadGhostRun(stats.selectedTrack);
+    activeGhostRef.current = ghost;
+    setGhostRunInfo(ghost);
   }, []);
 
   // Sync sound effects settings
@@ -321,6 +534,9 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     stats.selectedTrack = track;
     savePlayerStats(stats);
     soundManager.playClick();
+    const ghost = loadGhostRun(track);
+    activeGhostRef.current = ghost;
+    setGhostRunInfo(ghost);
   };
 
   // Fullscreen toggle
@@ -430,6 +646,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
       distance: 0,
       score: 0,
       coinsCollected: 0,
+      nearMissesCount: 0,
+      nitroBoostCount: 0,
       tilt: 0,
       shake: 0,
       curveOffset: 0,
@@ -484,11 +702,34 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     setComboMultiplier(1);
     setComboMessage(null);
 
+    // Reset Ghost recording and telemetry
+    raceTimeRef.current = 0;
+    lastRecordTimeRef.current = 0;
+    hasOvertakenGhostRef.current = false;
+    ghostPrevAheadRef.current = null;
+    setIsNewRecordBroken(false);
+    setGhostNotification(null);
+    setGhostDelta(null);
+    const ghost = loadGhostRun(selectedTrack);
+    activeGhostRef.current = ghost;
+    setGhostRunInfo(ghost);
+    recordedFramesRef.current = [
+      {
+        t: 0,
+        d: 0,
+        x: 0,
+        tilt: 0,
+        speed: 60,
+        nitro: false,
+        drift: false,
+      },
+    ];
+
     soundManager.startEngine();
     if (musicEnabled) {
       soundManager.startMusic();
     }
-  }, [musicEnabled]);
+  }, [musicEnabled, selectedTrack]);
 
   const pauseGame = () => {
     setGameState('PAUSED');
@@ -534,11 +775,49 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     savePlayerStats(stats);
     recordDailyRace();
 
+    // Record progress for Daily Challenges missions
+    recordDailyChallengeProgress({
+      distance: Math.floor(playerRef.current.distance),
+      coins: playerRef.current.coinsCollected,
+      nearMisses: playerRef.current.nearMissesCount || 0,
+      races: 1,
+      singleScore: finalScore,
+      nitroBoosts: playerRef.current.nitroBoostCount || 0,
+    });
+
     // Auto-record score into Top 5 Leaderboard (LocalStorage)
     if (finalScore > 0) {
       const pName = loadPlayerName();
       const car = CARS_DATA.find((c) => c.id === stats.selectedCarId) || CARS_DATA[0];
       addLeaderboardScore(pName, finalScore, car.arabicName || car.name);
+    }
+
+    // Ghost Car Record Evaluation & Storage
+    const runDist = Math.floor(playerRef.current.distance);
+    const isNewGhostRecord = checkIsNewGhostRecord(selectedTrack, runDist);
+    if (isNewGhostRecord && recordedFramesRef.current.length > 5) {
+      const car = CARS_DATA.find((c) => c.id === stats.selectedCarId) || CARS_DATA[0];
+      const newGhostRun: GhostRunData = {
+        version: 1,
+        id: `ghost_${Date.now()}`,
+        track: selectedTrack,
+        carId: car.id,
+        carName: car.arabicName || car.name,
+        carColor: car.color,
+        accentColor: car.accentColor,
+        totalDistance: runDist,
+        totalTime: Math.round(raceTimeRef.current * 10) / 10,
+        finalScore,
+        recordedAt: Date.now(),
+        frames: recordedFramesRef.current,
+      };
+      saveGhostRun(newGhostRun);
+      activeGhostRef.current = newGhostRun;
+      setGhostRunInfo(newGhostRun);
+      setIsNewRecordBroken(true);
+      soundManager.playRewardFanfare();
+    } else {
+      setIsNewRecordBroken(false);
     }
 
     onCoinsChange(finalCoins);
@@ -547,7 +826,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     setRunCoins(playerRef.current.coinsCollected);
     setRunDistance(Math.floor(playerRef.current.distance));
     setRunDirt(finalDirt);
-  }, [onCoinsChange]);
+  }, [onCoinsChange, selectedTrack]);
 
   // Main Canvas Render & Physics Loop
   useEffect(() => {
@@ -641,6 +920,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           if (!isNitroActiveRef.current) {
             isNitroActiveRef.current = true;
             setIsNitroActive(true);
+            p.nitroBoostCount = (p.nitroBoostCount || 0) + 1;
           }
         } else {
           // Slow passive nitro recharge
@@ -810,6 +1090,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           // Close pass / Near miss detection
           if (Math.abs(car.z) < 18 && Math.abs(car.x - p.x) < 0.48 && Math.abs(car.x - p.x) > 0.22 && !((car as unknown as { scoredCloseCall?: boolean }).scoredCloseCall)) {
             (car as unknown as { scoredCloseCall?: boolean }).scoredCloseCall = true;
+            p.nearMissesCount = (p.nearMissesCount || 0) + 1;
             p.combo = Math.min(5, p.combo + 1);
             p.comboTimer = 3.5;
             p.score += 75 * p.combo;
@@ -1247,8 +1528,48 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           carGhostsRef.current.pop();
         }
 
-        // Update state hooks (throttled to 10-12 FPS to eliminate mobile React tree re-render overhead)
+        // Record Ghost Telemetry (every ~0.085s)
+        raceTimeRef.current += dt;
+        if (raceTimeRef.current - lastRecordTimeRef.current >= 0.085) {
+          lastRecordTimeRef.current = raceTimeRef.current;
+          recordedFramesRef.current.push({
+            t: Math.round(raceTimeRef.current * 100) / 100,
+            d: Math.round(p.distance * 10) / 10,
+            x: Math.round(p.x * 1000) / 1000,
+            tilt: Math.round(p.tilt * 1000) / 1000,
+            speed: Math.round(p.speed),
+            nitro: isNitroActiveRef.current,
+            drift: keysRef.current.space || keysRef.current.drift,
+          });
+        }
+
         const nowUi = performance.now();
+
+        // Live Ghost Telemetry Delta Evaluation & Overtake Tracking
+        if (ghostEnabled && activeGhostRef.current) {
+          const ghostNow = interpolateGhost(activeGhostRef.current, raceTimeRef.current);
+          if (ghostNow) {
+            const isPlayerAhead = p.distance > ghostNow.d;
+
+            // Trigger overtake sound & notification when overtaking previous best ghost
+            if (ghostPrevAheadRef.current === false && isPlayerAhead && !hasOvertakenGhostRef.current && p.distance > 25) {
+              hasOvertakenGhostRef.current = true;
+              soundManager.playGhostOvertake();
+              setGhostNotification('👻 تجاوزت سيارة الشبح! أنت تتقدم على أفضل جولة سابقة 🔥');
+              setTimeout(() => setGhostNotification(null), 3500);
+            }
+            ghostPrevAheadRef.current = isPlayerAhead;
+
+            if (nowUi - lastUiSyncRef.current > (isMobileDevice ? 90 : 60)) {
+              const delta = calculateGhostDelta(p.distance, ghostNow.d);
+              setGhostDelta(delta);
+            }
+          }
+        } else if (ghostDelta !== null) {
+          setGhostDelta(null);
+        }
+
+        // Update state hooks (throttled to 10-12 FPS to eliminate mobile React tree re-render overhead)
         if (nowUi - lastUiSyncRef.current > (isMobileDevice ? 90 : 60)) {
           lastUiSyncRef.current = nowUi;
           setCurrentSpeed(Math.round(p.speed));
@@ -1728,6 +2049,29 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         });
       }
 
+      // 8.5. RENDER HOLOGRAPHIC GHOST CAR (Personal Best Record Run)
+      if (ghostEnabled && activeGhostRef.current) {
+        const ghostNow = interpolateGhost(activeGhostRef.current, raceTimeRef.current);
+        if (ghostNow) {
+          const relMeters = ghostNow.d - p.distance;
+          const rz = relMeters * 9;
+
+          if (rz > 0 && rz < 880) {
+            // Ghost car is on the road ahead of player
+            const proj = project(ghostNow.x, rz);
+            if (proj.visible) {
+              renderGhostVehicle(ctx, proj.px, proj.py, proj.scale, ghostNow, timestamp);
+            }
+          } else if (rz <= 0 && rz >= -55) {
+            // Ghost car is alongside or just passing the player
+            const gx = roadBottomX + (ghostNow.x * roadBottomW * 0.42);
+            const gy = playerScreenY - (rz * 1.8);
+            const gScale = Math.max(0.85, 1.0 + (rz * 0.003));
+            renderGhostVehicle(ctx, gx, gy, gScale, ghostNow, timestamp);
+          }
+        }
+      }
+
       // 9. PLAYER SPORTS CAR (Anchored at bottom center with realistic steering tilt)
       ctx.save();
       ctx.translate(playerScreenX, playerScreenY);
@@ -2140,6 +2484,55 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             )}
           </button>
 
+          {/* Daily Challenges Button */}
+          <button
+            type="button"
+            onClick={() => setShowDailyModal(true)}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors relative cursor-pointer ${
+              dailySummary.unclaimedCount > 0
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-500/20 animate-pulse'
+                : 'bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700/60'
+            }`}
+            title="التحدي اليومي والمكافآت"
+          >
+            <Target className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline font-bold">التحدي اليومي</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${
+              dailySummary.unclaimedCount > 0
+                ? 'bg-amber-400 text-slate-950 animate-bounce'
+                : 'bg-slate-800 text-slate-300'
+            }`}>
+              {dailySummary.unclaimedCount > 0 ? `🎁 ${dailySummary.unclaimedCount}` : `${dailySummary.completed}/${dailySummary.total}`}
+            </span>
+          </button>
+
+          {/* Ghost Car Toggle Button */}
+          <button
+            type="button"
+            onClick={() => {
+              const next = !ghostEnabled;
+              setGhostEnabled(next);
+              setGhostCarEnabled(next);
+            }}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+              ghostEnabled
+                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-sm shadow-cyan-500/20'
+                : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400 border border-slate-700/60'
+            }`}
+            title={ghostEnabled ? 'إخفاء سيارة الشبح (Ghost Car)' : 'تفعيل وإظهار سيارة الشبح (Ghost Car)'}
+            aria-label="Toggle Ghost Car"
+          >
+            <Ghost className={`w-3.5 h-3.5 ${ghostEnabled ? 'text-cyan-300 animate-pulse' : 'text-slate-400'}`} />
+            <span className="hidden sm:inline font-bold">
+              {ghostEnabled ? 'الشبح' : 'الشبح (معطّل)'}
+            </span>
+            {activeGhostRef.current && ghostEnabled && (
+              <span className="text-[10px] px-1 py-0.2 rounded bg-cyan-950/90 text-cyan-300 border border-cyan-800/60 font-mono hidden md:inline">
+                {activeGhostRef.current.totalDistance}م
+              </span>
+            )}
+          </button>
+
           <button
             onClick={toggleFullscreen}
             className="p-1.5 rounded-lg bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/60 transition-colors hidden sm:block"
@@ -2215,6 +2608,40 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             <div className="absolute top-14 right-3 sm:top-14 sm:right-5 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/30 border border-cyan-400/80 backdrop-blur-md text-cyan-200 text-xs font-black uppercase tracking-wider animate-pulse shadow-[0_0_15px_rgba(56,189,248,0.8)]">
               <span className="inline-block w-2 h-2 rounded-full bg-cyan-300 animate-ping" />
               <span>NITRO HYPER-DRIVE ⚡</span>
+            </div>
+          </div>
+        )}
+
+        {/* GHOST CAR TELEMETRY HUD PILL */}
+        {gameState === 'PLAYING' && ghostEnabled && activeGhostRef.current && (
+          <div className="absolute top-12 left-1/2 -translate-x-1/2 sm:top-14 z-20 pointer-events-none flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full bg-slate-950/85 backdrop-blur-md border border-cyan-500/40 shadow-lg shadow-cyan-500/10 text-xs font-bold font-mono">
+            <div className="flex items-center gap-1 text-cyan-300">
+              <Ghost className="w-3.5 h-3.5 animate-pulse" />
+              <span className="text-[10px] sm:text-[11px] font-sans font-bold text-white hidden xs:inline">الشبح:</span>
+            </div>
+            <span
+              className={`px-1.5 py-0.2 rounded text-[10px] sm:text-[11px] font-bold ${
+                ghostDelta?.status === 'ahead'
+                  ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/40'
+                  : ghostDelta?.status === 'behind'
+                  ? 'bg-red-500/25 text-red-300 border border-red-500/40'
+                  : 'bg-amber-500/25 text-amber-300 border border-amber-500/40'
+              }`}
+            >
+              {ghostDelta?.text || 'المسار متطابق'}
+            </span>
+            <span className="text-[9px] sm:text-[10px] text-slate-400 font-sans hidden sm:inline">
+              (أفضل: {activeGhostRef.current.totalDistance}م)
+            </span>
+          </div>
+        )}
+
+        {/* GHOST NOTIFICATION TOAST */}
+        {ghostNotification && (
+          <div className="absolute top-22 left-1/2 -translate-x-1/2 z-30 pointer-events-none animate-bounce max-w-[90vw]">
+            <div className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-cyan-950/90 border border-cyan-400/80 text-cyan-100 font-bold text-xs sm:text-sm shadow-xl shadow-cyan-500/25 flex items-center gap-2 backdrop-blur-md text-center">
+              <Ghost className="w-4 h-4 text-cyan-300 animate-spin shrink-0" />
+              <span>{ghostNotification}</span>
             </div>
           </div>
         )}
@@ -2534,7 +2961,22 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 </div>
               )}
 
-              {/* Quick Toggles: Music & High-Performance Mobile Mode */}
+              {/* Ghost Car Record Banner */}
+              {ghostRunInfo ? (
+                <div className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-200">
+                  <Ghost className="w-4 h-4 text-cyan-300 animate-pulse shrink-0" />
+                  <span>شبح أفضل جولة مسجل:</span>
+                  <span className="font-bold font-mono text-cyan-300">{ghostRunInfo.totalDistance.toLocaleString()} م</span>
+                  <span className="text-[11px] text-slate-400">({ghostRunInfo.carName})</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2 text-xs text-cyan-300/80">
+                  <Ghost className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>سيارة الشبح جاهزة للتسجيل في أول سباق لك! 👻</span>
+                </div>
+              )}
+
+              {/* Quick Toggles: Music, Ghost Car & High-Performance Mobile Mode */}
               <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
                 <button
                   type="button"
@@ -2551,6 +2993,23 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                     <Music2 className="w-3.5 h-3.5 text-slate-400" />
                   )}
                   <span>الموسيقى: {musicEnabled ? 'مفعلة' : 'متوقفة'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !ghostEnabled;
+                    setGhostEnabled(next);
+                    setGhostCarEnabled(next);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                    ghostEnabled
+                      ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300 shadow-sm shadow-cyan-500/10'
+                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <Ghost className={`w-3.5 h-3.5 ${ghostEnabled ? 'text-cyan-400' : 'text-slate-400'}`} />
+                  <span>سيارة الشبح: {ghostEnabled ? 'مفعّلة 👻' : 'معطلة'}</span>
                 </button>
 
                 <button
@@ -2630,6 +3089,24 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg transition-colors cursor-pointer"
                 >
                   متابعة القيادة
+                </button>
+
+                {/* Ghost Car Toggle in Pause Menu */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !ghostEnabled;
+                    setGhostEnabled(next);
+                    setGhostCarEnabled(next);
+                  }}
+                  className={`w-full py-2 px-4 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer ${
+                    ghostEnabled
+                      ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                      : 'bg-slate-900 text-slate-400 border-slate-700'
+                  }`}
+                >
+                  <Ghost className="w-4 h-4 text-cyan-400" />
+                  <span>سيارة الشبح (Ghost Car): {ghostEnabled ? 'مفعّلة 👻' : 'معطلة'}</span>
                 </button>
 
                 {/* Audio & Music Control Button in Pause Menu */}
@@ -2746,6 +3223,92 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                       </span>
                     )}
                   </div>
+                </div>
+
+                {/* Ghost Car Performance Comparison */}
+                <div
+                  className={`col-span-2 p-2.5 rounded-xl border flex items-center justify-between text-xs transition-colors ${
+                    isNewRecordBroken
+                      ? 'bg-cyan-500/15 border-cyan-400/60 text-cyan-200 shadow-sm shadow-cyan-500/10'
+                      : 'bg-slate-900/90 border-slate-800 text-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`p-1.5 rounded-lg shrink-0 ${
+                        isNewRecordBroken ? 'bg-cyan-500/25 text-cyan-300' : 'bg-slate-800 text-slate-400'
+                      }`}
+                    >
+                      <Ghost className={`w-4 h-4 ${isNewRecordBroken ? 'animate-bounce text-cyan-300' : 'text-cyan-400'}`} />
+                    </div>
+                    <div className="text-start">
+                      <div className="font-bold flex items-center gap-1.5">
+                        <span>سيارة الشبح (Ghost Car)</span>
+                        {isNewRecordBroken && (
+                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-400/25 text-cyan-200 font-bold border border-cyan-400/40 animate-pulse">
+                            رقم قياسي جديد! 🏆
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] opacity-80">
+                        {isNewRecordBroken
+                          ? `حطمت رقم الشبح السابق! تم حفظ مسارك الجديد: ${runDistance.toLocaleString()} م`
+                          : ghostRunInfo
+                          ? `أفضل مسار مسجل: ${ghostRunInfo.totalDistance.toLocaleString()} م بواسطة (${ghostRunInfo.carName})`
+                          : 'أول جولة لك تم تسجيلها كشبح لمنافسته في السباقات القادمة!'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="font-mono font-bold text-end shrink-0">
+                    {isNewRecordBroken ? (
+                      <span className="text-cyan-300 font-bold text-xs sm:text-sm">
+                        +{runDistance - (ghostRunInfo?.totalDistance || 0)}م متقدم 🔥
+                      </span>
+                    ) : ghostRunInfo ? (
+                      <span
+                        className={`text-xs ${
+                          runDistance >= ghostRunInfo.totalDistance ? 'text-emerald-400' : 'text-amber-400'
+                        }`}
+                      >
+                        {runDistance >= ghostRunInfo.totalDistance
+                          ? 'تغلبت على الشبح 🏁'
+                          : `${(ghostRunInfo.totalDistance - runDistance).toLocaleString()}م متبقي`}
+                      </span>
+                    ) : (
+                      <span className="text-cyan-400 text-xs">مسار محفوظ ✓</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Daily Challenges Progress Banner */}
+                <div className="col-span-2 p-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-slate-900 to-amber-500/10 border border-amber-500/30 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <Target className="w-4 h-4 text-amber-400 shrink-0" />
+                    <div className="text-start">
+                      <div className="font-bold text-white flex items-center gap-1.5">
+                        <span>التحدي اليومي</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono">
+                          {dailySummary.completed}/{dailySummary.total}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        {dailySummary.unclaimedCount > 0
+                          ? `لديك ${dailySummary.unclaimedCount} مكافأة جاهزة للاستلام!`
+                          : 'تابع تقدمك في مهام اليوم لربح العملات'}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowDailyModal(true)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                      dailySummary.unclaimedCount > 0
+                        ? 'bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 animate-bounce shadow-md shadow-amber-500/20'
+                        : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30'
+                    }`}
+                  >
+                    <Gift className="w-3.5 h-3.5" />
+                    <span>{dailySummary.unclaimedCount > 0 ? 'استلم المكافآت 🎁' : 'عرض التحديات'}</span>
+                  </button>
                 </div>
               </div>
 
@@ -2988,6 +3551,15 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             </div>
           </div>
         )}
+
+        {/* DAILY CHALLENGES & SPECIAL REWARDS MODAL */}
+        <DailyChallengesModal
+          isOpen={showDailyModal}
+          onClose={() => setShowDailyModal(false)}
+          onCoinsChange={(reward) => {
+            onCoinsChange(loadPlayerStats().coins);
+          }}
+        />
       </div>
     </div>
   );

@@ -1,9 +1,11 @@
-import React from 'react';
-import { Play, Sun, Moon, Wrench } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Play, Sun, Moon, Wrench, Gift, Target } from 'lucide-react';
+import { getDailyChallengesSummary } from '../utils/dailyChallenges';
 
 interface HeaderProps {
   onPlayClick: () => void;
   onOpenGarage: () => void;
+  onOpenDailyChallenges?: () => void;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
 }
@@ -11,10 +13,22 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   onPlayClick,
   onOpenGarage,
+  onOpenDailyChallenges,
   theme,
   onToggleTheme,
 }) => {
   const isDark = theme === 'dark';
+  const [dailySummary, setDailySummary] = useState(() => getDailyChallengesSummary());
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setDailySummary(getDailyChallengesSummary());
+    };
+    window.addEventListener('daily_challenges_changed', handleUpdate);
+    return () => {
+      window.removeEventListener('daily_challenges_changed', handleUpdate);
+    };
+  }, []);
 
   const handleScrollToCars = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -50,9 +64,13 @@ export const Header: React.FC<HeaderProps> = ({
         </a>
 
         {/* Zone 2: Nav links */}
-        <nav className="hidden md:flex items-center gap-6 text-xs sm:text-sm font-medium opacity-90">
+        <nav className="hidden md:flex items-center gap-5 text-xs sm:text-sm font-medium opacity-90">
           <a href="#game-container" className="hover:text-amber-500 transition-colors whitespace-nowrap shrink-0">
             شاشة اللعبة
+          </a>
+          <a href="#daily-challenges" className="hover:text-amber-500 transition-colors whitespace-nowrap shrink-0 font-bold text-amber-400 flex items-center gap-1">
+            <Target className="w-3.5 h-3.5 text-amber-400" />
+            <span>التحدي اليومي</span>
           </a>
           <a href="#leaderboard" className="hover:text-amber-500 transition-colors whitespace-nowrap shrink-0 font-bold text-amber-400">
             لوحة المتصدرين 🏆
@@ -75,8 +93,31 @@ export const Header: React.FC<HeaderProps> = ({
           </a>
         </nav>
 
-        {/* Zone 3: Actions (Theme Light/Dark Switcher + Garage + Play Now) */}
+        {/* Zone 3: Actions (Theme Light/Dark Switcher + Daily Challenges + Garage + Play Now) */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* زر التحدي اليومي والمكافآت */}
+          {onOpenDailyChallenges && (
+            <button
+              onClick={onOpenDailyChallenges}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer relative ${
+                dailySummary.unclaimedCount > 0
+                  ? 'bg-amber-500/25 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-500/20 animate-pulse'
+                  : isDark
+                  ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border-amber-500/30'
+                  : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300'
+              }`}
+              title="التحديات اليومية والمكافآت"
+            >
+              <Gift className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">التحدي اليومي</span>
+              {dailySummary.unclaimedCount > 0 ? (
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 animate-ping absolute -top-1 -right-1" />
+              ) : (
+                <span className="text-[10px] opacity-80 font-mono">({dailySummary.completed}/{dailySummary.total})</span>
+              )}
+            </button>
+          )}
+
           {/* زر تغيير إضاءة الصفحة (Dark / Light Mode Toggle) */}
           <button
             onClick={onToggleTheme}

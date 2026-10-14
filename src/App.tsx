@@ -13,6 +13,8 @@ import { AdSlot } from './components/AdSlot';
 import { GameArticle } from './components/GameArticle';
 import { Achievements } from './components/Achievements';
 import { Leaderboard } from './components/Leaderboard';
+import { DailyChallengesSection } from './components/DailyChallengesSection';
+import { DailyChallengesModal } from './components/DailyChallengesModal';
 import { Footer } from './components/Footer';
 import { loadPlayerStats } from './utils/storage';
 
@@ -26,12 +28,31 @@ export default function App() {
     return 'dark';
   });
   const [isGarageOpen, setIsGarageOpen] = useState(false);
+  const [isDailyChallengesOpen, setIsDailyChallengesOpen] = useState(false);
   const [selectedGarageCarId, setSelectedGarageCarId] = useState<string | undefined>(undefined);
   const [isPolicyOpen, setIsPolicyOpen] = useState(false);
   const [policyTab, setPolicyTab] = useState<PolicyTab>('privacy');
   const [coins, setCoins] = useState(() => {
     return loadPlayerStats().coins;
   });
+
+  // Listen for coins updates from daily challenges or garage
+  useEffect(() => {
+    const handleCoinsUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ coins: number }>;
+      if (customEvent.detail && typeof customEvent.detail.coins === 'number') {
+        setCoins(customEvent.detail.coins);
+      } else {
+        setCoins(loadPlayerStats().coins);
+      }
+    };
+    window.addEventListener('coins_updated', handleCoinsUpdate);
+    window.addEventListener('storage', handleCoinsUpdate);
+    return () => {
+      window.removeEventListener('coins_updated', handleCoinsUpdate);
+      window.removeEventListener('storage', handleCoinsUpdate);
+    };
+  }, []);
 
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
@@ -176,6 +197,7 @@ export default function App() {
       <Header
         onPlayClick={handlePlayNow}
         onOpenGarage={() => handleOpenGarage()}
+        onOpenDailyChallenges={() => setIsDailyChallengesOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
       />
@@ -236,6 +258,13 @@ export default function App() {
           />
         </section>
 
+        {/* قسم التحدي اليومي والمهام الخاصة والمكافآت */}
+        <DailyChallengesSection
+          theme={theme}
+          onPlayNow={handlePlayNow}
+          onCoinsChange={setCoins}
+        />
+
         {/* لوحة أفضل 5 متصدرين بناءً على مجموع النقاط في LocalStorage */}
         <Leaderboard theme={theme} onPlayNow={handlePlayNow} />
 
@@ -253,6 +282,13 @@ export default function App() {
         {/* مساحة إعلانية سفلية مهيأة لأدسنس */}
         <AdSlot slotId="bottom-banner" format="horizontal" />
       </main>
+
+      {/* نافذة التحديات اليومية والمكافآت */}
+      <DailyChallengesModal
+        isOpen={isDailyChallengesOpen}
+        onClose={() => setIsDailyChallengesOpen(false)}
+        onCoinsChange={setCoins}
+      />
 
       {/* نافذة المرآب والترقيات */}
       <GarageModal

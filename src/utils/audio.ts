@@ -874,6 +874,71 @@ class SoundEngine {
       });
     } catch {}
   }
+
+  /**
+   * Triumphant reward fanfare sound for Daily Challenge completion & Grand Chest
+   */
+  public playRewardFanfare() {
+    if (!this.sfxEnabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const ctx = this.ctx;
+
+      // Major triumphant arpeggio: C5, E5, G5, C6, G6
+      const notes = [523.25, 659.25, 783.99, 1046.5, 1567.98];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = idx === notes.length - 1 ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+
+        const dur = idx === notes.length - 1 ? 0.6 : 0.25;
+        gain.gain.setValueAtTime(0.14, now + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + dur);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + dur + 0.05);
+      });
+    } catch {}
+  }
+
+  /**
+   * Futuristic holographic chime when overtaking your Ghost Car record
+   */
+  public playGhostOvertake() {
+    if (!this.sfxEnabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const ctx = this.ctx;
+
+      // Holographic dual frequency rising chime (F6 to C7)
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1396.91, now);
+      osc.frequency.exponentialRampToValueAtTime(2093.0, now + 0.22);
+
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.36);
+    } catch {}
+  }
 }
 
 export const soundManager = new SoundEngine();
