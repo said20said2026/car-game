@@ -103,6 +103,37 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
           </div>
         </div>
 
+        {/* خريطة الفئات والكلمات المفتاحية لمحركات البحث وعشاق ألعاب السيارات */}
+        <div className={`p-4 rounded-xl border text-[11px] leading-relaxed space-y-3 ${
+          isDark
+            ? 'bg-slate-900/30 border-slate-800/60 text-slate-400'
+            : 'bg-slate-50 border-slate-200 text-slate-600'
+        }`}>
+          <div className="font-bold text-xs text-amber-500 font-game">
+            دليل أقسام ومصطلحات سباق سيارات المدينة:
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <span className="font-semibold block text-slate-300 mb-1">ألعاب سباق وسيارات حقيقية:</span>
+              <p className="opacity-80">
+                لعبة سباق سيارات المدينة السريعة للأبطال · لعبة سيارات سباق · لعبة سباق السيارات · لعبة عربيات سباق · لعبة السيارات · سباق سيارات لعبه سباق سيارات · سباق سيارات العاب · لعبة سباق سيارات · سباق سيارات لعبه · سيارات العاب سباق · سيارات سباق سيارات سباق سيارات سباق · سباق سيارات حقيقية · سباق سيارات ألعاب · سباق سيارات لعب · مسابقة سيارات حقيقية.
+              </p>
+            </div>
+            <div>
+              <span className="font-semibold block text-slate-300 mb-1">محاكاة الهواتف والأونلاين:</span>
+              <p className="opacity-80">
+                لعبة محاكي سيارات واقعية للاندرويد · لعبة محاكي السيارات للاندرويد · لعبة سباق سيارات apk · لعبة سيارات اون لاين · تنزيل لعبة سيارات · العاب سيارات تنزيل · العاب سيارات سيارات · سيارات سباق حقيقية · سيارات سباق حقيقي · سباق سيارات سباق سيارات · سباق سيارات سباق.
+              </p>
+            </div>
+            <div>
+              <span className="font-semibold block text-slate-300 mb-1">كلاسيكيات ومضامير وأسطول:</span>
+              <p className="opacity-80">
+                لعبة سابق ولاحق · لعبة حرب السيارات القديمة · لعبة حرب الديناميت · لعبة سيارات حربية · لعبة سباق الحروف · lane swerving game · سباق سيارات في الصحراء · 6 car games · لعبة ستة · العاب سيارات 4 · 500 car games.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Bottom Disclaimer */}
         <div className={`text-center sm:text-start text-[11px] border-t pt-4 leading-relaxed ${
           isDark ? 'border-slate-900 text-slate-600' : 'border-slate-100 text-slate-500'

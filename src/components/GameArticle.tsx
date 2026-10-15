@@ -19,6 +19,14 @@ import {
   Award,
   Sparkles,
   BookOpen,
+  Gamepad2,
+  History,
+  Compass,
+  Crosshair,
+  Tag,
+  Activity,
+  Layers,
+  Car,
 } from 'lucide-react';
 import { CARS_DATA } from '../utils/storage';
 
@@ -63,8 +71,20 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
       a: 'نعم تماماً، صُممت اللعبة لتكون بيئة ترفيهية عائلية آمنة 100% متوافقة مع إرشادات حماية الأطفال على الإنترنت (COPPA). لا تحتوي اللعبة على أي مشاهد عنف أو مؤثرات مؤذية، ولا تتضمن غرف دردشة عامة أو روابط خارجية غير آمنة، مما يجعلها خياراً ممتازاً وممتعاً للأطفال والناشئين.',
     },
     {
-      q: 'ماذا أفعل إذا لاحظت بطئاً أو تقطيعاً في الحركة (Frame Drop)؟',
-      a: 'تم تحسين كود اللعبة ليعمل بخفة متناهية. إذا شعرت ببطء مؤقت، تأكد من إغلاق النوافذ الثقيلة في المتصفح، وتحقق من تفعيل خيار تسريع الأجهزة (Hardware Acceleration) في إعدادات متصفحك، وتأكد من اتصالك بشبكة إنترنت مستقرة أثناء التحميل الأولي للعبة.',
+      q: 'هل تتوفر اللعبة بصيغة تطبيق APK أو محاكي سيارات واقعية للاندرويد؟',
+      a: 'بالتأكيد! إذا كنت تبحث عن لعبة محاكي سيارات واقعية للاندرويد أو لعبة سباق سيارات apk، فلن تحتاج إلى تنزيل لعبة سيارات أو البحث في مواقع خارجية؛ حيث تدعم اللعبة تقنية Progressive Web App (PWA) وتعمل بمثابة لعبة سيارات اون لاين ومحاكي قيادة حقيقي عالي الأداء يمكن تثبيته كأيقونة تطبيق سريعة بلمسة واحدة على شاشة هاتفك الأندرويد أو الآيفون.',
+    },
+    {
+      q: 'هل اللعبة مستوحاة من كلاسيكيات السباق مثل لعبة سابق ولاحق وألعاب حرب السيارات القديمة؟',
+      a: 'نعم! تستلهم اللعبة روح التحدي الكلاسيكي لجيل التسعينات والألفية، فإذا كنت تعشق لعبة سابق ولاحق وتطوير محركات سيارات السباق المصغرة، أو تبحث عن حماس لعبة حرب السيارات القديمة ولعبة حرب الديناميت ولعبة سيارات حربية في تفادي الاصطدامات الحركية، ستجد هنا إثارة متجددة تجمع بين تفادي الحارات (lane swerving game) وفيزياء المحاكاة ثلاثية الأبعاد.',
+    },
+    {
+      q: 'ما سر التركيز على أسطول الـ 6 سيارات بدلاً من مواقع ألعاب الـ 500 car games؟',
+      a: 'بدلاً من المواقع المزدحمة بآلاف الألعاب الضعيفة مثل مواقع 500 car games، ركّزنا في لعبة ستة سيارات خارقة (6 car games) على تقديم تجربة سباق سيارات حقيقية متقنة بعناية. تشمل فئات ألعاب سيارات 4 دفع رباعي وسيارات تيربو رياضية، مع فيزياء تماسك وانجراف مخصصة ونظام ترقية واقعي لكل مركبة.',
+    },
+    {
+      q: 'هل يحتوي المضمار على سباق سيارات في الصحراء؟',
+      a: 'نعم، يتضمن مسار السباق بيئة سباق سيارات في الصحراء الكبرى (Desert Storm Track) مع عواصف ترابية خفيفة وكثبان رملية وانزلاق ديناميكي للإطارات يختبر مهاراتك في مسابقة سيارات حقيقية لا ترحم.',
     },
   ];
 
@@ -73,13 +93,13 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
       {/* القسم الرئيسي المطلوب من المستخدم */}
       <section className="space-y-4">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          عن لعبة سباق السيارات للمحترفين الصغار والبالغين
+          لعبة سباق سيارات المدينة السريعة للأبطال - عالم من السرعة والإثارة
         </h2>
         <p className="text-base sm:text-lg opacity-90 leading-relaxed">
-          مرحباً بك في أقوى <strong>لعبة سيارات للأطفال والبالغين</strong> على الإنترنت! إذا كنت من عشاق السرعة ومحبي الإثارة الرياضية، فإن هذه اللعبة مصممة خصيصاً لك لتحدي مهاراتك القيادية وقدرتك على اتخاذ القرارات الخاطفة. تتيح لك اللعبة قيادة أسطول من السيارات الرياضية الخارقة في قلب شوارع المدينة السريعة، حيث تلتقي متعة ألعاب الأركيد الكلاسيكية مع فيزياء القيادة العصرية ثلاثية الأبعاد بدون أي تعقيدات تحميل.
+          مرحباً بك في أقوى <strong>لعبة سباق سيارات المدينة السريعة للأبطال</strong> وأفضل <strong>لعبة سيارات سباق</strong> مجانية على الإنترنت! إذا كنت تبحث عن <strong>لعبة سباق السيارات</strong> الشيقة أو متعة <strong>لعبة عربيات سباق</strong> حماسية تخطف الأنفاس، فإن هذه التجربة صُممت خصيصاً لتمنحك شعور سائق محترف في <strong>مسابقة سيارات حقيقية</strong>. تتيح لك <strong>لعبة السيارات</strong> التنافسية الانطلاق في شوارع تفاعلية بسرعة فائقة، والتفوق في أقوى <strong>سباق سيارات لعبه سباق سيارات</strong> تدمج بين أصالة ألعاب الأركيد وفيزياء القيادة العصرية.
         </p>
         <p className="text-sm sm:text-base opacity-85 leading-relaxed">
-          تتميز اللعبة بتقديم تجربة لعب فورية وسلسة مباشرة من المتصفح دون الحاجة إلى تثبيت أي برامج أو تطبيقات، مما يوفر مساحة جهازك ويمنحك فرصة الانطلاق في مضامير التحدي خلال أجزاء من الثانية. سواء كنت تستخدم جهاز كمبيوتر مكتبياً بلوحة مفاتيح سريعة أو هاتفاً ذكياً بشاشة لمسية، ستجد كل ما يلزم لتعيش تجربة سائق محترف ينافس على قمة لوحة الصدارة.
+          سواء كنت تبحث عبر محركات البحث عن <strong>سباق سيارات العاب</strong> أو <strong>لعبة سباق سيارات</strong> خفيفة وسريعة، أو كنت تفضل خوض <strong>سباق سيارات لعبه</strong> مليئة بالتحديات والمناورات بين حارات المرور، ستجد هنا أرقى بيئة تفاعلية. نحن نقدم لعشاق <strong>سيارات العاب سباق</strong> تجربة <strong>سيارات سباق سيارات سباق سيارات سباق</strong> متواصلة من خط البداية إلى منصة التتويج، مع محاكاة <strong>سباق سيارات حقيقية</strong> وتحدي <strong>سباق سيارات ألعاب</strong> متنوعة دون الحاجة لانتظار روابط <strong>العاب سيارات تنزيل</strong> أو البحث بين منصات <strong>العاب سيارات سيارات</strong> التقليدية؛ حيث تمكنك من الاستمتاع الفوري بأفضل <strong>سباق سيارات لعب</strong> مباشر من متصفحك.
         </p>
 
         {/* لقطة شاشة اللعبة بصيغة WebP مع نص بديل (Alt Tag) غني بالسيو */}
@@ -88,7 +108,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             <source srcSet="/assets/gameplay-preview.webp" type="image/webp" />
             <img
               src="/assets/gameplay-preview.jpg"
-              alt="لقطة حية من مضمار لعبة سباق سيارات المدينة السريعة للأبطال مع سيارات المرور وتأثيرات النيترو"
+              alt="لقطة حية من مضمار لعبة سباق سيارات المدينة السريعة للأبطال - سباق سيارات حقيقية مع سيارات المرور وتأثيرات النيترو"
               width={800}
               height={450}
               loading="lazy"
@@ -96,7 +116,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             />
           </picture>
           <figcaption className="text-center text-xs opacity-70 py-2.5 px-4 bg-slate-900/60 border-t border-slate-800/80">
-            مضمار سباق سيارات المدينة السريعة - رسومات تفاعلية متطورة ومؤثرات قيادة حقيقية على المتصفح
+            مضمار لعبة سباق سيارات المدينة السريعة للأبطال - رسومات تفاعلية متطورة وتجربة سيارات سباق حقيقية على المتصفح
           </figcaption>
         </figure>
       </section>
@@ -136,6 +156,38 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             </ul>
           </div>
         </div>
+      </section>
+
+      {/* قسم ذكريات ألعاب السباق الكلاسيكية إلى محاكاة تفادي الحارات */}
+      <section className="space-y-4 p-5 sm:p-7 rounded-2xl bg-gradient-to-br from-slate-900/60 to-slate-950 border border-slate-800/80">
+        <div className="flex items-center gap-2.5 text-amber-400">
+          <History className="w-6 h-6 shrink-0" />
+          <h2 className="text-xl sm:text-2xl font-black font-game text-white tracking-tight">
+            من كلاسيكيات الزمن الجميل إلى المحاكاة العصرية (Heritage & Arcade Roots)
+          </h2>
+        </div>
+        <p className="opacity-90 text-sm sm:text-base leading-relaxed text-slate-300">
+          تستحضر لعبتنا شغف الطفولة والذكريات الذهبية لجيل كامل نشأ على روائع الألعاب؛ فإذا كنت من جيل ارتبطت طفولته بسباقات <strong>لعبة سابق ولاحق</strong> الشهيرة وما فيها من إثارة تعديل التروس وتيربو المحركات الصاروخية، أو كنت تبحث عن الأدرينالين الخالص الذي طالما قدمته <strong>لعبة حرب السيارات القديمة</strong> الأسطورية، وتحديات الصمود وتفجير الحواجز كما في <strong>لعبة حرب الديناميت</strong> وتكتيكات <strong>لعبة سيارات حربية</strong> الشرسة، فإن هذه اللعبة صُممت لتلبي كل هذا الشغف في قالب أركيد متجدد.
+        </p>
+        <p className="opacity-90 text-sm sm:text-base leading-relaxed text-slate-300">
+          تعتمد اللعبة على ميكانيكية تفادي الحارات السريعة المعترف بها عالمياً باسم <strong>lane swerving game</strong>، والتي تتطلب دقة متناهية وسرعة رد فعل بديهية تضاهي سرعة البديهة في <strong>لعبة سباق الحروف</strong> الذهنية. هنا لا يوجد وقت للتردد؛ كل حركة للمقود محسوبة وكل مناورة بين حافلات وشاحنات الطريق هي رهان على البقاء وتصدر القمة.
+        </p>
+      </section>
+
+      {/* قسم محاكي السيارات للاندرويد والويب دون تنزيل */}
+      <section className="space-y-4 p-5 sm:p-7 rounded-2xl bg-gradient-to-br from-sky-950/30 via-slate-900/50 to-slate-950 border border-sky-800/40">
+        <div className="flex items-center gap-2.5 text-sky-400">
+          <Smartphone className="w-6 h-6 shrink-0" />
+          <h2 className="text-xl sm:text-2xl font-black font-game text-white tracking-tight">
+            أقوى لعبة محاكي سيارات واقعية للاندرويد والكمبيوتر أونلاين
+          </h2>
+        </div>
+        <p className="opacity-90 text-sm sm:text-base leading-relaxed text-slate-300">
+          بدلاً من إضاعة الوقت في البحث عن روابط <strong>العاب سيارات تنزيل</strong> مشبوهة أو الانتظار الطويل لتثبيت ملفات <strong>تنزيل لعبة سيارات</strong> ضخمة تستهلك ذاكرة هاتفك، أو البحث عن <strong>لعبة سباق سيارات apk</strong> غير آمنة، نوفر لك هنا أقوى <strong>لعبة محاكي سيارات واقعية للاندرويد</strong> وأفضل <strong>لعبة محاكي السيارات للاندرويد</strong> والآيفون مباشرة على المتصفح عبر أحدث تقنيات HTML5 WebGL الفائقة.
+        </p>
+        <p className="opacity-85 text-xs sm:text-sm leading-relaxed text-slate-400">
+          تعد هذه المنصة بمثابة <strong>لعبة سيارات اون لاين</strong> متكاملة تقدم أداء 60 إطاراً في الثانية دون تقطيع، مع فيزياء تماسك حقيقية لسيارات الدفع الخلفي والرباعي تجعلك تقود <strong>سيارات سباق حقيقية</strong> و<strong>سيارات سباق حقيقي</strong> وتخوض <strong>سباق سيارات سباق سيارات</strong> لا نهائي مع ميزة حفظ السجلات والأرقام القياسية محلياً، لخوض أروع <strong>سباق سيارات سباق</strong> في أي وقت ومن أي جهاز.
+        </p>
       </section>
 
       {/* مميزات اللعبة التي تجعلها فريدة */}
@@ -282,6 +334,16 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
               سماء برتقالية هادئة وظلال ممتدة على الإسفلت، مع سرعات حركة مرور أعلى تتطلب سرعة بديهة لتفادي الشاحنات السريعة.
             </p>
           </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-900/40 border border-amber-500/40 bg-gradient-to-br from-amber-950/20 to-slate-900/60 space-y-1.5">
+            <div className="flex items-center gap-2 text-amber-400">
+              <Compass className="w-4 h-4" />
+              <h3 className="text-sm font-bold text-white font-game">سباق سيارات في الصحراء</h3>
+            </div>
+            <p className="text-xs opacity-80 leading-relaxed">
+              كثبان رملية ممتدة ورياح صحراوية تتحدى ثبات الإطارات، لتمنحك أروع تجربة <strong>سباق سيارات في الصحراء</strong> مع إحساس <strong>مسابقة سيارات حقيقية</strong> بين الكثبان.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -290,10 +352,10 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-              أسطول سيارات السباق الخارقة ودليل التطوير في المرآب
+              أسطول الـ 6 سيارات الخارقة: ألعاب سيارات 4 ودليل ترقيات المرآب
             </h2>
             <p className="text-xs sm:text-sm opacity-80 mt-1">
-              اختر أي سيارة لتجربتها وتطوير محركاتها داخل المرآب مباشرة لرفع كفاءتها في المضمار
+              بدلاً من التشتت في مواقع تحتوي على <strong>500 car games</strong> تقليدية مكررة، اخترنا لك تجربة <strong>6 car games</strong> استثنائية ضمن <strong>لعبة ستة</strong> مركبات رياضية وأسطول <strong>العاب سيارات 4</strong> دفع عالي الأداء لتطويرها في المرآب.
             </p>
           </div>
 
@@ -485,6 +547,134 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
               )}
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* دليل الكلمات المفتاحية وأقسام ألعاب السيارات لمحركات البحث وزوار الموقع */}
+      <section className="space-y-5 pt-4 border-t border-slate-800/80">
+        <div className="flex items-center gap-2 text-amber-400">
+          <Tag className="w-5 h-5 shrink-0" />
+          <h2 className="text-xl sm:text-2xl font-black font-game text-white tracking-tight">
+            دليل وتصنيفات سباق سيارات المدينة السريعة (SEO Racing Hub)
+          </h2>
+        </div>
+        <p className="text-xs sm:text-sm opacity-85 leading-relaxed text-slate-300">
+          استكشف أشهر الموضوعات ومصطلحات البحث الشائعة التي يبحث عنها عشاق ألعاب السيارات في العالم العربي، والمدرجة بالكامل في محرك لعبتنا لتوفير أفضل تجربة لعب مجانية:
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          {/* تصنيف 1: ألقاب وبطولات السباق */}
+          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2.5">
+            <h3 className="font-bold text-amber-400 font-game flex items-center gap-1.5">
+              <Trophy className="w-4 h-4" />
+              <span>بطولات وألقاب سباق السيارات</span>
+            </h3>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                'لعبة سباق سيارات المدينة السريعة للأبطال',
+                'لعبة سيارات سباق',
+                'لعبة سباق السيارات',
+                'لعبة عربيات سباق',
+                'لعبة السيارات',
+                'سباق سيارات لعبه سباق سيارات',
+                'سباق سيارات العاب',
+                'لعبة سباق سيارات',
+                'سباق سيارات لعبه',
+                'سيارات العاب سباق',
+                'سيارات سباق سيارات سباق سيارات سباق',
+                'سباق سيارات حقيقية',
+                'سباق سيارات ألعاب',
+                'سباق سيارات لعب',
+                'مسابقة سيارات حقيقية',
+                'سباق سيارات سباق سيارات',
+                'سباق سيارات سباق',
+              ].map((term, i) => (
+                <span
+                  key={i}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-200 border border-slate-700/60 hover:border-amber-400/50 hover:text-amber-300 transition-colors"
+                >
+                  {term}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* تصنيف 2: محاكي الاندرويد والأونلاين */}
+          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2.5">
+            <h3 className="font-bold text-sky-400 font-game flex items-center gap-1.5">
+              <Smartphone className="w-4 h-4" />
+              <span>محاكاة الهواتف والاندرويد أونلاين</span>
+            </h3>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                'لعبة محاكي سيارات واقعية للاندرويد',
+                'لعبة محاكي السيارات للاندرويد',
+                'لعبة سباق سيارات apk',
+                'لعبة سيارات اون لاين',
+                'تنزيل لعبة سيارات',
+                'العاب سيارات تنزيل',
+                'العاب سيارات سيارات',
+                'سيارات سباق حقيقية',
+                'سيارات سباق حقيقي',
+              ].map((term, i) => (
+                <span
+                  key={i}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-200 border border-slate-700/60 hover:border-sky-400/50 hover:text-sky-300 transition-colors"
+                >
+                  {term}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* تصنيف 3: كلاسيكيات وألعاب حربية */}
+          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2.5">
+            <h3 className="font-bold text-emerald-400 font-game flex items-center gap-1.5">
+              <History className="w-4 h-4" />
+              <span>كلاسيكيات الزمن الجميل وألعاب الأكشن</span>
+            </h3>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                'لعبة سابق ولاحق',
+                'لعبة حرب السيارات القديمة',
+                'لعبة حرب الديناميت',
+                'لعبة سيارات حربية',
+                'لعبة سباق الحروف',
+                'lane swerving game',
+              ].map((term, i) => (
+                <span
+                  key={i}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-200 border border-slate-700/60 hover:border-emerald-400/50 hover:text-emerald-300 transition-colors"
+                >
+                  {term}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* تصنيف 4: الأسطول والمضامير والصحراء */}
+          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2.5">
+            <h3 className="font-bold text-orange-400 font-game flex items-center gap-1.5">
+              <Car className="w-4 h-4" />
+              <span>الأسطول ومضمار الصحراء</span>
+            </h3>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                '6 car games',
+                'لعبة ستة',
+                'العاب سيارات 4',
+                '500 car games',
+                'سباق سيارات في الصحراء',
+              ].map((term, i) => (
+                <span
+                  key={i}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-200 border border-slate-700/60 hover:border-orange-400/50 hover:text-orange-300 transition-colors"
+                >
+                  {term}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
     </article>

@@ -69,8 +69,8 @@ export default function App() {
 
   // Support direct path and hash navigation for pages (e.g. /privacy, /terms, /contact, /about, /cars, /instructions)
   useEffect(() => {
-    const defaultTitle = 'لعبة سباق سيارات المدينة السريعة - ألعاب سيارات للأطفال والبالغين';
-    const defaultDescription = 'العب لعبة سباق سيارات المدينة السريعة مجاناً على المتصفح. ألعاب سيارات للأطفال والبالغين، تفادَ العقبات وطور سيارتك. متوافقة مع الموبايل والكمبيوتر.';
+    const defaultTitle = 'لعبة سباق سيارات المدينة السريعة للأبطال - سباق سيارات حقيقية';
+    const defaultDescription = 'العب لعبة سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. أقوى لعبة سيارات سباق ومحاكي قيادة واقعية للاندرويد بدون تنزيل. تفادَ الحوادث واكسر الأرقام القياسية.';
     const siteUrl = 'https://www.games-children.com';
 
     const updateMetaDescription = (desc: string) => {
