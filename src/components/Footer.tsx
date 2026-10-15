@@ -103,32 +103,32 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
           </div>
         </div>
 
-        {/* خريطة الفئات والموضوعات لمحركات البحث وعشاق ألعاب السيارات */}
+        {/* خريطة الفئات والموضوعات لمحركات البحث وعشاق ألعاب القيادة والسباق */}
         <div className={`p-4 rounded-xl border text-[11px] leading-relaxed space-y-3 ${
           isDark
             ? 'bg-slate-900/30 border-slate-800/60 text-slate-400'
             : 'bg-slate-50 border-slate-200 text-slate-600'
         }`}>
           <div className="font-bold text-xs text-amber-500 font-game">
-            دليل أقسام وموضوعات سباق سيارات المدينة:
+            دليل أقسام وموضوعات سباق المدينة السريع:
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <span className="font-semibold block text-slate-300 mb-1">ألعاب السباق والمنافسات:</span>
               <p className="opacity-80">
-                لعبة سباق سيارات المدينة السريعة للأبطال · لعبة سباق السيارات · لعبة عربيات سباق · مسابقة سيارات حقيقية · سباقات الأركيد وتفادي الحوادث · لوحة المتصدرين والتحديات اليومية.
+                لعبة سباق سيارات المدينة السريعة للأبطال · لعبة عربيات سباق · مسابقة قيادة احترافية · سباقات الأركيد وتفادي الحوادث · لوحة المتصدرين والتحديات اليومية.
               </p>
             </div>
             <div>
               <span className="font-semibold block text-slate-300 mb-1">محاكاة الهواتف والأونلاين:</span>
               <p className="opacity-80">
-                لعبة محاكي سيارات واقعية للاندرويد · لعبة سباق سيارات apk للمتصفح · لعبة سيارات اون لاين · ألعاب سيارات سريعة بدون تحميل · محاكاة القيادة بدقة 60 FPS.
+                محاكي قيادة واقعي للأندرويد · لعبة سباق apk للمتصفح · منافسات أونلاين سريعة بدون تحميل · تجربة ويب خفيفة بدقة 60 FPS.
               </p>
             </div>
             <div>
               <span className="font-semibold block text-slate-300 mb-1">كلاسيكيات ومضامير التحدي:</span>
               <p className="opacity-80">
-                لعبة سابق ولاحق · لعبة حرب السيارات القديمة · لعبة حرب الديناميت ولعبة سيارات حربية · تفادي الحارات lane swerving game · سباق سيارات في الصحراء · أسطول 6 car games.
+                ذكريات سابق ولاحق · لعبة حرب الديناميت والصدام التكتيكي · تفادي الحارات lane swerving game · مضمار رمال الصحراء · مرآب وتعديل أسطول 6 car games.
               </p>
             </div>
           </div>
