@@ -116,19 +116,19 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
             <div>
               <span className="font-semibold block text-slate-300 mb-1">ألعاب السباق والمنافسات:</span>
               <p className="opacity-80">
-                لعبة سباق سيارات المدينة السريعة للأبطال · لعبة عربيات سباق · مسابقة قيادة احترافية · سباقات الأركيد وتفادي الحوادث · لوحة المتصدرين والتحديات اليومية.
+                ألعاب سباق سيارات المدينة السريعة للأبطال · لعبة عربيات سباق · مسابقة قيادة احترافية · ألعاب الأركيد وتفادي الحوادث · لوحة المتصدرين والتحديات اليومية.
               </p>
             </div>
             <div>
-              <span className="font-semibold block text-slate-300 mb-1">محاكاة الهواتف والأونلاين:</span>
+              <span className="font-semibold block text-slate-300 mb-1">محاكاة الهواتف وألعاب الأونلاين:</span>
               <p className="opacity-80">
-                محاكي قيادة واقعي للأندرويد · لعبة سباق apk للمتصفح · منافسات أونلاين سريعة بدون تحميل · تجربة ويب خفيفة بدقة 60 FPS.
+                محاكي قيادة واقعي للأندرويد · ألعاب سباق apk للمتصفح · ألعاب أونلاين سريعة بدون تحميل · تجربة ويب خفيفة بدقة 60 FPS.
               </p>
             </div>
             <div>
-              <span className="font-semibold block text-slate-300 mb-1">كلاسيكيات ومضامير التحدي:</span>
+              <span className="font-semibold block text-slate-300 mb-1">كلاسيكيات ومضامير ألعاب التحدي:</span>
               <p className="opacity-80">
-                ذكريات سابق ولاحق · لعبة حرب الديناميت والصدام التكتيكي · تفادي الحارات lane swerving game · مضمار رمال الصحراء · مرآب وتعديل أسطول 6 car games.
+                ذكريات سابق ولاحق · ألعاب حرب الديناميت والصدام التكتيكي · تفادي الحارات lane swerving game · مضمار رمال الصحراء · مرآب وتعديل أسطول 6 car games.
               </p>
             </div>
           </div>

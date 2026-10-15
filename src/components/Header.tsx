@@ -59,8 +59,8 @@ export const Header: React.FC<HeaderProps> = ({
             className="w-9 h-9 rounded-lg object-contain shadow-xs border border-amber-500/20"
             loading="eager"
           />
-          <span className="text-amber-500">سباق</span>
-          <span>سيارات المدينة</span>
+          <span className="text-amber-500">ألعاب</span>
+          <span>سباق سيارات المدينة</span>
         </a>
 
         {/* Zone 2: Nav links */}

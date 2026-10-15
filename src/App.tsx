@@ -69,8 +69,8 @@ export default function App() {
 
   // Support direct path and hash navigation for pages (e.g. /privacy, /terms, /contact, /about, /cars, /instructions)
   useEffect(() => {
-    const defaultTitle = 'لعبة سباق سيارات المدينة السريعة للأبطال - أقوى ألعاب السباق والمحاكاة';
-    const defaultDescription = 'العب لعبة سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة رائدة بين أمتع ألعاب السباق ومحاكاة القيادة للأندرويد والكمبيوتر بدون تنزيل. تفادَ الحوادث واكسر الأرقام القياسية.';
+    const defaultTitle = 'ألعاب سباق سيارات المدينة السريعة للأبطال - أقوى ألعاب السباق والمحاكاة';
+    const defaultDescription = 'استمتع بأقوى ألعاب سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة استثنائية بين أفضل ألعاب السباق ومحاكاة القيادة للأندرويد والكمبيوتر بدون تنزيل. تفادَ الحوادث واكسر الأرقام القياسية.';
     const siteUrl = 'https://www.games-children.com';
 
     const updateMetaDescription = (desc: string) => {
@@ -170,10 +170,10 @@ export default function App() {
     try {
       window.history.pushState({}, '', '/');
     } catch {}
-    document.title = 'لعبة سباق سيارات المدينة السريعة للأبطال - أقوى ألعاب السباق والمحاكاة';
+    document.title = 'ألعاب سباق سيارات المدينة السريعة للأبطال - أقوى ألعاب السباق والمحاكاة';
     const metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
     if (metaDesc) {
-      metaDesc.content = 'العب لعبة سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة رائدة بين أمتع ألعاب السباق ومحاكاة القيادة للأندرويد والكمبيوتر بدون تنزيل. تفادَ الحوادث واكسر الأرقام القياسية.';
+      metaDesc.content = 'استمتع بأقوى ألعاب سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة استثنائية بين أفضل ألعاب السباق ومحاكاة القيادة للأندرويد والكمبيوتر بدون تنزيل. تفادَ الحوادث واكسر الأرقام القياسية.';
     }
     const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (canonical) canonical.href = 'https://www.games-children.com';
@@ -212,11 +212,11 @@ export default function App() {
           </div>
 
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black font-game tracking-tight leading-tight">
-            لعبة سباق سيارات المدينة السريعة للأبطال
+            ألعاب سباق سيارات المدينة السريعة للأبطال
           </h1>
 
           <p className="text-sm sm:text-base opacity-85 max-w-2xl leading-relaxed">
-            العب لعبة سباق سيارات المدينة السريعة للأبطال مجاناً على المتصفح. تجربة رائدة بين أمتع ألعاب السباق والقيادة للأطفال والبالغين، تفادَ العقبات وطور مركبتك في المرآب.
+            استمتع بأقوى <strong>ألعاب</strong> سباق سيارات المدينة السريعة للأبطال مجاناً على المتصفح. تجربة استثنائية بين أفضل ألعاب السباق ومحاكاة القيادة للأطفال والبالغين، تفادَ الحوادث وطور مركبتك في المرآب.
           </p>
 
           <div className="pt-1 flex items-center gap-3 flex-wrap">

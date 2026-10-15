@@ -93,13 +93,13 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
       {/* القسم الرئيسي المطلوب من المستخدم */}
       <section className="space-y-4">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          لعبة سباق سيارات المدينة السريعة للأبطال - متعة رائدة بين أقوى ألعاب السرعة
+          ألعاب سباق سيارات المدينة السريعة للأبطال - متعة رائدة وتحديات سرعة لا تنتهي
         </h2>
         <p className="text-base sm:text-lg opacity-90 leading-relaxed">
-          مرحباً بك في <strong>لعبة سباق سيارات المدينة السريعة للأبطال</strong>، إحدى أميز <strong>ألعاب</strong> السباق والقيادة التفاعلية الأكثر إثارة على الإنترنت! إذا كنت تبحث عن متعة <strong>لعبة عربيات سباق</strong> حماسية تخطف الأنفاس، فإن هذه التجربة صُممت لتمنحك شعور سائق محترف يخوض <strong>مسابقة قيادة حقيقية</strong> وسط شوارع المدينة التفاعلية.
+          مرحباً بك في عالم <strong>ألعاب</strong> سباق سيارات المدينة السريعة للأبطال، إحدى أمتع <strong>ألعاب</strong> السباق والقيادة التفاعلية الأكثر إثارة على الإنترنت! إذا كنت تبحث عن التميز بين ألعاب عربيات سباق وسرعة تخطف الأنفاس، فإن هذه التجربة صُممت لتمنحك شعور سائق محترف يخوض <strong>مسابقة قيادة حقيقية</strong> وسط شوارع المدينة التفاعلية.
         </p>
         <p className="text-sm sm:text-base opacity-85 leading-relaxed">
-          تجمع اللعبة بين أصالة ألعاب الأركيد الكلاسيكية وفيزياء القيادة العصرية ثلاثية الأبعاد، حيث تتيح لك المناورة وتفادي الازدحام المروري واستخدام غاز النيترو لتحطيم الأرقام القياسية وجمع العملات الذهبية لتطوير مركبتك في المرآب، كل ذلك مباشرة عبر المتصفح على الهاتف والكمبيوتر دون الحاجة إلى انتظار روابط التحميل.
+          تتصدر هذه المنصة قائمة <strong>ألعاب</strong> الأركيد العصرية بفضل فيزياء القيادة ثلاثية الأبعاد الدقيقة، حيث تتيح لك المناورة وتفادي الازدحام المروري واستخدام غاز النيترو لتحطيم الأرقام القياسية وجمع العملات لتطوير مركبتك في المرآب، كل ذلك مباشرة عبر المتصفح على الهاتف والكمبيوتر دون الحاجة إلى انتظار روابط التحميل.
         </p>
 
         {/* لقطة شاشة اللعبة بصيغة WebP مع نص بديل (Alt Tag) غني بالسيو */}
@@ -124,7 +124,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
       {/* تفاصيل التحكم وطريقة اللعب */}
       <section id="instructions" className="scroll-mt-24 space-y-4 p-5 sm:p-7 rounded-2xl bg-slate-900/40 border border-slate-800/80">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          كيفية اللعب وإرشادات التحكم (Gameplay Instructions)
+          كيفية اللعب وقواعد ألعاب السرعة وتفادي الحارات
         </h2>
         <p className="opacity-90 text-sm sm:text-base leading-relaxed">
           تم تصميم نظام التحكم ليكون بديهياً وسهل الإتقان للمبتدئين، مع احتوائه على عمق تكتيكي يحتاجه المحترفون لتحطيم الأرقام القياسية:
@@ -193,7 +193,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
       {/* مميزات اللعبة التي تجعلها فريدة */}
       <section className="space-y-4">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          مميزات اللعبة التي تجعلها تجربة أركيد استثنائية:
+          مميزات تجعلها في صدارة ألعاب الأركيد والسرعة:
         </h2>
         <p className="opacity-90 text-sm sm:text-base leading-relaxed">
           تجمع اللعبة بين الأداء التقني الفائق والرسوميات الجذابة لتقديم تجربة قيادة استثنائية لا مثيل لها على شبكة الويب:
@@ -236,7 +236,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
       {/* استراتيجيات القيادة المتقدمة وأسرار النقاط العالية */}
       <section id="tips" className="scroll-mt-24 space-y-4">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          أسرار وتكتيكات القيادة للمحترفين لتحقيق أعلى النقاط
+          أسرار وتكتيكات ألعاب القيادة الاحترافية لتحقيق أعلى النقاط
         </h2>
         <p className="opacity-90 text-sm sm:text-base leading-relaxed">
           الوصول إلى صدارة قائمة الأبطال ليس مجرد ضغط مستمر على دواسة الوقود، بل يتطلب استراتيجية محكمة وذكاءً حركياً في التعامل مع مسار السباق:
@@ -521,7 +521,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
       {/* الأسئلة الشائعة (FAQ Accordion) */}
       <section id="faq" className="scroll-mt-24 space-y-4 pt-2">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          الأسئلة الشائعة حول اللعبة والمضامير (FAQ)
+          الأسئلة الشائعة حول اللعبة وعالم ألعاب السباق (FAQ)
         </h2>
         <div className="space-y-2.5">
           {faqs.map((faq, idx) => (
