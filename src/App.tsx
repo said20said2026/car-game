@@ -69,8 +69,8 @@ export default function App() {
 
   // Support direct path and hash navigation for pages (e.g. /privacy, /terms, /contact, /about, /cars, /instructions)
   useEffect(() => {
-    const defaultTitle = 'لعبة سباق سيارات المدينة السريعة للأبطال - محاكاة قيادة حقيقية';
-    const defaultDescription = 'العب لعبة سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. أقوى محاكي قيادة وأكشن أركيد للأندرويد والكمبيوتر بدون تنزيل. تفادَ الحوادث واكسر الأرقام القياسية.';
+    const defaultTitle = 'لعبة سباق سيارات المدينة السريعة للأبطال - أقوى ألعاب السباق والمحاكاة';
+    const defaultDescription = 'العب لعبة سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة رائدة بين أمتع ألعاب السباق ومحاكاة القيادة للأندرويد والكمبيوتر بدون تنزيل. تفادَ الحوادث واكسر الأرقام القياسية.';
     const siteUrl = 'https://www.games-children.com';
 
     const updateMetaDescription = (desc: string) => {
@@ -170,10 +170,10 @@ export default function App() {
     try {
       window.history.pushState({}, '', '/');
     } catch {}
-    document.title = 'لعبة سباق سيارات المدينة السريعة - ألعاب سيارات للأطفال والبالغين';
+    document.title = 'لعبة سباق سيارات المدينة السريعة للأبطال - أقوى ألعاب السباق والمحاكاة';
     const metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
     if (metaDesc) {
-      metaDesc.content = 'العب لعبة سباق سيارات المدينة السريعة مجاناً على المتصفح. ألعاب سيارات للأطفال والبالغين، تفادَ العقبات وطور سيارتك. متوافقة مع الموبايل والكمبيوتر.';
+      metaDesc.content = 'العب لعبة سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة رائدة بين أمتع ألعاب السباق ومحاكاة القيادة للأندرويد والكمبيوتر بدون تنزيل. تفادَ الحوادث واكسر الأرقام القياسية.';
     }
     const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (canonical) canonical.href = 'https://www.games-children.com';
@@ -206,7 +206,7 @@ export default function App() {
         {/* عنوان الصفحة الرئيسي (سيو) - بالضبط كما في متطلبات المستخدم */}
         <div className="text-center sm:text-start space-y-3">
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-amber-500">
-            <span>العاب سيارات مجانية على المتصفح</span>
+            <span>أفضل ألعاب السباق المجانية على المتصفح</span>
             <span>·</span>
             <span>بدون تحميل</span>
           </div>
@@ -216,7 +216,7 @@ export default function App() {
           </h1>
 
           <p className="text-sm sm:text-base opacity-85 max-w-2xl leading-relaxed">
-            العب لعبة سباق سيارات المدينة السريعة مجاناً على المتصفح. ألعاب سيارات للأطفال والبالغين، تفادَ العقبات وطور سيارتك. متوافقة مع الموبايل والكمبيوتر.
+            العب لعبة سباق سيارات المدينة السريعة للأبطال مجاناً على المتصفح. تجربة رائدة بين أمتع ألعاب السباق والقيادة للأطفال والبالغين، تفادَ العقبات وطور مركبتك في المرآب.
           </p>
 
           <div className="pt-1 flex items-center gap-3 flex-wrap">
