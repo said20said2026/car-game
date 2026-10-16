@@ -69,8 +69,8 @@ export default function App() {
 
   // Support direct path and hash navigation for pages (e.g. /privacy, /terms, /contact, /about, /cars, /instructions)
   useEffect(() => {
-    const defaultTitle = 'ألعاب سباق سيارات المدينة السريعة للأبطال - أقوى ألعاب السباق والمحاكاة';
-    const defaultDescription = 'استمتع بأقوى ألعاب سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة استثنائية بين أفضل ألعاب السباق ومحاكاة القيادة للأندرويد والكمبيوتر بدون تنزيل. تفادَ الحوادث واكسر الأرقام القياسية.';
+    const defaultTitle = 'ألعاب سباق سيارات المدينة السريعة للأبطال - تحدي السرعة';
+    const defaultDescription = 'العب أقوى ألعاب سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة قيادة ومحاكاة واقعية بدون تحميل، تفادَ الحوادث واكسر أعلى الأرقام القياسية الآن.';
     const siteUrl = 'https://www.games-children.com';
 
     const updateMetaDescription = (desc: string) => {
@@ -170,10 +170,10 @@ export default function App() {
     try {
       window.history.pushState({}, '', '/');
     } catch {}
-    document.title = 'ألعاب سباق سيارات المدينة السريعة للأبطال - أقوى ألعاب السباق والمحاكاة';
+    document.title = 'ألعاب سباق سيارات المدينة السريعة للأبطال - تحدي السرعة';
     const metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
     if (metaDesc) {
-      metaDesc.content = 'استمتع بأقوى ألعاب سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة استثنائية بين أفضل ألعاب السباق ومحاكاة القيادة للأندرويد والكمبيوتر بدون تنزيل. تفادَ الحوادث واكسر الأرقام القياسية.';
+      metaDesc.content = 'العب أقوى ألعاب سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة قيادة ومحاكاة واقعية بدون تحميل، تفادَ الحوادث واكسر أعلى الأرقام القياسية الآن.';
     }
     const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (canonical) canonical.href = 'https://www.games-children.com';
@@ -216,7 +216,7 @@ export default function App() {
           </h1>
 
           <p className="text-sm sm:text-base opacity-85 max-w-2xl leading-relaxed">
-            استمتع بأقوى <strong>ألعاب</strong> سباق سيارات المدينة السريعة للأبطال مجاناً على المتصفح. تجربة استثنائية بين أفضل ألعاب السباق ومحاكاة القيادة للأطفال والبالغين، تفادَ الحوادث وطور مركبتك في المرآب.
+            العب أقوى ألعاب سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة قيادة ومحاكاة واقعية بدون تحميل، تفادَ الحوادث واكسر أعلى الأرقام القياسية الآن.
           </p>
 
           <div className="pt-1 flex items-center gap-3 flex-wrap">

@@ -939,6 +939,64 @@ class SoundEngine {
       osc.stop(now + 0.36);
     } catch {}
   }
+
+  /**
+   * Triumphant golden fanfare when an achievement is unlocked
+   */
+  public playAchievementUnlock() {
+    if (!this.sfxEnabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const ctx = this.ctx;
+      // High triumphant golden chime: F5, A5, C6, F6
+      const notes = [698.46, 880.00, 1046.50, 1396.91];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = idx === notes.length - 1 ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+        const dur = idx === notes.length - 1 ? 0.65 : 0.28;
+        gain.gain.setValueAtTime(0.18, now + idx * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.07);
+        osc.stop(now + idx * 0.07 + dur + 0.05);
+      });
+    } catch {}
+  }
+
+  /**
+   * Electric high-energy fanfare when breaking an all-time high score record
+   */
+  public playRecordBreakFanfare() {
+    if (!this.sfxEnabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const ctx = this.ctx;
+      // Rising fanfare with trumpet-like harmonics: C5, G5, C6, E6, G6
+      const notes = [523.25, 783.99, 1046.50, 1318.51, 1567.98];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+        const dur = idx === notes.length - 1 ? 0.8 : 0.3;
+        gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + dur + 0.05);
+      });
+    } catch {}
+  }
 }
 
 export const soundManager = new SoundEngine();

@@ -41,6 +41,9 @@ export interface PlayerStats {
   unlockedCars: string[];
   carDirt?: Record<string, number>;
   ghostCarEnabled?: boolean;
+  totalOvertakes?: number; // Total cars safely overtaken across all races
+  unlockedAchievements?: string[]; // IDs of unlocked achievements
+  claimedAchievements?: string[]; // IDs of claimed rewards
 }
 
 export interface TrafficVehicle {
@@ -53,6 +56,7 @@ export interface TrafficVehicle {
   color: string;
   targetX: number;
   laneChangeTimer: number;
+  overtaken?: boolean; // Safe pass/overtake flag
 }
 
 export interface RoadCollectible {

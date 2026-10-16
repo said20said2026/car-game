@@ -112,6 +112,9 @@ export function loadPlayerStats(): PlayerStats {
           red_rocket: 0,
         },
         ghostCarEnabled: parsed.ghostCarEnabled ?? true,
+        totalOvertakes: parsed.totalOvertakes ?? 0,
+        unlockedAchievements: parsed.unlockedAchievements ?? [],
+        claimedAchievements: parsed.claimedAchievements ?? [],
       };
     }
   } catch {}
@@ -136,12 +139,18 @@ export function loadPlayerStats(): PlayerStats {
       red_rocket: 0,
     },
     ghostCarEnabled: true,
+    totalOvertakes: 0,
+    unlockedAchievements: [],
+    claimedAchievements: [],
   };
 }
 
 export function savePlayerStats(stats: PlayerStats) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('player_stats_changed', { detail: stats }));
+    }
   } catch {}
 }
 

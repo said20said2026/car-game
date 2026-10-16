@@ -67,6 +67,8 @@ import {
 } from '../utils/ghostCar';
 import { DailyChallengesModal } from './DailyChallengesModal';
 import { soundManager, engineAudio } from '../utils/audio';
+import { AchievementToast } from './AchievementToast';
+import { dispatchGameToast, checkAndUnlockAchievements } from '../utils/achievements';
 
 export interface RacingGameHandle {
   startGame: () => void;
@@ -252,6 +254,13 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const [highScore, setHighScore] = useState<number>(0);
   const [selectedCarId, setSelectedCarId] = useState<string>('red_rocket');
   const [carHealth, setCarHealth] = useState<number>(100);
+
+  // Dynamic Achievements, Overtakes & Record Breaking Tracking
+  const [raceOvertakes, setRaceOvertakes] = useState<number>(0);
+  const raceOvertakesRef = useRef<number>(0);
+  const highScoreBreakTriggeredRef = useRef<boolean>(false);
+  const overtakeMilestonesTriggeredRef = useRef<Set<number>>(new Set());
+  const initialHighScoreRef = useRef<number>(0);
 
   // Ghost Car System State & Telemetry Refs
   const [ghostEnabled, setGhostEnabled] = useState<boolean>(() => isGhostCarEnabled());
@@ -663,6 +672,14 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     warpLinesRef.current = [];
     roadCurveRef.current = { current: 0, target: 0, timer: 0 };
 
+    // Reset Dynamic Achievements & Overtaking counters for this run
+    const currentStoredStats = loadPlayerStats();
+    initialHighScoreRef.current = currentStoredStats.highScore || 0;
+    raceOvertakesRef.current = 0;
+    setRaceOvertakes(0);
+    highScoreBreakTriggeredRef.current = false;
+    overtakeMilestonesTriggeredRef.current.clear();
+
     // Initial traffic population ahead
     for (let i = 1; i <= 6; i++) {
       const laneIndex = Math.floor(Math.random() * 3);
@@ -774,6 +791,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     stats.carDirt[stats.selectedCarId] = finalDirt;
     savePlayerStats(stats);
     recordDailyRace();
+    checkAndUnlockAchievements(stats);
 
     // Record progress for Daily Challenges missions
     recordDailyChallengeProgress({
@@ -1131,6 +1149,48 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               break;
             }
             continue;
+          }
+
+          // Clean overtake detection (vehicle safely passed behind player)
+          if (car.z < -5 && !car.overtaken) {
+            car.overtaken = true;
+            raceOvertakesRef.current += 1;
+            const count = raceOvertakesRef.current;
+            setRaceOvertakes(count);
+
+            // Award bonus score for clean pass
+            p.score += 30 * p.combo;
+
+            // Milestone toasts for overtaking cars in this run
+            const overtakeMilestones: Record<number, { title: string; desc: string; coins: number; icon: 'zap' | 'car' | 'flame' | 'trophy' | 'sparkles' }> = {
+              5: { title: 'تجاوز سريع! ⚡', desc: 'تجاوزت 5 سيارات في شوارع المدينة بنجاح!', coins: 30, icon: 'zap' },
+              10: { title: 'مناور بارع! 🏎️', desc: 'تجاوزت 10 سيارات في الزحام الشديد دون اصطدام!', coins: 75, icon: 'car' },
+              25: { title: 'سيد الطرق السريعة! 🔥', desc: 'إنجاز مذهل! تجاوزت 25 سيارة في سباق واحد!', coins: 150, icon: 'flame' },
+              50: { title: 'أسطورة المناورة الخارقة! 👑', desc: 'تحكم لا يُقهر! 50 سيارة متجاوزة في سباق واحد!', coins: 300, icon: 'trophy' },
+              100: { title: 'قناص المسارات الأسطوري! 🌟', desc: 'مستوى عالمي! تجاوزت 100 سيارة بنجاح أسطوري!', coins: 600, icon: 'sparkles' },
+            };
+
+            if (overtakeMilestones[count] && !overtakeMilestonesTriggeredRef.current.has(count)) {
+              overtakeMilestonesTriggeredRef.current.add(count);
+              const m = overtakeMilestones[count];
+              p.coinsCollected += m.coins;
+              setRunCoins(p.coinsCollected);
+
+              dispatchGameToast({
+                type: 'overtake',
+                title: m.title,
+                description: m.desc,
+                iconName: m.icon,
+                reward: m.coins,
+                badgeText: `${count} سيارات`,
+              });
+            }
+
+            // Realtime stats career overtakes increment & achievements check
+            const currentStats = loadPlayerStats();
+            currentStats.totalOvertakes = (currentStats.totalOvertakes || 0) + 1;
+            savePlayerStats(currentStats);
+            checkAndUnlockAchievements(currentStats);
           }
 
           // Remove vehicles far behind or far ahead
@@ -1574,9 +1634,59 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           lastUiSyncRef.current = nowUi;
           setCurrentSpeed(Math.round(p.speed));
           setNitroAmount(Math.round((p.nitro / effective.nitro) * 100));
-          setCurrentScore(Math.floor(p.score));
+          const currentFloorScore = Math.floor(p.score);
+          setCurrentScore(currentFloorScore);
           setRunCoins(p.coinsCollected);
           setRunDistance(Math.floor(p.distance));
+
+          // Real-time Dynamic High Score Break Detection & Toast
+          if (
+            initialHighScoreRef.current > 300 &&
+            currentFloorScore > initialHighScoreRef.current &&
+            !highScoreBreakTriggeredRef.current
+          ) {
+            highScoreBreakTriggeredRef.current = true;
+            setIsNewRecordBroken(true);
+            p.coinsCollected += 100;
+            setRunCoins(p.coinsCollected);
+
+            dispatchGameToast({
+              type: 'record',
+              title: 'رقم قياسي جديد حطمته الآن! 🏆',
+              description: `تجاوزت رقمك القياسي السابق (${initialHighScoreRef.current.toLocaleString()} نقطة)! أحرزت الآن ${currentFloorScore.toLocaleString()} نقطة!`,
+              iconName: 'trophy',
+              reward: 100,
+              badgeText: 'رقم قياسي جديد',
+            });
+
+            const currentStats = loadPlayerStats();
+            currentStats.highScore = Math.max(currentStats.highScore, currentFloorScore);
+            savePlayerStats(currentStats);
+            checkAndUnlockAchievements(currentStats);
+          } else if (
+            initialHighScoreRef.current <= 300 &&
+            currentFloorScore >= 1000 &&
+            !highScoreBreakTriggeredRef.current
+          ) {
+            highScoreBreakTriggeredRef.current = true;
+            setIsNewRecordBroken(true);
+            p.coinsCollected += 100;
+            setRunCoins(p.coinsCollected);
+
+            dispatchGameToast({
+              type: 'record',
+              title: 'أول رقم قياسي استثنائي! 🏆',
+              description: `أداء أسطوري! كسرت حاجز الـ 1,000 نقطة لأول مرة وسجلت ${currentFloorScore.toLocaleString()} نقطة!`,
+              iconName: 'trophy',
+              reward: 100,
+              badgeText: 'رقم قياسي',
+            });
+
+            const currentStats = loadPlayerStats();
+            currentStats.highScore = Math.max(currentStats.highScore, currentFloorScore);
+            savePlayerStats(currentStats);
+            checkAndUnlockAchievements(currentStats);
+          }
         }
       }
 
@@ -2337,10 +2447,13 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
       ref={containerRef}
       className="relative w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl select-none"
     >
+      {/* Dynamic In-Game Achievement & Milestone Toasts */}
+      <AchievementToast />
+
       {/* TOP IN-GAME HUD BAR (Always accessible) */}
       <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-3 sm:px-6 py-2.5 bg-gradient-to-b from-slate-950/90 via-slate-950/60 to-transparent backdrop-blur-xs">
         {/* Left: Score & Distance */}
-        <div className="flex items-center gap-4 text-xs sm:text-sm">
+        <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
           <div className="flex items-center gap-1.5 text-amber-400 font-bold font-game">
             <Coins className="w-4 h-4" />
             <span className="tabular-nums text-sm sm:text-base">
@@ -2361,6 +2474,17 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               {(runDistance / 1000).toFixed(2)} كم
             </span>
           </div>
+
+          {/* Live Cars Overtaken Badge */}
+          {gameState === 'PLAYING' && (
+            <div className="flex items-center gap-1 text-cyan-300 font-bold font-game bg-cyan-950/50 px-2 py-0.5 rounded-lg border border-cyan-500/30">
+              <Zap className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-slate-400 font-sans text-xs hidden xs:inline">تجاوز:</span>
+              <span className="tabular-nums text-xs sm:text-sm text-cyan-300">
+                {raceOvertakes}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Center: Combo Pill (When active) */}
@@ -3194,6 +3318,17 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   <div className="text-base font-bold font-game text-sky-400">
                     {highScore.toLocaleString()}
                   </div>
+                </div>
+
+                {/* Cars Overtaken in this run */}
+                <div className="col-span-2 p-2 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs">
+                  <span className="text-slate-400 flex items-center gap-1.5 font-medium">
+                    <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>السيارات المتجاوزة في الجولة:</span>
+                  </span>
+                  <span className="font-bold text-cyan-300 font-game text-sm tabular-nums">
+                    {raceOvertakes} سيارة
+                  </span>
                 </div>
 
                 {/* Car Dirt & Cleanliness Summary */}
