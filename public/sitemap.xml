@@ -77,7 +77,15 @@
   <!-- صفحة اتصل بنا ونموذج التواصل المباشر -->
   <url>
     <loc>https://www.games-children.com/contact</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- صفحة إخلاء المسؤولية القانونية -->
+  <url>
+    <loc>https://www.games-children.com/disclaimer</loc>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

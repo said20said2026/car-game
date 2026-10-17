@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, FileText, Shield, HelpCircle, Mail, Info } from 'lucide-react';
+import { ShieldCheck, FileText, Shield, HelpCircle, Mail, Info, AlertTriangle } from 'lucide-react';
 import { PolicyTab } from './PolicyModal';
 import { SocialShare } from './SocialShare';
 
@@ -66,7 +66,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
           </a>
         </div>
 
-        {/* Middle Row: The Essential AdSense Legal Links (سياسة الخصوصية - شروط الخدمة - اتصل بنا - من نحن) */}
+        {/* Middle Row: The Essential AdSense Legal Links (سياسة الخصوصية - شروط الخدمة - إخلاء مسؤولية - اتصل بنا - من نحن) */}
         <div className={`py-3 px-4 rounded-xl border flex flex-wrap items-center justify-center sm:justify-between gap-3 text-xs ${
           isDark
             ? 'bg-slate-900/60 border-slate-800/80 text-slate-300'
@@ -75,7 +75,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
           <span className="font-semibold text-[11px] sm:text-xs opacity-80">
             الصفحات القانونية والتعريفية:
           </span>
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-5">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
             <a
               href="/privacy"
               onClick={(e) => {
@@ -99,6 +99,19 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
             >
               <FileText className="w-3.5 h-3.5 text-sky-500" />
               <span>شروط الخدمة</span>
+            </a>
+            <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
+
+            <a
+              href="/disclaimer"
+              onClick={(e) => {
+                e.preventDefault();
+                onOpenPolicy('disclaimer');
+              }}
+              className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer text-amber-400 font-medium"
+            >
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+              <span>• إخلاء مسؤولية</span>
             </a>
             <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
 
@@ -161,10 +174,22 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
         </div>
 
         {/* Bottom Disclaimer */}
-        <div className={`text-center sm:text-start text-[11px] border-t pt-4 leading-relaxed ${
-          isDark ? 'border-slate-900 text-slate-600' : 'border-slate-100 text-slate-500'
+        <div className={`text-center sm:text-start text-[11px] border-t pt-4 leading-relaxed flex flex-col sm:flex-row items-center justify-between gap-3 ${
+          isDark ? 'border-slate-900 text-slate-500' : 'border-slate-100 text-slate-500'
         }`}>
-          تم تصميم وبناء هذه اللعبة خصيصاً لموقع games-children.com لتوفير تجربة سباق تفاعلية آمنة وسلسة بدون إعلانات منبثقة مزعجة أو برمجيات ضارة. جميع العلامات التجارية وحقوق السيارات الرقمية مخصصة للأغراض الترفيهية.
+          <p className="m-0">
+            <strong className="text-amber-400/90 font-bold">• إخلاء مسؤولية:</strong> تم تصميم وبناء هذه اللعبة خصيصاً لموقع games-children.com لتوفير تجربة سباق تفاعلية آمنة وسلسة للأغراض الترفيهية فقط، ولا تمثل محاكاة واقعية لقواعد السير على الطرق العامة. جميع العلامات وحقوق السيارات مخصصة للترفيه الرقمي.
+          </p>
+          <a
+            href="/disclaimer"
+            onClick={(e) => {
+              e.preventDefault();
+              onOpenPolicy('disclaimer');
+            }}
+            className="text-amber-400 hover:text-amber-300 font-bold whitespace-nowrap underline cursor-pointer shrink-0"
+          >
+            صفحة إخلاء المسؤولية ◀
+          </a>
         </div>
       </div>
     </footer>

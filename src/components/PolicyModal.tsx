@@ -11,9 +11,10 @@ import {
   Globe,
   Sparkles,
   HelpCircle,
+  AlertTriangle,
 } from 'lucide-react';
 
-export type PolicyTab = 'privacy' | 'terms' | 'contact' | 'about';
+export type PolicyTab = 'privacy' | 'terms' | 'disclaimer' | 'contact' | 'about';
 
 interface PolicyModalProps {
   isOpen: boolean;
@@ -54,6 +55,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
   const navItems = [
     { id: 'privacy', label: 'سياسة الخصوصية', icon: Shield },
     { id: 'terms', label: 'شروط الخدمة', icon: FileText },
+    { id: 'disclaimer', label: 'إخلاء المسؤولية', icon: AlertTriangle },
     { id: 'contact', label: 'اتصل بنا', icon: Mail },
     { id: 'about', label: 'من نحن', icon: Info },
   ] as const;
@@ -207,6 +209,75 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                 <h3 className="text-base font-bold text-white">4. إخلاء المسؤولية</h3>
                 <p>
                   يتم تقديم اللعبة ومحتوى الموقع "كما هو" (AS IS) دون أي ضمانات صريحة أو ضمنية. نحن نسعى دائماً لضمان استقرار وسلاسة اللعب بدون انقطاع، ولكننا لا نتحمل المسؤولية عن أي انقطاع مفاجئ ناتج عن المتصفح أو مزودي خدمة الإنترنت.
+                </p>
+              </section>
+            </div>
+          )}
+
+          {/* TAB: إخلاء المسؤولية (DISCLAIMER) */}
+          {activeTab === 'disclaimer' && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="border-b border-slate-800 pb-4">
+                <h2 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-amber-400" />
+                  <span>إخلاء المسؤولية (Legal Disclaimer)</span>
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  تاريخ السريان: 2026 · تنبيهات قانونية وإرشادات استخدام موقع games-children.com
+                </p>
+              </div>
+
+              <section className="space-y-2">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <span>1. إخلاء المسؤولية العامة والمحتوى الترفيهي</span>
+                </h3>
+                <p>
+                  يتم تقديم محتوى لعبة <strong>سباق سيارات المدينة السريعة للأبطال</strong> وكافة المواد التفاعلية والمعلومات المتاحة على موقع <code>games-children.com</code> لأغراض الترفيه والتسلية فقط. إن تجربة قيادة المركبات الافتراضية ومناورات تفادي الحارات والسرعات الفائقة وحركات الانجراف هي محض محاكاة برمجية رقمية خيالية ولا تمثل بأي شكل من الأشكال قواعد القيادة الواقعية على الطرق السريعة العامة.
+                </p>
+              </section>
+
+              <section className="space-y-2">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <span>2. السلامة المرورية وعدم تقليد القيادة في الواقع</span>
+                </h3>
+                <p>
+                  نحث جميع مستخدمينا وزوارنا من مختلف الأعمار، ولا سيما الفئات الشابة، على الالتزام الصارم بقوانين السير والمرور المعمول بها في بلدانهم، وعدم محاولة تقليد أو تطبيق أي من الحركات البهلوانية أو المناورات الخطيرة (مثل التجاوز الوشيك، القيادة بسرعات مفرطة، أو استخدام مكابح اليد المفاجئة) أثناء قيادة السيارات في الواقع الفعلي. السلامة على الطريق مسؤولية مشتركة وأولى أولويات الحياة اليومية.
+                </p>
+              </section>
+
+              <section className="space-y-2">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <span>3. حقوق الملكية الفكرية والعلامات التجارية</span>
+                </h3>
+                <p>
+                  جميع نماذج السيارات والمجسمات ثلاثية الأبعاد والتأثيرات الصوتية المستخدمة في اللعبة إما مصممة خصيصاً للمشروع أو مستوحاة من فئات رياضية عامة أو مُرخصة ضمن رخص المصادر المفتوحة للاستخدام الترفيهي. إن أي تشابه في الأسماء أو الهياكل مع علامات تجارية واقعية لشركات تصنيع السيارات هو تشابه تخيلي بحت ولا يشير إلى أي شراكة أو رعاية أو موافقة رسمية من تلك الشركات.
+                </p>
+              </section>
+
+              <section className="space-y-2">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <span>4. الإعلانات التابعة لجهات خارجية ومعايير Google AdSense</span>
+                </h3>
+                <p>
+                  يحتوي الموقع على إعلانات رقمية تُدار عبر شبكة <strong>Google AdSense</strong>. إن ظهور أي إعلان لسلعة أو خدمة أو رابط خارجي على الموقع لا يعني تزكيتنا أو ضماننا لمحتوى ذلك الإعلان أو جودته. يتحمل المستخدم المسؤولية الكاملة عند النقر على الروابط الخارجية أو التعامل التجاري مع المعلنين المستقلين.
+                </p>
+              </section>
+
+              <section className="space-y-2">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <span>5. حدود المسؤولية الفنية والبرمجية</span>
+                </h3>
+                <p>
+                  يُتاح الموقع ومحتواه "كما هو" (AS IS) و "حسب المتوفر" دون أي ضمانات ضمنية بشأن التوافق المطلق مع جميع الأجهزة أو المتصفحات أو انعدام فترات التوقف المؤقت للصيانة التقنية. لا يتحمل الموقع أي مسؤولية عن أي أضرار مباشرة أو غير مباشرة قد تنشأ عن استخدام اللعبة أو فقدان بيانات النقاط المحفوظة محلياً (LocalStorage) في متصفح المستخدم.
+                </p>
+              </section>
+
+              <section className="space-y-2">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <span>6. حماية الأطفال وإرشادات العائلة</span>
+                </h3>
+                <p>
+                  تم تصميم هذه اللعبة لتكون بيئة ترفيهية نظيفة وآمنة لجميع أفراد الأسرة، خالية من مشاهد العنف الواقعي أو المحتوى غير الملائم. وننصح أولياء الأمور بمتابعة الأوقات التي يقضيها أطفالهم في ممارسة الألعاب الإلكترونية لضمان التوازن الصحي بين الأنشطة اليومية والدراسة.
                 </p>
               </section>
             </div>

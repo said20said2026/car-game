@@ -150,6 +150,10 @@
       "destination": "/instructions.html"
     },
     {
+      "source": "/disclaimer",
+      "destination": "/disclaimer.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
