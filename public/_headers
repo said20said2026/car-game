@@ -1,7 +1,47 @@
+# Cloudflare Pages / Fastly / Netlify Caching & Security Headers
+
+# Immutable Long-Term Caching for Static Assets (1 Year)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  CDN-Cache-Control: public, max-age=31536000, immutable
+  Cloudflare-CDN-Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+  X-Content-Type-Options: nosniff
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+  CDN-Cache-Control: public, max-age=31536000, immutable
+  Cloudflare-CDN-Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+  CDN-Cache-Control: public, max-age=31536000, immutable
+  Cloudflare-CDN-Cache-Control: public, max-age=31536000, immutable
+
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+  CDN-Cache-Control: public, max-age=31536000, immutable
+  Cloudflare-CDN-Cache-Control: public, max-age=31536000, immutable
+
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+  CDN-Cache-Control: public, max-age=31536000, immutable
+
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+  CDN-Cache-Control: public, max-age=31536000, immutable
+
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+  CDN-Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+# Global HTML & Edge Security Headers
 /*
+  Cache-Control: public, max-age=0, must-revalidate
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.google-analytics.com https://*.doubleclick.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; connect-src 'self' https: wss:; frame-src 'self' https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.google.com; object-src 'none'; base-uri 'self';
+  Content-Security-Policy: default-src 'self' https: data: blob:; script-src 'self' https://cdn.ampproject.org https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.google-analytics.com https://*.doubleclick.net 'unsafe-eval' 'sha256-0OWtD+xzZMRTwPbAx6JRh23ijVgAXH8Xy/B7sejKiYM=' 'sha256-CEowoYi1JOv4IdZ43FVM7M0MqFvFO8DW38Poc1JFilU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; connect-src 'self' https: wss:; frame-src 'self' https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.google.com; object-src 'none'; base-uri 'self';

@@ -1211,7 +1211,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             if (item.type === 'coin') {
               p.coinsCollected += 1;
               p.score += 25 * p.combo;
-              soundManager.playCoin();
+              soundManager.playCoin(p.combo);
             } else if (item.type === 'nitro') {
               p.nitro = effective.nitro;
               soundManager.playNitroBoost();

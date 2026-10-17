@@ -618,29 +618,89 @@ class SoundEngine {
     this.isEngineRunning = false;
   }
 
-  public playCoin() {
+  /**
+   * Advanced interactive coin collection sound with metallic bell resonance,
+   * crystal overtones, and dynamic pitch scaling according to streak/combo.
+   * @param combo Consecutive coin multiplier or streak level (1 to 5+)
+   */
+  public playCoin(combo: number = 1) {
     if (!this.sfxEnabled) return;
     this.initContext();
     if (!this.ctx) return;
 
     try {
       const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
+      const ctx = this.ctx;
+      const sfxVol = this.sfxVolume;
 
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(987.77, now); // B5
-      osc.frequency.setValueAtTime(1318.51, now + 0.07); // E6
+      // Dynamic musical scale based on combo multiplier (ascends musically: B5 -> D6 -> E6 -> G6 -> A6 -> C7)
+      const clampedCombo = Math.max(1, Math.min(5, Math.floor(combo)));
+      const baseFreqs = [
+        { f1: 987.77, f2: 1318.51, o: 2637.02 }, // B5 -> E6 -> E7
+        { f1: 1174.66, f2: 1567.98, o: 3135.96 }, // D6 -> G6 -> G7
+        { f1: 1318.51, f2: 1760.00, o: 3520.00 }, // E6 -> A6 -> A7
+        { f1: 1567.98, f2: 2093.00, o: 4186.01 }, // G6 -> C7 -> C8
+        { f1: 1760.00, f2: 2637.02, o: 5274.04 }, // A6 -> E7 -> E8
+      ];
+      const pitch = baseFreqs[clampedCombo - 1];
 
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      // 1. Fundamental chime (high-purity golden bell)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(pitch.f1, now);
+      osc1.frequency.setValueAtTime(pitch.f2, now + 0.05);
 
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain1.gain.setValueAtTime(0.14 * sfxVol, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
 
-      osc.start(now);
-      osc.stop(now + 0.3);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.4);
+
+      // 2. High harmonic crystal shimmer (adds sparkling metallic physics)
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(pitch.o, now);
+
+      gain2.gain.setValueAtTime(0.045 * sfxVol, now);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now);
+      osc2.stop(now + 0.2);
+
+      // 3. Metallic coin impact transient (initial 8ms click)
+      const clickOsc = ctx.createOscillator();
+      const clickGain = ctx.createGain();
+      clickOsc.type = 'square';
+      clickOsc.frequency.setValueAtTime(4200, now);
+      clickOsc.frequency.exponentialRampToValueAtTime(1200, now + 0.015);
+
+      clickGain.gain.setValueAtTime(0.03 * sfxVol, now);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+
+      clickOsc.connect(clickGain);
+      clickGain.connect(ctx.destination);
+      clickOsc.start(now);
+      clickOsc.stop(now + 0.025);
     } catch {}
+  }
+
+  /**
+   * Cascading shower of coins for jackpot rewards and large coin pickups
+   */
+  public playCoinCascade(count: number = 4) {
+    if (!this.sfxEnabled) return;
+    const clampedCount = Math.min(8, Math.max(2, count));
+    for (let i = 0; i < clampedCount; i++) {
+      setTimeout(() => {
+        this.playCoin(i + 1);
+      }, i * 65);
+    }
   }
 
   public playNitroBoost() {

@@ -662,6 +662,35 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
           </div>
         </div>
       </section>
+
+      {/* قسم منشور إنستغرام والتفاعل الاجتماعي لتعزيز الزيارات والأرشفة */}
+      <section className="mt-8 p-5 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-[#dc2743]/40 shadow-lg relative overflow-hidden">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="space-y-1.5 text-center md:text-start">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#dc2743]/15 text-[#fb7185] text-xs font-bold border border-[#dc2743]/30">
+              <span>مجتمع إنستغرام الرسمي</span>
+              <span>·</span>
+              <span>تحديات ومقاطع حصرية</span>
+            </div>
+            <h3 className="text-base font-bold text-white font-game">
+              شاهد أقوى مقاطع سباق سيارات المدينة السريعة على إنستغرام
+            </h3>
+            <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+              انضم إلى آلاف اللاعبين في الوطن العربي وشاركنا أعلى نقاطك وأفضل جولات التفحيط وتجاوز السيارات عبر متابعة منشور اللعبة الرسمي على إنستغرام.
+            </p>
+          </div>
+
+          <a
+            href="https://www.instagram.com/p/Dej81fEjA0J/?utm_source=ig_web_copy_link&rpxt=MzRlODBiNWFlZA==&srtk=MzRlODBiNWFlZA=="
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] hover:opacity-90 active:scale-95 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shrink-0 shadow-lg shadow-[#dc2743]/20 transition-all cursor-pointer"
+          >
+            <span>مشاهدة المنشور على إنستغرام</span>
+            <span>↗</span>
+          </a>
+        </div>
+      </section>
     </article>
   );
 };

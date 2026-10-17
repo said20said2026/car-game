@@ -107,7 +107,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
     savePlayerStats(updated);
     setStats(updated);
     onCoinsChange(newCoins);
-    soundManager.playCoin();
+    soundManager.playCoinCascade(4);
     setStatusMessage('مبروك! تم فتح السيارة بنجاح وتجهيزها للسباق.');
     setTimeout(() => setStatusMessage(null), 3000);
   };
@@ -177,7 +177,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
     savePlayerStats(updated);
     setStats(updated);
     onCoinsChange(newCoins);
-    soundManager.playCoin();
+    soundManager.playCoinCascade(3);
     setStatusMessage('تمت ترقية الجزء بنجاح وزيادة قدرات السيارة!');
     setTimeout(() => setStatusMessage(null), 2500);
   };

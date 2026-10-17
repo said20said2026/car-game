@@ -20,7 +20,7 @@ export default defineConfig(() => {
             res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
             res.setHeader(
               'Content-Security-Policy',
-              "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.google-analytics.com https://*.doubleclick.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; connect-src 'self' https: wss:; frame-src 'self' https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.google.com; object-src 'none'; base-uri 'self';"
+              "default-src 'self' https: data: blob:; script-src 'self' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.google-analytics.com https://*.doubleclick.net 'unsafe-eval' 'sha256-0OWtD+xzZMRTwPbAx6JRh23ijVgAXH8Xy/B7sejKiYM=' 'sha256-CEowoYi1JOv4IdZ43FVM7M0MqFvFO8DW38Poc1JFilU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; connect-src 'self' https: wss:; frame-src 'self' https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.google.com; object-src 'none'; base-uri 'self';"
             );
 
             if (req.url === '/googleba8a8f81976877d7.html') {
@@ -35,6 +35,7 @@ export default defineConfig(() => {
                 const filePath = path.resolve(__dirname, `public${cleanUrl}.html`);
                 if (fs.existsSync(filePath)) {
                   res.setHeader('Content-Type', 'text/html; charset=utf-8');
+                  res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
                   res.end(fs.readFileSync(filePath));
                   return;
                 }
@@ -56,6 +57,12 @@ export default defineConfig(() => {
                 };
                 if (mimes[ext]) {
                   res.setHeader('Content-Type', mimes[ext]);
+                  if (ext === '.html') {
+                    res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+                  } else {
+                    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+                    res.setHeader('Access-Control-Allow-Origin', '*');
+                  }
                   res.end(fs.readFileSync(publicFilePath));
                   return;
                 }
