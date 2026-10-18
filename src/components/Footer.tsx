@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, FileText, Shield, HelpCircle, Mail, Info, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, FileText, Shield, HelpCircle, Mail, Info, AlertTriangle, Lightbulb, Trophy, Target } from 'lucide-react';
 import { PolicyTab } from './PolicyModal';
 import { SocialShare } from './SocialShare';
 
@@ -39,32 +39,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
 
         {/* أزرار وأيقونات المشاركة لوسائل التواصل الاجتماعي العشرة */}
         <SocialShare theme={theme} />
-
-        {/* رابط منشور إنستغرام الرسمي لزيادة الزيارات والأرشفة */}
-        <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs ${
-          isDark
-            ? 'bg-slate-900/50 border-slate-800 text-slate-300'
-            : 'bg-white border-slate-200 text-slate-700 shadow-xs'
-        }`}>
-          <div className="flex items-center gap-2.5 text-center sm:text-start">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#dc2743] shrink-0" />
-            <span className="font-bold text-white">
-              تابع تحديات ألعاب سباق سيارات المدينة السريعة على إنستغرام:
-            </span>
-            <span className="text-[11px] text-slate-400 hidden md:inline">
-              مقاطع حصرية، أرقام قياسية ومنافسات المتصدرين
-            </span>
-          </div>
-          <a
-            href="https://www.instagram.com/p/Dej81fEjA0J/?utm_source=ig_web_copy_link&rpxt=MzRlODBiNWFlZA==&srtk=MzRlODBiNWFlZA=="
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] text-white font-bold text-xs hover:opacity-90 active:scale-95 transition-all shadow-sm shrink-0"
-          >
-            <span>زيارة منشور إنستغرام</span>
-            <span>↗</span>
-          </a>
-        </div>
 
         {/* Middle Row: The Essential AdSense Legal Links (سياسة الخصوصية - شروط الخدمة - إخلاء مسؤولية - اتصل بنا - من نحن) */}
         <div className={`py-3 px-4 rounded-xl border flex flex-wrap items-center justify-center sm:justify-between gap-3 text-xs ${
@@ -112,6 +86,78 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
             >
               <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
               <span>• إخلاء مسؤولية</span>
+            </a>
+            <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
+
+            <a
+              href="#leaderboard"
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.getElementById('leaderboard');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  window.location.href = '/#leaderboard';
+                }
+              }}
+              className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer text-amber-400 font-semibold"
+            >
+              <Trophy className="w-3.5 h-3.5 text-amber-400" />
+              <span>لوحة المتصدرين</span>
+            </a>
+            <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
+
+            <a
+              href="#daily-challenges"
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.getElementById('daily-challenges');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  window.location.href = '/#daily-challenges';
+                }
+              }}
+              className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer text-amber-400 font-semibold"
+            >
+              <Target className="w-3.5 h-3.5 text-amber-400" />
+              <span>التحدي اليومي</span>
+            </a>
+            <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
+
+            <a
+              href="#tips"
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.getElementById('tips');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  window.location.href = '/#tips';
+                }
+              }}
+              className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer"
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+              <span>نصائح الفوز</span>
+            </a>
+            <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
+
+            <a
+              href="#faq"
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.getElementById('faq');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  window.location.href = '/#faq';
+                }
+              }}
+              className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-sky-400" />
+              <span>الأسئلة الشائعة</span>
             </a>
             <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
 

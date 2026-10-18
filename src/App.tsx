@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Play } from 'lucide-react';
+import { Play, Trophy, Target } from 'lucide-react';
 import { Header } from './components/Header';
 import { RacingGame, RacingGameHandle } from './components/RacingGame';
 import { GarageModal } from './components/GarageModal';
@@ -245,6 +245,34 @@ export default function App() {
             >
               <span>استعراض أنواع السيارات</span>
             </a>
+
+            <a
+              href="#leaderboard"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('leaderboard')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className={`px-5 py-3 rounded-xl font-bold text-sm border transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                theme === 'dark'
+                  ? 'bg-slate-900 hover:bg-slate-800 text-amber-400 border-amber-500/30'
+                  : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300 shadow-xs'
+              }`}
+            >
+              <Trophy className="w-4 h-4 text-amber-400" />
+              <span>لوحة المتصدرين 🏆</span>
+            </a>
+
+            <button
+              onClick={() => setIsDailyChallengesOpen(true)}
+              className={`px-5 py-3 rounded-xl font-bold text-sm border transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                theme === 'dark'
+                  ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border-amber-500/30'
+                  : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300 shadow-xs'
+              }`}
+            >
+              <Target className="w-4 h-4 text-amber-400" />
+              <span>التحدي اليومي 🎯</span>
+            </button>
           </div>
         </div>
 
