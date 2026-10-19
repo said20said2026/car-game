@@ -7,7 +7,6 @@ import {
   Check,
   Flame,
   Sparkles,
-  Zap,
   RotateCcw,
   Car,
   Calendar,
@@ -17,7 +16,6 @@ import {
 import {
   LeaderboardEntry,
   loadLeaderboard,
-  saveLeaderboard,
   addLeaderboardScore,
   loadPlayerName,
   savePlayerName,
@@ -31,11 +29,11 @@ interface LeaderboardProps {
 }
 
 const NAME_SUGGESTIONS = [
-  'كابتن السرعة ⚡',
-  'صقر الأسفلت 🦅',
-  'شبح الحلبة 🏁',
-  'توربو الخارق 🚀',
-  'فارس الظلام 🌙',
+  'Speed Captain ⚡',
+  'Asphalt Falcon 🦅',
+  'Highway Ghost 🏁',
+  'Turbo Titan 🚀',
+  'Shadow Racer 🌙',
 ];
 
 export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlayNow }) => {
@@ -84,7 +82,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
 
   const handleSubmitScore = (scoreValue: number) => {
     if (scoreValue <= 0) return;
-    const result = addLeaderboardScore(nameInput.trim() || playerName, scoreValue, 'سيارة السباق');
+    const result = addLeaderboardScore(nameInput.trim() || playerName, scoreValue, 'Red Rocket GT');
     setEntries(result.entries);
     setRankAchieved(result.rank);
     setShowAddScoreModal(false);
@@ -93,7 +91,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
   };
 
   const handleReset = () => {
-    if (window.confirm('هل تريد استعادة قائمة المتصدرين الافتراضية؟')) {
+    if (window.confirm('Reset leaderboard to default champions?')) {
       const reset = resetLeaderboard();
       setEntries(reset);
       setRankAchieved(null);
@@ -105,50 +103,48 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
   return (
     <section
       id="leaderboard"
-      aria-label="قائمة المتصدرين"
+      aria-label="High Scores Leaderboard"
       className={`scroll-mt-20 my-8 rounded-2xl p-4 sm:p-7 border transition-all ${
         isDark
           ? 'bg-slate-900/85 border-slate-800 text-white shadow-2xl shadow-black/40'
           : 'bg-white border-slate-200 text-slate-900 shadow-xl'
       }`}
     >
-      {/* رأس المكون - متمركز في وسط الصفحة */}
+      {/* Component Header */}
       <div className="flex flex-col items-center text-center pb-6 border-b border-slate-800/80">
-        {/* أيقونة كأس لوحة المتصدرين 🏆 متمركزة في وسط الصفحة */}
         <div className="relative mb-3.5 flex items-center justify-center">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-br from-amber-300 via-amber-500 to-yellow-600 flex items-center justify-center shadow-2xl shadow-amber-500/40 ring-4 ring-amber-400/40 transform hover:scale-105 transition-all">
             <Trophy className="w-8 h-8 sm:w-10 sm:h-10 text-slate-950 drop-shadow-md" />
           </div>
-          {/* تأثير توهج نيون خلف أيقونة الكأس في الوسط */}
           <div className="absolute -inset-3 bg-amber-500/25 blur-xl rounded-full -z-10 pointer-events-none" />
         </div>
 
         <div className="flex flex-col items-center">
           <div className="flex items-center justify-center gap-2 flex-wrap mb-1.5">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-black font-game tracking-tight">
-              لوحة المتصدرين 🏆 (Leaderboard)
+              Champions Leaderboard 🏆
             </h2>
             <span className="text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1 shadow-sm">
               <Crown className="w-3.5 h-3.5 text-amber-400" />
-              أفضل 5 أبطال
+              Top 5 Racers
             </span>
           </div>
           <p className={`text-xs sm:text-sm max-w-lg mx-auto leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            سجل أرقامك القياسية وتنافس للوصول إلى قمة المتصدرين في شوارع المدينة السريعة
+            Compete against top racers across USA, Canada, Netherlands & worldwide to dominate city highways
           </p>
         </div>
 
-        {/* أزرار الإجراءات العلوية متمركزة في وسط الصفحة */}
+        {/* Action Buttons */}
         <div className="flex items-center justify-center gap-2.5 mt-4 flex-wrap">
           {currentHighScore > 0 && (
             <button
               type="button"
               onClick={() => handleSubmitScore(currentHighScore)}
               className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
-              title="إدراج رقمك القياسي الحالي في القائمة"
+              title="Post your current high score to the leaderboard"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>تسجيل رقمي ({currentHighScore.toLocaleString()})</span>
+              <span>Submit My Record ({currentHighScore.toLocaleString()} pts)</span>
             </button>
           )}
 
@@ -162,7 +158,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
             }`}
           >
             <Send className="w-3.5 h-3.5 text-amber-400" />
-            <span>تسجيل نتيجة</span>
+            <span>Post Score</span>
           </button>
 
           <button
@@ -173,30 +169,30 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
                 ? 'bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-700/80'
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'
             }`}
-            title="استعادة القائمة الافتراضية"
+            title="Reset leaderboard to defaults"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* تنبيه تحقيق مركز في القائمة */}
+      {/* Rank achieved banner */}
       {rankAchieved !== null && (
         <div className="mt-4 p-3.5 rounded-xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/10 border border-emerald-500/40 text-emerald-300 flex items-center justify-between gap-3 animate-bounce">
           <div className="flex items-center gap-2">
             <Trophy className="w-5 h-5 text-amber-400 shrink-0" />
             <span className="text-sm font-bold">
-              تهانينا يا {playerName}! لقد حجزت المركز{' '}
-              <strong className="text-amber-300 font-game text-base">#{rankAchieved}</strong> في لوحة أفضل 5 لاعبين!
+              Congratulations {playerName}! You earned Rank{' '}
+              <strong className="text-amber-300 font-game text-base">#{rankAchieved}</strong> on the Top 5 Leaderboard!
             </span>
           </div>
           <span className="text-xs bg-emerald-500/30 text-emerald-200 px-2.5 py-1 rounded-lg font-bold">
-            محفوظ بنجاح
+            Saved
           </span>
         </div>
       )}
 
-      {/* قسم تخصيص اسم اللاعب */}
+      {/* Player name customization */}
       <div
         className={`mt-5 p-4 rounded-xl border ${
           isDark ? 'bg-slate-950/60 border-slate-800/90' : 'bg-slate-50 border-slate-200'
@@ -205,13 +201,12 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-amber-400" />
-            <span className="text-xs sm:text-sm font-bold">اسمك في السباق:</span>
+            <span className="text-xs sm:text-sm font-bold">Your Racer Tag:</span>
             <span className="text-xs font-black px-2.5 py-0.5 rounded-md bg-amber-400/10 text-amber-400 border border-amber-400/30 font-game">
               {playerName}
             </span>
           </div>
 
-          {/* نموذج إدخال وحفظ اسم اللاعب */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -225,7 +220,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
                 value={nameInput}
                 onChange={(e) => setNameInput(e.target.value)}
                 maxLength={25}
-                placeholder="أدخل اسمك كمتسابق..."
+                placeholder="Enter your racer tag..."
                 className={`w-full px-3 py-1.5 text-xs rounded-lg border outline-none transition-all ${
                   isDark
                     ? 'bg-slate-900 border-slate-700 text-white focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50'
@@ -239,15 +234,15 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
               className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold text-xs rounded-lg transition-all flex items-center gap-1 cursor-pointer shrink-0"
             >
               {isSavedNotice ? <Check className="w-3.5 h-3.5 text-slate-950" /> : <Edit2 className="w-3.5 h-3.5" />}
-              <span>{isSavedNotice ? 'تم الحفظ!' : 'حفظ الاسم'}</span>
+              <span>{isSavedNotice ? 'Saved!' : 'Save Tag'}</span>
             </button>
           </form>
         </div>
 
-        {/* اقتراحات سريعة لأسماء المتسابقين */}
+        {/* Name suggestions */}
         <div className="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center gap-1.5 flex-wrap">
           <span className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            اقتراحات سريعة:
+            Quick tags:
           </span>
           {NAME_SUGGESTIONS.map((suggestion) => (
             <button
@@ -266,24 +261,24 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
         </div>
       </div>
 
-      {/* نافذة منبثقة بسيطة لتسجيل نتيجة يدوياً إن رغب المستخدم */}
+      {/* Manual Score Submission Modal */}
       {showAddScoreModal && (
         <div
-          className={`mt-4 p-4 rounded-xl border animate-fadeIn ${
+          className={`mt-4 p-4 rounded-xl border ${
             isDark ? 'bg-slate-950/80 border-amber-500/40' : 'bg-amber-50/70 border-amber-300'
           }`}
         >
           <div className="flex items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span className="text-xs font-bold">تسجيل نتيجة جديدة في لوحة المتصدرين</span>
+              <span className="text-xs font-bold">Post New Score to Champions Leaderboard</span>
             </div>
             <button
               type="button"
               onClick={() => setShowAddScoreModal(false)}
               className="text-xs opacity-60 hover:opacity-100 cursor-pointer"
             >
-              ✕ إغلاق
+              ✕ Close
             </button>
           </div>
 
@@ -303,7 +298,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
               max="999999"
               value={customScoreInput}
               onChange={(e) => setCustomScoreInput(e.target.value)}
-              placeholder="اكتب النقاط (مثال: 12500)..."
+              placeholder="Enter score (e.g. 12500)..."
               className={`w-full sm:flex-1 px-3 py-2 text-xs rounded-lg border outline-none ${
                 isDark
                   ? 'bg-slate-900 border-slate-700 text-white focus:border-emerald-400'
@@ -314,13 +309,13 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
               type="submit"
               className="w-full sm:w-auto px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-colors cursor-pointer"
             >
-              تسجيل في اللوحة الآن
+              Post Record Now
             </button>
           </form>
         </div>
       )}
 
-      {/* قائمة أفضل 5 لاعبين */}
+      {/* Top 5 Leaderboard List */}
       <div className="mt-6 space-y-2.5">
         {entries.map((entry, index) => {
           const rank = index + 1;
@@ -350,9 +345,8 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
                   : 'bg-white border-slate-200'
               } ${isCurrent ? 'ring-2 ring-emerald-400/60' : ''}`}
             >
-              {/* الترتيب والمعلومات */}
+              {/* Rank and Player Info */}
               <div className="flex items-center gap-3 min-w-0">
-                {/* شارة الترتيب */}
                 <div
                   className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-black font-game text-sm shrink-0 shadow-xs ${
                     isGold
@@ -377,18 +371,17 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
                   )}
                 </div>
 
-                {/* اسم المتسابق والتفاصيل */}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-sm sm:text-base truncate">{entry.name}</span>
                     {isCurrent && (
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shrink-0">
-                        أنت
+                        YOU
                       </span>
                     )}
                     {isGold && (
                       <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400/20 text-amber-300 border border-amber-400/30 shrink-0">
-                        متصدر البطولة
+                        Highway Champion
                       </span>
                     )}
                   </div>
@@ -415,7 +408,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
                 </div>
               </div>
 
-              {/* مجموع النقاط */}
+              {/* Total Score */}
               <div className="text-end shrink-0 ps-2">
                 <div
                   className={`text-base sm:text-xl font-black font-game tracking-tight tabular-nums ${
@@ -431,7 +424,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
                   {entry.score.toLocaleString()}
                 </div>
                 <div className={`text-[10px] font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  نقطة
+                  PTS
                 </div>
               </div>
             </div>
@@ -439,14 +432,14 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
         })}
       </div>
 
-      {/* شريط الإحصائيات والمعلومات التوضيحية */}
+      {/* Footer Info */}
       <div className="mt-5 pt-3.5 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="inline-flex items-center gap-1 text-amber-400 font-semibold">
             <Flame className="w-3.5 h-3.5" />
-            تحديث تلقائي:
+            Auto-Synced:
           </span>
-          <span>تُحفظ أفضل 5 أرقام قياسية في التخزين المحلي (LocalStorage) لكل سباق.</span>
+          <span>Top 5 records are saved automatically in your browser's local storage.</span>
         </div>
 
         {onPlayNow && (
@@ -455,8 +448,8 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
             onClick={onPlayNow}
             className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 transition-colors cursor-pointer"
           >
-            <span>انطلق لتحطيم الرقم القياسي الآن</span>
-            <span>←</span>
+            <span>Start Race & Break Record</span>
+            <span>→</span>
           </button>
         )}
       </div>

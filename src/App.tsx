@@ -69,8 +69,8 @@ export default function App() {
 
   // Support direct path and hash navigation for pages (e.g. /privacy, /terms, /contact, /about, /cars, /instructions)
   useEffect(() => {
-    const defaultTitle = 'ألعاب سباق سيارات المدينة السريعة للأبطال - تحدي السرعة';
-    const defaultDescription = 'العب أقوى ألعاب سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة قيادة ومحاكاة واقعية بدون تحميل، تفادَ الحوادث واكسر أعلى الأرقام القياسية الآن.';
+    const defaultTitle = 'City Speed Heroes - Free 3D Car Racing Game Online | games-children.com';
+    const defaultDescription = 'Play City Speed Heroes, the ultimate free 3D car racing game online on games-children.com. Drive supercar speeds, dodge traffic, unlock nitro boosts & upgrades with zero downloads on PC, Mac, Android & iOS across USA, Canada, Netherlands & worldwide.';
     const siteUrl = 'https://www.games-children.com';
 
     const updateMetaDescription = (desc: string) => {
@@ -102,34 +102,34 @@ export default function App() {
         setPolicyTab(target as PolicyTab);
         setIsPolicyOpen(true);
         const titles: Record<string, string> = {
-          privacy: 'سياسة الخصوصية - لعبة سباق سيارات المدينة السريعة',
-          terms: 'شروط الخدمة والاستخدام - لعبة سباق سيارات المدينة السريعة',
-          disclaimer: 'إخلاء المسؤولية - لعبة سباق سيارات المدينة السريعة للأبطال',
-          contact: 'اتصل بنا ونموذج التواصل - لعبة سباق سيارات المدينة السريعة',
-          about: 'من نحن ورسالتنا - لعبة سباق سيارات المدينة السريعة',
+          privacy: 'Privacy Policy - City Speed Heroes | games-children.com',
+          terms: 'Terms of Service - City Speed Heroes | games-children.com',
+          disclaimer: 'Disclaimer - City Speed Heroes | games-children.com',
+          contact: 'Contact Us & Support - City Speed Heroes | games-children.com',
+          about: 'About Us - City Speed Heroes | games-children.com',
         };
         const descriptions: Record<string, string> = {
-          privacy: 'سياسة الخصوصية لموقع لعبة سباق سيارات المدينة السريعة ومعايير حماية البيانات وحقوق المستخدم.',
-          terms: 'شروط وأحكام استخدام لعبة سباق سيارات المدينة السريعة وقواعد الاستخدام العادل.',
-          disclaimer: 'إخلاء المسؤولية القانونية لموقع لعبة سباق سيارات المدينة السريعة، تنبيهات الأمان والترفيه الرقمي.',
-          contact: 'اتصل بنا وتواصل مع إدارة موقع سباق سيارات المدينة السريعة للاستفسارات والدعم الفني.',
-          about: 'من نحن - فريق تطوير لعبة سباق سيارات المدينة السريعة وأهدافنا في ألعاب المتصفح العربية.',
+          privacy: 'Read our Privacy Policy, COPPA compliance, cookie disclosures, and data protection guidelines for City Speed Heroes.',
+          terms: 'Review the Terms of Service and fair play guidelines for City Speed Heroes on games-children.com.',
+          disclaimer: 'Legal disclaimer and safety advisory for City Speed Heroes browser car racing game.',
+          contact: 'Get in touch with our team for feedback, bug reports, and customer support.',
+          about: 'Learn about our mission to bring fast, safe, high-performance browser games to families and players worldwide.',
         };
         document.title = titles[target] || defaultTitle;
         updateMetaDescription(descriptions[target] || defaultDescription);
         updateCanonical(`/${target}`);
       } else if (target === 'cars') {
         setIsPolicyOpen(false);
-        document.title = 'أنواع وتطوير سيارات السباق - لعبة سباق سيارات المدينة';
-        updateMetaDescription('تعرف على أنواع سيارات السباق الخارقة ومواصفات السرعة والتحكم والنيترو وكيفية ترقيتها.');
+        document.title = 'Supercars Fleet & Upgrades - City Speed Heroes | games-children.com';
+        updateMetaDescription('Explore the 6 high-octane racing supercars, performance stats, turbo specs, and garage upgrades.');
         updateCanonical('/cars');
         setTimeout(() => {
           document.getElementById('cars')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
       } else if (target === 'instructions') {
         setIsPolicyOpen(false);
-        document.title = 'طريقة اللعب وإرشادات التحكم - لعبة سباق سيارات المدينة';
-        updateMetaDescription('دليل مفصل لطريقة قيادة السيارات وأزرار التحكم باللمس والأسهم وتفعيل النيترو لجمع النقاط.');
+        document.title = 'How to Play & Controls Guide - City Speed Heroes | games-children.com';
+        updateMetaDescription('Master keyboard and touch controls, nitro boosts, drafting, and near-miss multipliers in City Speed Heroes.');
         updateCanonical('/instructions');
         setTimeout(() => {
           document.getElementById('instructions')?.scrollIntoView({ behavior: 'smooth' });
@@ -157,13 +157,13 @@ export default function App() {
       window.history.pushState({ tab }, '', `/${tab}`);
     } catch {}
     const titles: Record<string, string> = {
-      privacy: 'سياسة الخصوصية - لعبة سباق سيارات المدينة السريعة',
-      terms: 'شروط الخدمة والاستخدام - لعبة سباق سيارات المدينة السريعة',
-      disclaimer: 'إخلاء المسؤولية - لعبة سباق سيارات المدينة السريعة للأبطال',
-      contact: 'اتصل بنا ونموذج التواصل - لعبة سباق سيارات المدينة السريعة',
-      about: 'من نحن ورسالتنا - لعبة سباق سيارات المدينة السريعة',
+      privacy: 'Privacy Policy - City Speed Heroes | games-children.com',
+      terms: 'Terms of Service - City Speed Heroes | games-children.com',
+      disclaimer: 'Disclaimer - City Speed Heroes | games-children.com',
+      contact: 'Contact Us & Support - City Speed Heroes | games-children.com',
+      about: 'About Us - City Speed Heroes | games-children.com',
     };
-    document.title = titles[tab] || 'لعبة سباق سيارات المدينة السريعة';
+    document.title = titles[tab] || 'City Speed Heroes - Free 3D Car Racing Game Online';
     const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (canonical) canonical.href = `https://www.games-children.com/${tab}`;
   };
@@ -173,10 +173,10 @@ export default function App() {
     try {
       window.history.pushState({}, '', '/');
     } catch {}
-    document.title = 'ألعاب سباق سيارات المدينة السريعة للأبطال - تحدي السرعة';
+    document.title = 'City Speed Heroes - Free 3D Car Racing Game Online | games-children.com';
     const metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
     if (metaDesc) {
-      metaDesc.content = 'العب أقوى ألعاب سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة قيادة ومحاكاة واقعية بدون تحميل، تفادَ الحوادث واكسر أعلى الأرقام القياسية الآن.';
+      metaDesc.content = 'Play City Speed Heroes, the ultimate free 3D car racing game online on games-children.com. Drive supercar speeds, dodge traffic, unlock nitro boosts & upgrades with zero downloads on PC, Mac, Android & iOS across USA, Canada, Netherlands & worldwide.';
     }
     const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (canonical) canonical.href = 'https://www.games-children.com';
@@ -206,20 +206,20 @@ export default function App() {
       />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
-        {/* عنوان الصفحة الرئيسي (سيو) - بالضبط كما في متطلبات المستخدم */}
+        {/* Main Hero Header (SEO Optimized for USA, Canada, Netherlands, Global) */}
         <div className="text-center sm:text-start space-y-3">
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-amber-500">
-            <span>أفضل ألعاب السباق المجانية على المتصفح</span>
+            <span>#1 Free Online Browser 3D Car Racing Game</span>
             <span>·</span>
-            <span>بدون تحميل</span>
+            <span>No Download Required</span>
           </div>
 
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black font-game tracking-tight leading-tight">
-            ألعاب سباق سيارات المدينة السريعة للأبطال
+            City Speed Heroes - Free 3D Car Racing Game Online
           </h1>
 
           <p className="text-sm sm:text-base opacity-85 max-w-2xl leading-relaxed">
-            العب أقوى ألعاب سباق سيارات المدينة السريعة للأبطال مجاناً أونلاين. تجربة قيادة ومحاكاة واقعية بدون تحميل، تفادَ الحوادث واكسر أعلى الأرقام القياسية الآن.
+            Play City Speed Heroes for free on games-children.com! Experience realistic 3D highway racing, dodge intense traffic, unlock nitrous speed boosts, and beat global high score records with zero downloads on desktop, tablet, and mobile.
           </p>
 
           <div className="pt-1 flex items-center gap-3 flex-wrap">
@@ -228,7 +228,7 @@ export default function App() {
               className="btn-play-pulse px-6 sm:px-8 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 active:scale-95 text-slate-950 font-black text-sm sm:text-base rounded-xl shadow-lg shadow-amber-400/25 flex items-center justify-center gap-2 transition-all cursor-pointer inline-flex"
             >
               <Play className="w-5 h-5 fill-slate-950" />
-              <span>العب الآن - انطلق بالسباق</span>
+              <span>Play Now - Start Race</span>
             </button>
 
             <a
@@ -243,7 +243,7 @@ export default function App() {
                   : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300 shadow-xs'
               }`}
             >
-              <span>استعراض أنواع السيارات</span>
+              <span>Explore Supercars Fleet</span>
             </a>
 
             <a
@@ -259,7 +259,7 @@ export default function App() {
               }`}
             >
               <Trophy className="w-4 h-4 text-amber-400" />
-              <span>لوحة المتصدرين 🏆</span>
+              <span>Leaderboard 🏆</span>
             </a>
 
             <button
@@ -271,15 +271,15 @@ export default function App() {
               }`}
             >
               <Target className="w-4 h-4 text-amber-400" />
-              <span>التحدي اليومي 🎯</span>
+              <span>Daily Quests 🎯</span>
             </button>
           </div>
         </div>
 
-        {/* مساحة إعلانية علوية مهيأة لأدسنس */}
+        {/* Top AdSense slot */}
         <AdSlot slotId="header-leaderboard" format="horizontal" />
 
-        {/* حاوية اللعبة البرمجية - قسم اللعبة الرئيسي */}
+        {/* Main 3D Racing Game Canvas Section */}
         <section id="game-container" className="scroll-mt-20">
           <RacingGame
             ref={racingRef}
@@ -289,39 +289,39 @@ export default function App() {
           />
         </section>
 
-        {/* قسم التحدي اليومي والمهام الخاصة والمكافآت */}
+        {/* Daily Quests, Special Missions & Reward Milestones */}
         <DailyChallengesSection
           theme={theme}
           onPlayNow={handlePlayNow}
           onCoinsChange={setCoins}
         />
 
-        {/* لوحة أفضل 5 متصدرين بناءً على مجموع النقاط في LocalStorage */}
+        {/* Top 5 Leaderboard with LocalStorage Persistence */}
         <Leaderboard theme={theme} onPlayNow={handlePlayNow} />
 
-        {/* قسم الإنجازات وشارات التميز */}
+        {/* Achievements and Milestones Section */}
         <Achievements stats={loadPlayerStats()} />
 
-        {/* مساحات فارغة مهيأة لإعلانات أدسنس المستقبلية دون التأثير على اللعبة */}
+        {/* Mid-page AdSense Placement */}
         <AdSlot slotId="mid-game-banner" format="horizontal" />
 
-        {/* النص التعريفي الكافي لتخطي شروط أدسنس والسيو وقسم أنواع السيارات */}
+        {/* Comprehensive SEO Game Article & Car Showroom */}
         <div>
           <GameArticle onOpenGarage={handleOpenGarage} />
         </div>
 
-        {/* مساحة إعلانية سفلية مهيأة لأدسنس */}
+        {/* Bottom AdSense Placement */}
         <AdSlot slotId="bottom-banner" format="horizontal" />
       </main>
 
-      {/* نافذة التحديات اليومية والمكافآت */}
+      {/* Daily Challenges & Rewards Modal */}
       <DailyChallengesModal
         isOpen={isDailyChallengesOpen}
         onClose={() => setIsDailyChallengesOpen(false)}
         onCoinsChange={setCoins}
       />
 
-      {/* نافذة المرآب والترقيات */}
+      {/* Garage & Car Wash Modal */}
       <GarageModal
         isOpen={isGarageOpen}
         onClose={() => setIsGarageOpen(false)}
@@ -330,7 +330,7 @@ export default function App() {
         selectedCarIdProp={selectedGarageCarId}
       />
 
-      {/* نافذة الصفحات الأساسية (سياسة الخصوصية - شروط الخدمة - اتصل بنا - من نحن) */}
+      {/* Legal & Policy Modal (Privacy Policy, Terms of Service, Contact, About, Disclaimer, Instructions) */}
       <PolicyModal
         isOpen={isPolicyOpen}
         activeTab={policyTab}

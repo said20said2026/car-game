@@ -22,10 +22,7 @@ import {
   Gamepad2,
   History,
   Compass,
-  Crosshair,
   Tag,
-  Activity,
-  Layers,
   Car,
 } from 'lucide-react';
 import { CARS_DATA } from '../utils/storage';
@@ -43,72 +40,84 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
 
   const faqs = [
     {
-      q: 'هل لعبة سباق سيارات المدينة السريعة مجانية بالكامل؟',
-      a: 'نعم، اللعبة مجانية بنسبة 100% ولا تتطلب أي اشتراك أو تحميل ملفات؛ يمكنك الاستمتاع بكافة المركبات والمضامير مباشرة عبر متصفح الإنترنت على الهاتف المحمول أو الجهاز المكتبي أو اللوحي.',
+      q: 'Is City Speed Heroes 100% free to play with no downloads required?',
+      a: 'Yes, City Speed Heroes is completely 100% free with zero downloads or subscriptions. You can play directly inside any modern web browser on PC, Mac, Chromebook, iPhone, iPad, and Android devices across the USA, Canada, Netherlands, and worldwide.',
     },
     {
-      q: 'كيف يمكنني جمع العملات وتطوير مركبتي بسرعة؟',
-      a: 'يمكنك مضاعفة رصيدك بثلاث طرق: التقاط العملات الذهبية أثناء الانطلاق، تنفيذ مناورات "التجاوز الوشيك" (Near Miss) بالمرور بالقرب الشديد من مركبات المرور بسرعة عالية، والحفاظ على سلاسل السرعة العالية واستخدام النيترو بانتظام لقطع أطول مسافة ممكنة.',
+      q: 'How do I earn gold coins quickly to upgrade supercars in the garage?',
+      a: 'You can multiply your earnings in three ways: grabbing gold coins on the road, performing near-miss passes by swerving inches away from traffic at speeds over 100 km/h, and chaining combos with nitrous boost to survive longer race distances.',
     },
     {
-      q: 'هل تدعم اللعبة أزرار التحكم باللمس على الهواتف والأجهزة اللوحية؟',
-      a: 'نعم، تم تزويد اللعبة بنظام تحكم لمسي متطور مصمم خصيصاً للهواتف الذكية والشاشات اللمسية (Android و iOS). تظهر أزرار توجيه جانبية سريعة الاستجابة، مع دواسة فرامل لمسية وزر فوري لتفعيل أكسيد النيتروز (Nitro)، مع تسارع تلقائي يتيح لك التركيز الكامل على المناورة وتفادي العقبات.',
+      q: 'Does the game support touch controls on smartphones and tablets?',
+      a: 'Yes! City Speed Heroes features responsive on-screen mobile touch controls. Left/right thumb buttons provide precise steering, a dedicated brake pedal allows quick deceleration, and an animated nitrous boost button delivers instant supersonic acceleration.',
     },
     {
-      q: 'ما هي مواصفات الجهاز والمتصفحات المتوافقة لتشغيل اللعبة؟',
-      a: 'تعمل اللعبة بكفاءة عالية وبمعدل 60 إطاراً في الثانية (60 FPS) على معظم الأجهزة الحديثة والمتوسطة. يكفي وجود متصفح حديث يدعم تقنيات HTML5 و Canvas مثل Google Chrome، Safari، Microsoft Edge، أو Mozilla Firefox، مع استهلاك منخفض جداً لطاقة البطارية والذاكرة العشوائية.',
+      q: 'What are the system requirements to run the game smoothly at 60 FPS?',
+      a: 'The game is built with lightweight HTML5 Canvas 2.5D technology and runs at a fluid 60 frames per second on almost any desktop, laptop, or mobile device. All you need is an up-to-date web browser such as Google Chrome, Safari, Edge, or Firefox.',
     },
     {
-      q: 'هل يتم حفظ تقدمي والمركبات التي فتحتها إذا أغلقت المتصفح؟',
-      a: 'نعم بالتأكيد! تعتمد اللعبة على تقنية التخزين المحلي الآمن (HTML5 LocalStorage) على جهازك مباشرة. يتم حفظ رصيد العملات، وأعلى رقم قياسي حققته، وكافة النماذج التي قمت بشرائها أو ترقية محركاتها تلقائياً، دون الحاجة لإنشاء حساب أو إدخال أي بيانات شخصية.',
+      q: 'Will my high scores and unlocked supercars be saved if I close my browser?',
+      a: 'Yes, absolutely. The game uses secure HTML5 LocalStorage in your browser to save your collected coins, unlocked vehicles, garage upgrade levels, and your highest record score automatically without requiring account registration or personal data.',
     },
     {
-      q: 'ما الفرق بين الانجراف (Drift) والتجاوز الوشيك (Near Miss)؟',
-      a: 'الانجراف (Drift) يتم تفعيله عند الضغط على زر الفرامل مع الانعطاف السريع، مما يسمح للمركبة بقطع المنحنيات الحادة مع الحفاظ على عزم الدوران. أما التجاوز الوشيك (Near Miss) فهو حركة بهلوانية جريئة تتمثل في المرور بجانب شاحنات وحافلات المرور على مسافة سنتيمترات معدودة بسرعة تفوق 120 كم/س، وهو ما يمنحك مكافآت نقاط إضافية وعملات فورية.',
+      q: 'What is the tactical difference between drifting and a near miss?',
+      a: 'Drifting is triggered by tapping brake while steering hard through highway curves, preserving vehicle momentum and sliding gracefully. A near miss is an adrenaline stunt executed by passing civil traffic vehicles at high speed within inches, rewarding you with multiplier points and bonus coins.',
     },
     {
-      q: 'هل اللعبة آمنة للأطفال وخالية من أي محتوى غير لائق؟',
-      a: 'نعم تماماً، صُممت اللعبة لتكون بيئة ترفيهية عائلية آمنة 100% متوافقة مع إرشادات حماية الأطفال على الإنترنت (COPPA). لا تحتوي اللعبة على أي مشاهد عنف أو مؤثرات مؤذية، ولا تتضمن غرف دردشة عامة أو روابط خارجية غير آمنة، مما يجعلها خياراً ممتازاً وممتعاً للأطفال والناشئين.',
+      q: 'Is City Speed Heroes safe for children and COPPA compliant?',
+      a: 'Yes, the game is designed as a family-safe arcade racing environment fully compliant with COPPA and Google AdSense family safety guidelines. It contains no realistic violence, no chat rooms, and no personal data collection.',
     },
     {
-      q: 'هل تتوفر اللعبة بصيغة تطبيق APK أو محاكي قيادة واقعي للاندرويد؟',
-      a: 'بالتأكيد! إذا كنت تبحث عن محاكي قيادة واقعي للاندرويد أو صيغة APK خفيفة، فلن تحتاج إلى تنزيل برامج من مصادر مجهولة؛ حيث تدعم اللعبة تقنية PWA وتعمل كتطبيق أونلاين متكامل يمكن تثبيته بلمسة واحدة على شاشة هاتفك.',
+      q: 'Can I install City Speed Heroes as a Progressive Web App (PWA) on mobile?',
+      a: 'Yes! City Speed Heroes supports modern PWA capabilities. You can add it directly to your home screen on iOS and Android with a single tap, enjoying full-screen gameplay without downloading heavy APK files from third-party app stores.',
     },
     {
-      q: 'هل اللعبة مستوحاة من كلاسيكيات السباق مثل لعبة سابق ولاحق وألعاب زمن الطيبين؟',
-      a: 'نعم! تستلهم اللعبة روح التحدي الكلاسيكي، فإذا كنت تعشق سباقات سابق ولاحق وتطوير المحركات المصغرة، أو تبحث عن حماس المناورات الحركية وتفادي الاصطدامات، ستجد هنا إثارة متجددة تجمع بين تفادي الحارات (lane swerving game) وفيزياء الحركة ثلاثية الأبعاد.',
+      q: 'What racing classics inspired City Speed Heroes?',
+      a: 'City Speed Heroes draws inspiration from legendary retro arcade racing games and highway swerving simulators, combining precise lane-swerving tactics, high-speed drafting, and garage engine tuning into a modern, 60 FPS browser experience.',
     },
     {
-      q: 'ما سر التركيز على أسطول الـ 6 مركبات بدلاً من مواقع الـ 500 car games؟',
-      a: 'بدلاً من المواقع المزدحمة بآلاف الألعاب السطحية، ركّزنا في أسطول المركبات الست (6 car games) على تقديم تجربة قيادة متقنة بعناية. تشمل فئات الدفع الرباعي والمحركات الرياضية الخارقة، مع فيزياء تماسك مخصصة ونظام ترقية واقعي لكل طراز.',
+      q: 'Why focus on 6 master-crafted supercars instead of generic 500 car games?',
+      a: 'Rather than offering hundreds of repetitive, low-detail models found on generic 500-car gaming portals, our curated fleet of 6 supercars offers bespoke physics, unique acceleration curves, custom engine audio profiles, and 5-stage mechanical garage tuning.',
     },
     {
-      q: 'هل يحتوي المضمار على مسار في الصحراء؟',
-      a: 'نعم، يتضمن مسار السباق بيئة الصحراء الكبرى (Desert Storm Track) مع عواصف ترابية خفيفة وكثبان رملية وانزلاق ديناميكي للإطارات يختبر مهاراتك في منافسة حقيقية لا ترحم.',
+      q: 'Does City Speed Heroes feature desert and weather tracks?',
+      a: 'Yes! Experience dynamic tracks including the Sunny Downtown Highway, Rainstorm Slicks with realistic surface hydroplaning, Cyberpunk Neon City, and the vast Desert Dunes track with shifting sand gusts.',
+    },
+    {
+      q: 'What are the best services offered by games-children.com?',
+      a: 'The best services of games-children.com include providing instant-play 3D browser games with zero downloads, COPPA-compliant child-safe family environments, seamless 60 FPS performance, and responsive cross-platform support across desktop and mobile devices.',
+    },
+    {
+      q: 'Where can I find comprehensive supercar guides and detailed reviews?',
+      a: 'Our comprehensive guide and detailed reviews section breaks down the speed thresholds, acceleration ratings, drift stability, and upgrade pathways for all 6 supercars in the fleet to help you claim #1 on the Champions Leaderboard.',
+    },
+    {
+      q: 'How does games-children.com optimize SEO and user experience?',
+      a: 'We implement industry-leading search engine optimization (SEO) and user experience (UX) practices: lightning-fast Core Web Vitals, semantic HTML5 structure, schema.org structured data, touch-friendly UI design, and strict zero-intrusive ad placement.',
     },
   ];
 
   return (
-    <article className="game-description mt-10 space-y-12 leading-relaxed max-w-4xl mx-auto">
-      {/* القسم الرئيسي المطلوب من المستخدم */}
+    <article className="game-description mt-10 space-y-12 leading-relaxed max-w-4xl mx-auto text-left" dir="ltr">
+      {/* Main Hero Overview */}
       <section className="space-y-4">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          ألعاب سباق سيارات المدينة السريعة للأبطال - متعة رائدة وتحديات سرعة لا تنتهي
+          City Speed Heroes - Free 3D Car Racing Game Online
         </h2>
         <p className="text-base sm:text-lg opacity-90 leading-relaxed">
-          مرحباً بك في عالم <strong>ألعاب</strong> سباق سيارات المدينة السريعة للأبطال، إحدى أمتع <strong>ألعاب</strong> السباق والقيادة التفاعلية الأكثر إثارة على الإنترنت! إذا كنت تبحث عن التميز بين ألعاب عربيات سباق وسرعة تخطف الأنفاس، فإن هذه التجربة صُممت لتمنحك شعور سائق محترف يخوض <strong>مسابقة قيادة حقيقية</strong> وسط شوارع المدينة التفاعلية.
+          Welcome to <strong>City Speed Heroes</strong>, the premier free 3D browser car racing and highway driving simulation on <strong>games-children.com</strong>! If you love high-octane speed, dodging intense rush-hour traffic, and tuning exotic supercars, this game delivers pure arcade adrenaline directly in your web browser with zero downloads.
         </p>
         <p className="text-sm sm:text-base opacity-85 leading-relaxed">
-          تتصدر هذه المنصة قائمة <strong>ألعاب</strong> الأركيد العصرية بفضل فيزياء القيادة ثلاثية الأبعاد الدقيقة، حيث تتيح لك المناورة وتفادي الازدحام المروري واستخدام غاز النيترو لتحطيم الأرقام القياسية وجمع العملات لتطوير مركبتك في المرآب، كل ذلك مباشرة عبر المتصفح على الهاتف والكمبيوتر دون الحاجة إلى انتظار روابط التحميل.
+          Engineered for players across the United States, Canada, the Netherlands, and around the globe, City Speed Heroes combines silky-smooth 60 FPS pseudo-3D graphics, procedural engine acoustics, dynamic weather tracks, and deep garage upgrades. Race anytime on PC, Mac, Chromebook, iPhone, iPad, or Android!
         </p>
 
-        {/* لقطة شاشة اللعبة بصيغة WebP مع نص بديل (Alt Tag) غني بالسيو */}
+        {/* High-res gameplay preview image */}
         <figure className="my-6 rounded-2xl overflow-hidden border border-slate-800 shadow-xl bg-slate-950">
           <picture>
             <source srcSet="/assets/gameplay-preview.webp" type="image/webp" />
             <img
               src="/assets/gameplay-preview.jpg"
-              alt="لقطة حية من مضمار لعبة سباق سيارات المدينة السريعة للأبطال مع حركة المرور وتأثيرات النيترو"
+              alt="City Speed Heroes 3D highway racing gameplay preview with nitrous boost and traffic dodge"
               width={800}
               height={450}
               loading="lazy"
@@ -116,98 +125,77 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             />
           </picture>
           <figcaption className="text-center text-xs opacity-70 py-2.5 px-4 bg-slate-900/60 border-t border-slate-800/80">
-            مضمار السباق التفاعلي - رسومات ثلاثية الأبعاد متطورة وتجربة قيادة واقعية على المتصفح
+            Interactive City Highway Track - Advanced 3D canvas visuals and realistic arcade driving
           </figcaption>
         </figure>
       </section>
 
-      {/* تفاصيل التحكم وطريقة اللعب */}
+      {/* Controls & How to Play */}
       <section id="instructions" className="scroll-mt-24 space-y-4 p-5 sm:p-7 rounded-2xl bg-slate-900/40 border border-slate-800/80">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          كيفية اللعب وقواعد ألعاب السرعة وتفادي الحارات
+          How to Play & Master Highway Lane Swerving
         </h2>
         <p className="opacity-90 text-sm sm:text-base leading-relaxed">
-          تم تصميم نظام التحكم ليكون بديهياً وسهل الإتقان للمبتدئين، مع احتوائه على عمق تكتيكي يحتاجه المحترفون لتحطيم الأرقام القياسية:
+          The control scheme is designed to be instantly accessible for casual players while offering the precision and responsiveness required by competitive speedrunners:
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
           <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800/80 space-y-2">
             <div className="flex items-center gap-2 text-sky-400">
               <Monitor className="w-5 h-5 shrink-0" />
-              <h3 className="text-base font-bold text-inherit font-game">التحكم على الكمبيوتر (PC Keyboard)</h3>
+              <h3 className="text-base font-bold text-inherit font-game">PC & Mac Keyboard Controls</h3>
             </div>
-            <ul className="text-xs sm:text-sm opacity-85 leading-relaxed space-y-1.5 list-disc pr-5">
-              <li><strong>الأسهم يميناً ويساراً أو (A / D):</strong> لتوجيه المقود بين حارات الطريق وتفادي المركبات والشاحنات البطيئة.</li>
-              <li><strong>السهم للأعلى أو (W):</strong> لزيادة السرعة واستغلال أقصى قدرة للحصان الميكانيكي.</li>
-              <li><strong>السهم للأسفل أو (S):</strong> لتخفيف السرعة واستخدام المكابح لتفادي الاصطدامات الطارئة.</li>
-              <li><strong>زر المسافة (Spacebar):</strong> لاستخدام فرامل اليد والانجراف (Drift) حول المنعطفات الحادة.</li>
-              <li><strong>زر Shift:</strong> لإطلاق دفعة غاز النيترو الخارقة عند اكتمال تعبئة الخزان.</li>
+            <ul className="text-xs sm:text-sm opacity-85 leading-relaxed space-y-1.5 list-disc pl-5">
+              <li><strong>Left & Right Arrows or (A / D):</strong> Steer smoothly between highway lanes to dodge slower trucks and sedans.</li>
+              <li><strong>Up Arrow or (W):</strong> Full throttle acceleration to reach maximum horsepower and highway velocity.</li>
+              <li><strong>Down Arrow or (S):</strong> Apply hydraulic brakes to slow down safely behind dense traffic congestion.</li>
+              <li><strong>Spacebar:</strong> Engage the handbrake to execute high-speed tactical drifts around sweeping road curves.</li>
+              <li><strong>Shift Key:</strong> Ignite supersonic Nitrous Oxide (Nitro) boost when your nitrous tank is charged.</li>
             </ul>
           </div>
           <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800/80 space-y-2">
             <div className="flex items-center gap-2 text-emerald-400">
               <Smartphone className="w-5 h-5 shrink-0" />
-              <h3 className="text-base font-bold text-inherit font-game">التحكم باللمس على الموبايل (Mobile Touch)</h3>
+              <h3 className="text-base font-bold text-inherit font-game">Mobile & Tablet Touch Controls</h3>
             </div>
-            <ul className="text-xs sm:text-sm opacity-85 leading-relaxed space-y-1.5 list-disc pr-5">
-              <li><strong>أزرار الأسهم الشفافة أسفل الشاشة:</strong> لتوجيه المقود بدقة فائقة عبر إبهام اليد.</li>
-              <li><strong>التسارع التلقائي الذكي:</strong> ينطلق المحرك تلقائياً لتوفير راحة قصوى أثناء اللعب على الشاشات اللمسية.</li>
-              <li><strong>دواسة المكابح اللمسية:</strong> زر مخصص للإبطاء السريع وتعديل المسار في الازدحامات المفاجئة.</li>
-              <li><strong>زر النيترو الدائري المتوهج:</strong> لتفعيل التيربو فورياً وتخطي المنافسين في خط مستقيم.</li>
+            <ul className="text-xs sm:text-sm opacity-85 leading-relaxed space-y-1.5 list-disc pl-5">
+              <li><strong>On-Screen Steering Buttons:</strong> Ergonomic transparent left/right touch buttons positioned for natural thumb control.</li>
+              <li><strong>Smart Auto-Acceleration:</strong> Keeps your supercar accelerating smoothly so you can focus on quick maneuvers.</li>
+              <li><strong>Touch Brake Pedal:</strong> Instant emergency braking to prevent collisions with the rear bumpers of trucks.</li>
+              <li><strong>Pulsing Nitro Button:</strong> Glows when nitrous is primed—tap once to blast through traffic in a straight line.</li>
             </ul>
           </div>
         </div>
       </section>
 
-      {/* قسم ذكريات ألعاب السباق الكلاسيكية إلى محاكاة تفادي الحارات */}
+      {/* Arcade Heritage & Lane Swerving Tactics */}
       <section className="space-y-4 p-5 sm:p-7 rounded-2xl bg-gradient-to-br from-slate-900/60 to-slate-950 border border-slate-800/80">
         <div className="flex items-center gap-2.5 text-amber-400">
           <History className="w-6 h-6 shrink-0" />
           <h2 className="text-xl sm:text-2xl font-black font-game text-white tracking-tight">
-            من كلاسيكيات الزمن الجميل إلى المحاكاة العصرية (Heritage & Arcade Roots)
+            Arcade Heritage & High-Speed Highway Swerving
           </h2>
         </div>
         <p className="opacity-90 text-sm sm:text-base leading-relaxed text-slate-300">
-          تستحضر لعبتنا شغف الطفولة والذكريات الذهبية لجيل كامل نشأ على روائع الألعاب؛ فإذا كنت من جيل ارتبطت طفولته بسباقات <strong>لعبة سابق ولاحق</strong> الشهيرة وما فيها من إثارة تعديل التروس وتيربو المحركات الصاروخية، أو كنت تبحث عن الأدرينالين الخالص وتحديات الصمود وتفجير الحواجز كما في <strong>لعبة حرب الديناميت</strong> وتكتيكات ألعاب الصدام الحربية الشرسة، فإن هذه اللعبة صُممت لتلبي كل هذا الشغف في قالب أركيد متجدد.
+          City Speed Heroes pays homage to beloved arcade racing classics while introducing modern pseudo-3D mechanics. Known globally as a high-octane <strong>lane swerving game</strong>, every millisecond counts as you read traffic patterns, spot openings between 18-wheelers, and thread the needle at over 200 km/h.
         </p>
         <p className="opacity-90 text-sm sm:text-base leading-relaxed text-slate-300">
-          تعتمد اللعبة على ميكانيكية تفادي الحارات السريعة المعترف بها عالمياً باسم <strong>lane swerving game</strong>، والتي تتطلب دقة متناهية وسرعة رد فعل بديهية تضاهي سرعة البديهة في <strong>لعبة سباق الحروف</strong> الذهنية. هنا لا يوجد وقت للتردد؛ كل حركة للمقود محسوبة وكل مناورة بين حافلات وشاحنات الطريق هي رهان على البقاء وتصدر القمة.
+          Unlike static driving titles, dynamic road curvature and intelligent AI traffic vehicles challenge your reflexes. Chaining clean passes and building momentum tests the same sharp hand-eye coordination found in competitive esports.
         </p>
       </section>
 
-      {/* قسم محاكي القيادة للاندرويد والويب دون تنزيل */}
-      <section className="space-y-4 p-5 sm:p-7 rounded-2xl bg-gradient-to-br from-sky-950/30 via-slate-900/50 to-slate-950 border border-sky-800/40">
-        <div className="flex items-center gap-2.5 text-sky-400">
-          <Smartphone className="w-6 h-6 shrink-0" />
-          <h2 className="text-xl sm:text-2xl font-black font-game text-white tracking-tight">
-            أقوى محاكي قيادة واقعي للاندرويد والكمبيوتر أونلاين
-          </h2>
-        </div>
-        <p className="opacity-90 text-sm sm:text-base leading-relaxed text-slate-300">
-          بدلاً من إضاعة الوقت في البحث عن روابط تنزيل غير آمنة أو تثبيت ملفات <strong>لعبة سباق سيارات apk</strong> ضخمة تستهلك ذاكرة هاتفك، نوفر لك هنا أقوى محاكي قيادة واقعي للموبايل والكمبيوتر مباشرة على المتصفح عبر أحدث تقنيات HTML5 وWebGL السريعة.
-        </p>
-        <p className="opacity-85 text-xs sm:text-sm leading-relaxed text-slate-400">
-          تمنحك هذه المنصة تجربة لعب متكاملة بسرعة 60 إطاراً في الثانية دون تقطيع، مع فيزياء تماسك وانجراف دقيقة تحاكي قيادة المركبات الرياضية الخارقة، مع حفظ تلقائي لجميع أرقامك القياسية وترقيات الأسطول.
-        </p>
-      </section>
-
-      {/* مميزات اللعبة التي تجعلها فريدة */}
+      {/* Key Features Breakdown */}
       <section className="space-y-4">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          مميزات تجعلها في صدارة ألعاب الأركيد والسرعة:
+          What Makes City Speed Heroes Exceptional
         </h2>
-        <p className="opacity-90 text-sm sm:text-base leading-relaxed">
-          تجمع اللعبة بين الأداء التقني الفائق والرسوميات الجذابة لتقديم تجربة قيادة استثنائية لا مثيل لها على شبكة الويب:
-        </p>
-
-        {/* كروت المميزات التوضيحية */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
           <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2">
             <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold">
               <Cpu className="w-4 h-4" />
             </div>
-            <h3 className="font-bold text-inherit text-sm font-game">محرك أصوات وتوليف واقعي</h3>
+            <h3 className="font-bold text-inherit text-sm font-game">Web Audio Procedural Engine</h3>
             <p className="text-xs opacity-80 leading-relaxed">
-              توليد ديناميكي لنغمات المحرك التوربيني عبر تقنية Web Audio API مع اختلاف واقعي لدوران المحرك وسرعة عزم الدوران واحتكاك العجلات.
+              Dynamic synthesized V8 and turbo acoustics that shift pitch realistically with engine RPM, turbo blow-off hiss, and tire screeching.
             </p>
           </div>
 
@@ -215,9 +203,9 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
               <Trophy className="w-4 h-4" />
             </div>
-            <h3 className="font-bold text-inherit text-sm font-game">نظام ترقيات شامل في المرآب</h3>
+            <h3 className="font-bold text-inherit text-sm font-game">Comprehensive Garage Tuning</h3>
             <p className="text-xs opacity-80 leading-relaxed">
-              تطوير السرعة القصوى، قوة الانطلاق والتسارع، استجابة المكابح، وحجم خزان النيترو حتى 5 مستويات لكل سيارة باستخدام العملات المجمعة.
+              Upgrade Top Speed, Acceleration, Handling, and Nitro Capacity across 5 distinct stages for each vehicle using collected gold coins.
             </p>
           </div>
 
@@ -225,137 +213,71 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
               <ShieldCheck className="w-4 h-4" />
             </div>
-            <h3 className="font-bold text-inherit text-sm font-game">مضامير وطقس ديناميكي متقلب</h3>
+            <h3 className="font-bold text-inherit text-sm font-game">Dynamic Weather & Tracks</h3>
             <p className="text-xs opacity-80 leading-relaxed">
-              سباقات تحت أشعة شمس الظهيرة، مع مسارات الغروب الذهبية، وأضواء النيون الليلية مع شوارع مبللة بالعواصف الماطرة تؤثر على ثبات الإطارات.
+              Race through Sunny Downtown, Rainstorm Slicks with hydroplane physics, Cyberpunk Neon skylines, and the golden Desert Dunes.
             </p>
           </div>
         </div>
       </section>
 
-      {/* استراتيجيات القيادة المتقدمة وأسرار النقاط العالية */}
+      {/* Pro Racing Tips & High Score Strategy */}
       <section id="tips" className="scroll-mt-24 space-y-4">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          أسرار وتكتيكات ألعاب القيادة الاحترافية لتحقيق أعلى النقاط
+          Pro Racing Tips & High Score Tactics
         </h2>
-        <p className="opacity-90 text-sm sm:text-base leading-relaxed">
-          الوصول إلى صدارة قائمة الأبطال ليس مجرد ضغط مستمر على دواسة الوقود، بل يتطلب استراتيجية محكمة وذكاءً حركياً في التعامل مع مسار السباق:
-        </p>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
           <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/60 space-y-1.5">
             <h3 className="text-sm font-bold text-amber-400 font-game flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
-              <span>تقنية التجاوز الوشيك (Near Miss Multiplier)</span>
+              <span>Near Miss Multiplier (Combo Chains)</span>
             </h3>
             <p className="text-xs opacity-80 leading-relaxed">
-              عندما تقترب من سيارة مرور مدنية وتمر بجانبها بمسافة سنتمترات قليلة دون أن تصطدم بها وأنت تقود بسرعة تزيد عن 100 كم/س، ستكافئك اللعبة بنقاط إضافية وعملات مضاعفة. اربط عدة تجاوزات متتالية لتكوين سلسلة مضاعفة (Combo Chain) ترفع رصيدك بشكل هائل.
+              Pass civilian vehicles within inches at speeds above 100 km/h without making contact. Linking consecutive near-misses builds a combo multiplier (up to 5x) that sky-rockets your score and coin accumulation.
             </p>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/60 space-y-1.5">
             <h3 className="text-sm font-bold text-sky-400 font-game flex items-center gap-2">
               <Flame className="w-4 h-4" />
-              <span>إدارة شحنة النيترو والتوقيت المثالي</span>
+              <span>Strategic Nitrous Timing</span>
             </h3>
             <p className="text-xs opacity-80 leading-relaxed">
-              لا تستهلك طاقة النيترو وأنت في منتصف منعطف حاد أو في حارة مزدحمة بشاحنات النقل. انتظر حتى ترى مساراً مستقيماً ومفتوحاً أمامك، ثم أطلق قوة التيربو للوصول إلى السرعة القصوى وقطع مسافات طويلة في زمن قياسي.
+              Avoid burning nitrous in the middle of tight blind curves or bumper-to-bumper traffic jams. Wait for an open straightaway to fire your nitro boost for maximum speed and safe highway clearance.
             </p>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/60 space-y-1.5">
             <h3 className="text-sm font-bold text-emerald-400 font-game flex items-center gap-2">
               <Award className="w-4 h-4" />
-              <span>قراءة إشارات المرور وتوقع حركة الشاحنات</span>
+              <span>Horizon Scanning & Truck Anticipation</span>
             </h3>
             <p className="text-xs opacity-80 leading-relaxed">
-              تسير الشاحنات ومركبات الأجرة بسرعات متفاوتة في الحارات. درّب عينيك على مراقبة أقصى الأفق في الشاشة لتوقع مسار الحافلات والمركبات البطيئة وتغيير حارتك مبكراً قبل أن تُجبر على الضغط على المكابح وخسارة عزم السرعة.
+              Keep your gaze fixed on the vanishing horizon. Spotting the silhouettes of slow moving trucks early allows you to switch lanes smoothly without braking and losing speed momentum.
             </p>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/60 space-y-1.5">
             <h3 className="text-sm font-bold text-purple-400 font-game flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
-              <span>التوازن بين جمع العملات والبقاء على قيد السباق</span>
+              <span>Survival Over Coin Greed</span>
             </h3>
             <p className="text-xs opacity-80 leading-relaxed">
-              رغم أهمية جمع العملات الذهبية لتطوير سيارتك في المرآب، لا تخاطر بالاصطدام من أجل عملة واحدة في حارة ضيقة. البقاء في السباق لقطع كيلومترات أطول يمنحك نقاطاً أساسية وعملات أكثر على المدى البعيد.
+              While collecting coins is essential for garage upgrades, never risk a terminal collision for a single coin in a congested lane. Surviving longer distances yields far greater score records.
             </p>
           </div>
         </div>
       </section>
 
-      {/* قسم مضامير السباق والطقس */}
-      <section className="space-y-4">
-        <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          مضامير السباق والبيئات المناخية الديناميكية
-        </h2>
-        <p className="opacity-90 text-sm sm:text-base leading-relaxed">
-          تأخذك اللعبة في جولة شيقة عبر بيئات متنوعة تتغير ديناميكياً مع تقدمك في مسافة السباق، حيث يفرض كل طقس تحدياً قيادياً خاصاً:
-        </p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-          <div className="p-3.5 rounded-xl bg-slate-900/40 border border-slate-800/70 space-y-1.5">
-            <div className="flex items-center gap-2 text-amber-400">
-              <Sun className="w-4 h-4" />
-              <h3 className="text-sm font-bold text-white font-game">مضمار وسط المدينة المشمس</h3>
-            </div>
-            <p className="text-xs opacity-80 leading-relaxed">
-              إضاءة نهارية ساطعة ورؤية واضحة لحركة المرور، وهو المضمار المثالي لاختبار السرعة القصوى وضبط توقيت التجاوز.
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-900/40 border border-slate-800/70 space-y-1.5">
-            <div className="flex items-center gap-2 text-sky-400">
-              <CloudRain className="w-4 h-4" />
-              <h3 className="text-sm font-bold text-white font-game">طريق العاصفة الماطرة</h3>
-            </div>
-            <p className="text-xs opacity-80 leading-relaxed">
-              تأثيرات الأمطار والضباب الخفيف مع شوارع مبللة، حيث تزداد مسافة التوقف وتتطلب السيارة تركيزاً أكبر في التوجيه.
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-900/40 border border-slate-800/70 space-y-1.5">
-            <div className="flex items-center gap-2 text-indigo-400">
-              <Moon className="w-4 h-4" />
-              <h3 className="text-sm font-bold text-white font-game">طريق النيون الليلي</h3>
-            </div>
-            <p className="text-xs opacity-80 leading-relaxed">
-              أجواء سباقات الشوارع الليلية بين ناطحات السحاب المضاءة بالألوان النيونية وتوهج المصابيح الخلفية للمركبات.
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-900/40 border border-slate-800/70 space-y-1.5">
-            <div className="flex items-center gap-2 text-orange-400">
-              <Flame className="w-4 h-4" />
-              <h3 className="text-sm font-bold text-white font-game">طريق الغروب الساحلي</h3>
-            </div>
-            <p className="text-xs opacity-80 leading-relaxed">
-              سماء برتقالية هادئة وظلال ممتدة على الإسفلت، مع سرعات حركة مرور أعلى تتطلب سرعة بديهة لتفادي الشاحنات السريعة.
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-900/40 border border-amber-500/40 bg-gradient-to-br from-amber-950/20 to-slate-900/60 space-y-1.5">
-            <div className="flex items-center gap-2 text-amber-400">
-              <Compass className="w-4 h-4" />
-              <h3 className="text-sm font-bold text-white font-game">مضمار الصحراء الكبرى</h3>
-            </div>
-            <p className="text-xs opacity-80 leading-relaxed">
-              كثبان رملية ممتدة ورياح صحراوية تتحدى ثبات الإطارات، لتمنحك أروع تجربة قيادة في الصحراء مع إحساس المنافسة الحقيقية بين الكثبان.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* قسم نماذج الأسطول التفاعلي */}
+      {/* Supercars Fleet Showcase & Specs */}
       <section id="cars" className="scroll-mt-24 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-              أسطول المركبات الست الخارقة: دليل الترقيات والمواصفات
+              Fleet of 6 Supercars: Performance Specs & Tuning
             </h2>
             <p className="text-xs sm:text-sm opacity-80 mt-1">
-              بدلاً من التشتت في مواقع تحتوي على <strong>500 car games</strong> تقليدية مكررة، اخترنا لك تجربة <strong>6 car games</strong> استثنائية ضمن أسطول يضم 6 طرازات رياضية خارقة وفئات دفع رباعي لتطويرها في المرآب.
+              Explore the 6 high-octane racing supercars in the fleet—from American V8 muscle to futuristic aero hypercars.
             </p>
           </div>
 
@@ -365,18 +287,18 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
               className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md shadow-amber-400/20 flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
             >
               <Wrench className="w-4 h-4" />
-              <span>فتح المرآب لتطوير الأسطول</span>
+              <span>Open Garage to Upgrade Fleet</span>
             </button>
           )}
         </div>
 
-        {/* صورة أسطول المركبات الخارقة بصيغة WebP مع وسم Alt */}
+        {/* Fleet banner */}
         <figure className="my-6 rounded-2xl overflow-hidden border border-slate-800 shadow-xl bg-slate-950">
           <picture>
             <source srcSet="/assets/social-cover.webp" type="image/webp" />
             <img
               src="/assets/social-cover.jpg"
-              alt="أسطول المركبات الرياضية الخارقة في مرآب لعبة سباق سيارات المدينة السريعة للأبطال"
+              alt="City Speed Heroes fleet of exotic supercars in garage"
               width={1200}
               height={630}
               loading="lazy"
@@ -384,11 +306,11 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             />
           </picture>
           <figcaption className="text-center text-xs opacity-70 py-2.5 px-4 bg-slate-900/60 border-t border-slate-800/80">
-            أسطول المركبات الرياضية الخارقة المتاحة للاختيار والترقية داخل المرآب
+            The 6 High-Performance Racing Supercars available in your garage
           </figcaption>
         </figure>
 
-        {/* كروت تفاعلية لأنواع السيارات */}
+        {/* Cars Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {CARS_DATA.map((car) => (
             <div
@@ -406,26 +328,26 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
                   />
                 </div>
 
-                <h3 className="text-lg font-bold font-game text-inherit">{car.arabicName}</h3>
+                <h3 className="text-lg font-bold font-game text-inherit">{car.name}</h3>
                 <p className="text-xs opacity-80 mt-1 line-clamp-2 leading-relaxed">
                   {car.description}
                 </p>
               </div>
 
-              {/* مواصفات السيارة */}
+              {/* Specs */}
               <div className="space-y-1.5 pt-2 border-t border-slate-800/60 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1 text-sky-400">
                     <Gauge className="w-3.5 h-3.5" />
-                    السرعة القصوى:
+                    Top Speed:
                   </span>
-                  <span className="font-game font-bold tabular-nums text-sky-400">{car.baseSpeed} كم/س</span>
+                  <span className="font-game font-bold tabular-nums text-sky-400">{car.baseSpeed} km/h</span>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1 text-amber-400">
                     <Zap className="w-3.5 h-3.5" />
-                    التسارع:
+                    Acceleration:
                   </span>
                   <span className="font-bold tabular-nums">{car.baseAcceleration}%</span>
                 </div>
@@ -433,35 +355,34 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1 text-emerald-400">
                     <Shield className="w-3.5 h-3.5" />
-                    التحكم والانجراف:
+                    Handling:
                   </span>
                   <span className="font-bold tabular-nums">{car.baseHandling}%</span>
                 </div>
               </div>
 
-              {/* زر التعديل والترقية */}
               <button
                 onClick={() => onOpenGarage?.(car.id)}
                 className="w-full mt-2 py-2 px-3 bg-slate-800 hover:bg-amber-400 hover:text-slate-950 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Wrench className="w-3.5 h-3.5" />
-                <span>اختيار وتطوير هذا الطراز</span>
+                <span>Tune This Supercar in Garage</span>
               </button>
             </div>
           ))}
         </div>
 
-        {/* جدول مواصفات الأسطول الرياضي */}
+        {/* Specs Comparison Table */}
         <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/40 mt-4">
-          <table className="w-full text-right text-xs sm:text-sm">
+          <table className="w-full text-left text-xs sm:text-sm">
             <thead className="bg-slate-900 border-b border-slate-800 font-bold opacity-90">
               <tr>
-                <th className="py-3 px-4">اسم المركبة</th>
-                <th className="py-3 px-4">الفئة الميكانيكية</th>
-                <th className="py-3 px-4">السرعة القصوى</th>
-                <th className="py-3 px-4">معدل التسارع</th>
-                <th className="py-3 px-4">الثبات والانجراف</th>
-                <th className="py-3 px-4">تكلفة الفتح</th>
+                <th className="py-3 px-4">Supercar</th>
+                <th className="py-3 px-4">Class</th>
+                <th className="py-3 px-4">Top Speed</th>
+                <th className="py-3 px-4">Acceleration</th>
+                <th className="py-3 px-4">Handling</th>
+                <th className="py-3 px-4">Price</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-sans">
@@ -469,14 +390,14 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
                 <tr key={c.id} className="hover:bg-slate-800/30 transition-colors">
                   <td className="py-3 px-4 font-bold flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
-                    {c.arabicName}
+                    {c.name}
                   </td>
                   <td className="py-3 px-4 opacity-80">{c.type}</td>
-                  <td className="py-3 px-4 font-game font-bold text-sky-400 tabular-nums">{c.baseSpeed} كم/س</td>
+                  <td className="py-3 px-4 font-game font-bold text-sky-400 tabular-nums">{c.baseSpeed} km/h</td>
                   <td className="py-3 px-4 tabular-nums">{c.baseAcceleration}%</td>
                   <td className="py-3 px-4 tabular-nums">{c.baseHandling}%</td>
                   <td className="py-3 px-4 font-game text-amber-400 font-bold tabular-nums">
-                    {c.price === 0 ? 'مفتوحة مجاناً' : `${c.price} عملة`}
+                    {c.price === 0 ? 'Free Starter' : `${c.price} Coins`}
                   </td>
                 </tr>
               ))}
@@ -485,43 +406,67 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
         </div>
       </section>
 
-      {/* الفوائد الذهنية والتربوية لألعاب القيادة الإلكترونية */}
-      <section className="space-y-4 p-5 sm:p-7 rounded-2xl bg-slate-900/40 border border-slate-800/80">
-        <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          الفوائد الذهنية والتربوية لألعاب القيادة والسرعة
-        </h2>
-        <p className="opacity-90 text-sm sm:text-base leading-relaxed">
-          أثبتت العديد من الدراسات المعرفية أن ألعاب القيادة والتحدي المصممة بذكاء تقدم فوائد تعليمية وتطويرية ملموسة للمهارات الذهنية والحركية:
-        </p>
+      {/* Quality Standards & Platform Services: Strategic Keywords Section */}
+      <section className="space-y-6 p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-950 to-slate-900/70 border border-amber-500/30 shadow-xl">
+        <div className="border-b border-slate-800 pb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 text-amber-400 text-xs font-bold border border-amber-400/20 mb-2">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Platform Excellence & SEO Standards</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black font-game text-white tracking-tight">
+            Best Services of games-children.com: Comprehensive Guide & User Experience
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Our commitment to delivering the premier free web gaming experience for players in the USA, Netherlands, Canada, and worldwide
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-          <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/60 space-y-1.5">
-            <h3 className="text-sm font-bold text-amber-400 font-game">تسريع ردود الفعل الحركية</h3>
-            <p className="text-xs opacity-80 leading-relaxed">
-              تتطلب المناورة وتفادي العقبات بسرعات تتجاوز 150 كم/س اتخاذ قرارات في أجزاء من الثانية، مما يدرب الدماغ على المعالجة البصرية الفورية والاستجابة السريعة للمؤثرات الخارجية.
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Card 1: Best Services of games-children.com */}
+          <div className="p-5 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-3 hover:border-amber-400/40 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold font-game text-white">
+              Best Services of games-children.com
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              <strong>games-children.com</strong> provides instant-play 3D browser games with zero downloads, 100% family-safe COPPA compliance, silky-smooth 60 FPS performance, and automatic progress saving in your browser across all devices.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/60 space-y-1.5">
-            <h3 className="text-sm font-bold text-sky-400 font-game">تعزيز التنسيق البصري الحركي</h3>
-            <p className="text-xs opacity-80 leading-relaxed">
-              التوافق الدقيق بين ما تراه العين على مسار الطريق وما تفعله الأصابع على أزرار التوجيه يعزز التناسق العصبي العضلي، وهو مهارة حيوية تنعكس إيجابياً على مختلف الأنشطة اليومية.
+          {/* Card 2: Comprehensive Guide & Detailed Reviews */}
+          <div className="p-5 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-3 hover:border-sky-400/40 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold font-game text-white">
+              Comprehensive Guide & Detailed Reviews
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Our <strong>comprehensive guide and detailed reviews</strong> evaluate the performance curves, top speed limits, and handling dynamics of each supercar in our fleet to help players master high-speed highway racing and top the leaderboard.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/60 space-y-1.5">
-            <h3 className="text-sm font-bold text-emerald-400 font-game">إدارة الموارد والتفكير الاستراتيجي</h3>
-            <p className="text-xs opacity-80 leading-relaxed">
-              جمع العملات وتحديد أولويات ترقية المحرك مقابل النيترو أو المكابح يعلّم اللاعبين الصغار مفاهيم التخطيط الاقتصادي البسيط وإدارة الموارد لتحقيق أهداف طويلة الأجل.
+          {/* Card 3: SEO Tips & User Experience Optimization */}
+          <div className="p-5 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-3 hover:border-emerald-400/40 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <Zap className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold font-game text-white">
+              SEO Tips & User Experience (UX)
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              We apply the latest <strong>SEO and user experience optimization tips</strong>—ensuring lightning Core Web Vitals loading speeds, fully responsive mobile touch steering, clear semantic structure, and non-intrusive ad layouts.
             </p>
           </div>
         </div>
       </section>
 
-      {/* الأسئلة الشائعة (FAQ Accordion) */}
+      {/* FAQ Accordion Section */}
       <section id="faq" className="scroll-mt-24 space-y-4 pt-2">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          الأسئلة الشائعة حول اللعبة وعالم ألعاب السباق (FAQ)
+          Frequently Asked Questions (FAQ)
         </h2>
         <div className="space-y-2.5">
           {faqs.map((faq, idx) => (
@@ -531,7 +476,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             >
               <button
                 onClick={() => toggleFaq(idx)}
-                className="w-full py-3.5 px-4 text-start font-semibold flex items-center justify-between gap-3 hover:bg-slate-800/40 transition-colors cursor-pointer"
+                className="w-full py-3.5 px-4 text-left font-semibold flex items-center justify-between gap-3 hover:bg-slate-800/40 transition-colors cursor-pointer"
               >
                 <h3 className="text-sm sm:text-base font-bold text-inherit">{faq.q}</h3>
                 <ChevronDown
@@ -550,33 +495,33 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
         </div>
       </section>
 
-      {/* دليل الكلمات المفتاحية وأقسام ألعاب القيادة لمحركات البحث وزوار الموقع */}
+      {/* SEO Topic Tags & Global Search Directory */}
       <section className="space-y-5 pt-4 border-t border-slate-800/80">
         <div className="flex items-center gap-2 text-amber-400">
           <Tag className="w-5 h-5 shrink-0" />
           <h2 className="text-xl sm:text-2xl font-black font-game text-white tracking-tight">
-            دليل وتصنيفات سباق المدينة السريع (SEO Racing Hub)
+            City Speed Heroes Global Search Hub
           </h2>
         </div>
         <p className="text-xs sm:text-sm opacity-85 leading-relaxed text-slate-300">
-          استكشف أشهر الموضوعات ومصطلحات البحث الشائعة التي يبحث عنها عشاق ألعاب القيادة والتفحيط في العالم العربي، والمدرجة بالكامل في محرك لعبتنا لتوفير أفضل تجربة لعب مجانية:
+          Explore the popular game topics and search terms integrated into City Speed Heroes for global discovery:
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          {/* تصنيف 1: ألقاب وبطولات السباق */}
           <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2.5">
             <h3 className="font-bold text-amber-400 font-game flex items-center gap-1.5">
               <Trophy className="w-4 h-4" />
-              <span>بطولات وألقاب سباق المدينة</span>
+              <span>Racing Modes & Highlights</span>
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {[
-                'لعبة سباق سيارات المدينة السريعة للأبطال',
-                'لعبة عربيات سباق',
-                'مسابقة قيادة حقيقية',
-                'تحديات التفحيط والانجراف',
-                'ألعاب المتصفح السريعة',
-                'تفادي الحوادث المرورية',
+                'City Speed Heroes 3D',
+                'Free online car games',
+                'Browser racing simulator',
+                'Lane swerving game',
+                'Near miss dodge mechanics',
+                'Nitrous boost speeds',
+                'Top 5 leaderboard',
               ].map((term, i) => (
                 <span
                   key={i}
@@ -588,19 +533,19 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             </div>
           </div>
 
-          {/* تصنيف 2: محاكي الاندرويد والأونلاين */}
           <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2.5">
             <h3 className="font-bold text-sky-400 font-game flex items-center gap-1.5">
               <Smartphone className="w-4 h-4" />
-              <span>محاكاة الهواتف والاندرويد أونلاين</span>
+              <span>Cross-Platform Web Gaming</span>
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {[
-                'محاكي قيادة واقعي للاندرويد',
-                'لعبة سباق apk للمتصفح',
-                'ألعاب أونلاين بدون تحميل',
-                'دقة وسلاسة 60 إطاراً',
-                'تحكم لمسي سريع الاستجابة',
+                'No download required',
+                'Play in browser on PC & Mac',
+                'Mobile touch controls',
+                '60 FPS HTML5 canvas engine',
+                'US & Canada online car games',
+                'Netherlands browser games',
               ].map((term, i) => (
                 <span
                   key={i}
@@ -612,48 +557,25 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             </div>
           </div>
 
-          {/* تصنيف 3: كلاسيكيات وألعاب حربية */}
-          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2.5">
-            <h3 className="font-bold text-emerald-400 font-game flex items-center gap-1.5">
-              <History className="w-4 h-4" />
-              <span>كلاسيكيات الزمن الجميل وألعاب الأكشن</span>
+          <div className="p-4 rounded-xl bg-slate-900/40 border border-amber-500/30 space-y-2.5 sm:col-span-2">
+            <h3 className="font-bold text-amber-400 font-game flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4" />
+              <span>games-children.com Best Services & Reviews</span>
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {[
-                'لعبة سابق ولاحق',
-                'لعبة حرب الديناميت',
-                'صدام المركبات وتفادي العوائق',
-                'لعبة سباق الحروف',
-                'lane swerving game',
-                'مناورات التجاوز الوشيك',
+                'Best services of games-children.com',
+                'Comprehensive guide and detailed reviews',
+                'SEO tips and user experience',
+                'Safe family gaming 100%',
+                'Supercars fleet & garage upgrades',
+                'أفضل خدمات games-children.com',
+                'دليل شامل ومراجعات مفصلة باللغة العربية',
+                'نصائح تحسين محركات البحث وتجربة المستخدم',
               ].map((term, i) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-200 border border-slate-700/60 hover:border-emerald-400/50 hover:text-emerald-300 transition-colors"
-                >
-                  {term}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* تصنيف 4: الأسطول والمضامير والصحراء */}
-          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2.5">
-            <h3 className="font-bold text-orange-400 font-game flex items-center gap-1.5">
-              <Car className="w-4 h-4" />
-              <span>الأسطول ومضمار الصحراء</span>
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {[
-                '6 car games',
-                'لعبة ستة طرازات خارقة',
-                'مركبات الدفع الرباعي 4x4',
-                'مقارنة 500 car games',
-                'سباق كثبان الصحراء الكبرى',
-              ].map((term, i) => (
-                <span
-                  key={i}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-200 border border-slate-700/60 hover:border-orange-400/50 hover:text-orange-300 transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-200 border border-slate-700/60 hover:border-amber-400/50 hover:text-amber-300 transition-colors font-medium"
                 >
                   {term}
                 </span>

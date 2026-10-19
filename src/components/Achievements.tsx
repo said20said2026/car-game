@@ -9,11 +9,8 @@ import {
   Sparkles,
   Calendar,
   Target,
-  CheckCircle2,
   Car,
-  TrendingUp,
   Layers,
-  ChevronLeft,
 } from 'lucide-react';
 import { PlayerStats } from '../types/game';
 import { loadPlayerStats, loadDailyRaces, DailyRacesData } from '../utils/storage';
@@ -64,15 +61,15 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats: propStats }) 
     }
   }, [propStats]);
 
-  // Format today's date in Arabic
+  // Format today's date in English
   const todayFormatted = (() => {
     try {
       const [y, m, d] = dailyData.date.split('-').map(Number);
       const dateObj = new Date(y, m - 1, d);
-      return dateObj.toLocaleDateString('ar-EG', {
-        weekday: 'long',
+      return dateObj.toLocaleDateString('en-US', {
+        weekday: 'short',
         year: 'numeric',
-        month: 'long',
+        month: 'short',
         day: 'numeric',
       });
     } catch {
@@ -84,11 +81,11 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats: propStats }) 
 
   // Rank Tier based on total cars overtaken
   const getOvertakeRank = (count: number) => {
-    if (count >= 100) return { title: 'أسطورة المناورات العالمية', color: 'text-amber-400', bg: 'bg-amber-500/20', border: 'border-amber-500/40' };
-    if (count >= 60) return { title: 'ملك الطرق السريعة', color: 'text-purple-400', bg: 'bg-purple-500/20', border: 'border-purple-500/40' };
-    if (count >= 30) return { title: 'سيد التجاوز السريع', color: 'text-sky-400', bg: 'bg-sky-500/20', border: 'border-sky-500/40' };
-    if (count >= 10) return { title: 'مناور محترف', color: 'text-emerald-400', bg: 'bg-emerald-500/20', border: 'border-emerald-500/40' };
-    return { title: 'سائق مبتدئ', color: 'text-slate-300', bg: 'bg-slate-800/50', border: 'border-slate-700/50' };
+    if (count >= 100) return { title: 'World Overtake Legend', color: 'text-amber-400', bg: 'bg-amber-500/20', border: 'border-amber-500/40' };
+    if (count >= 60) return { title: 'Highway King', color: 'text-purple-400', bg: 'bg-purple-500/20', border: 'border-purple-500/40' };
+    if (count >= 30) return { title: 'Master Swerver', color: 'text-sky-400', bg: 'bg-sky-500/20', border: 'border-sky-500/40' };
+    if (count >= 10) return { title: 'Pro Overtaker', color: 'text-emerald-400', bg: 'bg-emerald-500/20', border: 'border-emerald-500/40' };
+    return { title: 'Rookie Driver', color: 'text-slate-300', bg: 'bg-slate-800/50', border: 'border-slate-700/50' };
   };
 
   const currentRank = getOvertakeRank(totalOvertakes);
@@ -149,13 +146,13 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats: propStats }) 
           </div>
           <div>
             <h2 className="text-lg sm:text-xl font-bold font-game text-white flex items-center gap-2">
-              <span>إنجازات وأوسمة المتسابق</span>
+              <span>Driver Achievements & Trophies</span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-sans font-semibold border border-amber-500/30">
-                {unlockedCount} من {totalCount} مكتمل
+                {unlockedCount} of {totalCount} Unlocked
               </span>
             </h2>
             <p className="text-xs text-slate-400">
-              نظام إنجازات ديناميكي يمنحك مكافآت وتنبيهات فورية عند كسر الأرقام وتجاوز السيارات
+              Complete career milestones, dodge oncoming traffic, and unlock coin bonuses
             </p>
           </div>
         </div>
@@ -176,7 +173,7 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats: propStats }) 
 
       {/* DUAL DASHBOARD CARDS: 1. OVERTAKES COUNTER & 2. DAILY RACES */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {/* بطاقة عداد تجاوز السيارات التفاعلي */}
+        {/* Overtakes Card */}
         <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-cyan-500/30 shadow-lg shadow-cyan-500/5 relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-36 h-36 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -184,7 +181,7 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats: propStats }) 
             <div className="flex items-center justify-between gap-2 flex-wrap mb-2">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold text-xs border border-cyan-500/30">
                 <Zap className="w-3.5 h-3.5" />
-                <span>إجمالي السيارات المتجاوزة</span>
+                <span>Total Vehicles Overtaken</span>
               </span>
               <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${currentRank.bg} ${currentRank.color} ${currentRank.border}`}>
                 {currentRank.title}
@@ -193,40 +190,40 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats: propStats }) 
 
             <p className="text-xs text-slate-300 leading-relaxed mb-3">
               {totalOvertakes === 0
-                ? 'انطلق بالسيارة وتفادَ زحام المدينة لتسجيل أول تجاوز لك!'
+                ? 'Hit the gas and swerve through highway traffic to log your very first overtake!'
                 : totalOvertakes < 30
-                ? `تجاوزت ${totalOvertakes} سيارة بنجاح! استمر لفتح لقب سيد التجاوز السريع.`
+                ? `Passed ${totalOvertakes} cars cleanly! Keep pushing to unlock the Master Swerver tier.`
                 : totalOvertakes < 60
-                ? `أداء خارق! ${totalOvertakes} سيارة متجاوزة، اقتربت من لقب ملك الطرق السريعة.`
-                : `مناور أسطوري لا يُقهر! تجاوزت ${totalOvertakes} سيارة في شوارع المدينة.`}
+                ? `Exceptional control! ${totalOvertakes} cars passed, closing in on Highway King.`
+                : `Highway Legend! You have dominated traffic with ${totalOvertakes} clean overtakes.`}
             </p>
           </div>
 
           <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-800/80 bg-slate-900/60 rounded-xl px-3.5 py-2.5">
             <div>
-              <div className="text-[10px] text-slate-400 font-medium">السيارات المتجاوزة</div>
+              <div className="text-[10px] text-slate-400 font-medium">Cars Overtaken</div>
               <div className="text-2xl font-black font-game text-cyan-400 tabular-nums">
-                {totalOvertakes} <span className="text-xs font-normal text-slate-400">سيارة</span>
+                {totalOvertakes} <span className="text-xs font-normal text-slate-400">vehicles</span>
               </div>
             </div>
-            <div className="text-start sm:text-end">
-              <div className="text-[10px] text-slate-400 font-medium">الهدف القادم</div>
+            <div className="text-end">
+              <div className="text-[10px] text-slate-400 font-medium">Next Milestone</div>
               <div className="text-xs font-bold text-white">
                 {totalOvertakes < 10
-                  ? '10 سيارات (مناور مبتدئ)'
+                  ? '10 Cars (Pro Overtaker)'
                   : totalOvertakes < 30
-                  ? '30 سيارة (سيد التجاوز)'
+                  ? '30 Cars (Master Swerver)'
                   : totalOvertakes < 60
-                  ? '60 سيارة (ملك الطرق)'
+                  ? '60 Cars (Highway King)'
                   : totalOvertakes < 100
-                  ? '100 سيارة (أسطورة المناورة)'
-                  : 'تم تحقيق أقصى رتبة!'}
+                  ? '100 Cars (Overtake Legend)'
+                  : 'Max Tier Achieved!'}
               </div>
             </div>
           </div>
         </div>
 
-        {/* بطاقة عداد السباقات اليومية */}
+        {/* Daily Races Card */}
         <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-amber-500/30 shadow-lg shadow-amber-500/5 relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -234,7 +231,7 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats: propStats }) 
             <div className="flex items-center justify-between gap-2 flex-wrap mb-2">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-bold text-xs border border-amber-500/30">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>عداد السباقات اليومية</span>
+                <span>Daily Races Log</span>
               </span>
               <span className="text-[11px] text-slate-400 font-medium">
                 {todayFormatted}
@@ -243,25 +240,25 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats: propStats }) 
 
             <p className="text-xs text-slate-300 leading-relaxed mb-3">
               {dailyData.count === 0
-                ? 'لم تخض أي سباق اليوم بعد. انطلق الآن وتحدَّ أرقامك القياسية!'
+                ? 'No races completed yet today. Jump into the arena and crush your personal best!'
                 : dailyData.count < 3
-                ? 'بداية رائعة اليوم! استمر في القيادة لجمع المكافآت وكسر الأرقام.'
+                ? 'Great start today! Keep racing to earn daily challenge gold rewards.'
                 : dailyData.count < 5
-                ? 'أداء بطولي! اقتربت جداً من تحقيق هدف اليوم (5 سباقات).'
-                : 'بطل شوارع المدينة اليوم! حققت وتجاوزت الهدف اليومي بجدارة.'}
+                ? 'High-octane pace! Almost at today\'s daily target of 5 races.'
+                : 'Daily Champion! You unlocked all daily race achievements today.'}
             </p>
           </div>
 
           <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-800/80 bg-slate-900/60 rounded-xl px-3.5 py-2.5">
             <div>
-              <div className="text-[10px] text-slate-400 font-medium">خاضها اليوم</div>
+              <div className="text-[10px] text-slate-400 font-medium">Completed Today</div>
               <div className="text-2xl font-black font-game text-amber-400 tabular-nums">
-                {dailyData.count} <span className="text-xs font-normal text-slate-400">سباقات</span>
+                {dailyData.count} <span className="text-xs font-normal text-slate-400">races</span>
               </div>
             </div>
             <div className="min-w-[110px]">
               <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                <span>هدف اليوم:</span>
+                <span>Daily Goal:</span>
                 <span className="font-bold text-white tabular-nums">{Math.min(dailyData.count, 5)} / 5</span>
               </div>
               <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
@@ -280,12 +277,12 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats: propStats }) 
       {/* CATEGORY FILTER TABS */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-none">
         {[
-          { id: 'all', label: 'جميع الإنجازات', icon: Layers },
-          { id: 'overtake', label: 'تجاوز السيارات', icon: Zap },
-          { id: 'record', label: 'الأرقام القياسية', icon: Trophy },
-          { id: 'races', label: 'السباقات واليوميات', icon: Flag },
-          { id: 'distance', label: 'المسافات', icon: Award },
-          { id: 'garage', label: 'المرآب والذهب', icon: Coins },
+          { id: 'all', label: 'All Badges', icon: Layers },
+          { id: 'overtake', label: 'Traffic Overtakes', icon: Zap },
+          { id: 'record', label: 'High Scores', icon: Trophy },
+          { id: 'races', label: 'Races & Career', icon: Flag },
+          { id: 'distance', label: 'Distance', icon: Award },
+          { id: 'garage', label: 'Garage & Gold', icon: Coins },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeCategory === tab.id;
@@ -342,7 +339,7 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats: propStats }) 
                       {ach.unlocked ? (
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">
                           <Sparkles className="w-2.5 h-2.5" />
-                          تم الإنجاز
+                          Unlocked
                         </span>
                       ) : (
                         <span className="text-[10px] text-slate-500 tabular-nums shrink-0">
@@ -360,10 +357,10 @@ export const Achievements: React.FC<AchievementsProps> = ({ stats: propStats }) 
               {/* Reward and Progress Bar */}
               <div className="mt-3 pt-2.5 border-t border-slate-800/60 flex flex-col gap-1.5">
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400 font-medium">المكافأة:</span>
+                  <span className="text-slate-400 font-medium">Reward:</span>
                   <span className="inline-flex items-center gap-1 font-bold text-amber-400">
                     <Coins className="w-3 h-3" />
-                    <span>+{ach.reward} عملة</span>
+                    <span>+{ach.reward} Coins</span>
                   </span>
                 </div>
 

@@ -4,7 +4,6 @@ import { Share2, Check, Copy } from 'lucide-react';
 interface SocialPlatform {
   id: string;
   name: string;
-  nameEn: string;
   bgColor: string;
   textColor: string;
   borderColor: string;
@@ -39,7 +38,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
   };
 
   const getShareTitle = () => {
-    return 'لعبة سباق سيارات المدينة السريعة للأبطال 🏎️ - العب الآن مجاناً عبر المتصفح!';
+    return 'City Speed Heroes 🏎️ - Play free 3D car racing game online on games-children.com!';
   };
 
   const openSharePopup = (url: string) => {
@@ -58,7 +57,6 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(url);
       } else {
-        // Fallback for older browsers / iframe restrictions
         const textArea = document.createElement('textarea');
         textArea.value = url;
         document.body.appendChild(textArea);
@@ -69,20 +67,19 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
       setCopied(platformName || 'general');
       showToast(
         platformName
-          ? `تم نسخ رابط اللعبة بنجاح! شاركه الآن على ${platformName} 🚀`
-          : 'تم نسخ رابط اللعبة إلى الحافظة بنجاح! 🎉'
+          ? `Game link copied! Share now on ${platformName} 🚀`
+          : 'Game link copied to clipboard! 🎉'
       );
       setTimeout(() => setCopied(null), 3000);
     } catch {
-      showToast('تعذر النسخ التلقائي، يمكنك نسخ الرابط من شريط العنوان.');
+      showToast('Could not copy automatically. You can copy the URL from your address bar.');
     }
   };
 
   const platforms: SocialPlatform[] = [
     {
       id: 'facebook',
-      name: 'فيسبوك',
-      nameEn: 'Facebook',
+      name: 'Facebook',
       bgColor: 'bg-[#1877F2]',
       textColor: 'text-white',
       borderColor: 'border-[#1877F2]/40',
@@ -98,8 +95,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
     },
     {
       id: 'twitter',
-      name: 'تويتر (X)',
-      nameEn: 'Twitter / X',
+      name: 'X (Twitter)',
       bgColor: 'bg-black',
       textColor: 'text-white',
       borderColor: 'border-slate-700',
@@ -110,13 +106,12 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
         </svg>
       ),
       action: (url, title) => {
-        openSharePopup(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}&hashtags=ألعاب_أطفال,سباق_سيارات`);
+        openSharePopup(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}&hashtags=CarRacing,CitySpeedHeroes,FreeGames`);
       },
     },
     {
       id: 'whatsapp',
-      name: 'واتساب',
-      nameEn: 'WhatsApp',
+      name: 'WhatsApp',
       bgColor: 'bg-[#25D366]',
       textColor: 'text-white',
       borderColor: 'border-[#25D366]/40',
@@ -133,8 +128,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
     },
     {
       id: 'messenger',
-      name: 'ماسنجر',
-      nameEn: 'Messenger',
+      name: 'Messenger',
       bgColor: 'bg-gradient-to-r from-[#00B2FF] via-[#006AFF] to-[#9B30FF]',
       textColor: 'text-white',
       borderColor: 'border-[#0084FF]/40',
@@ -145,7 +139,6 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
         </svg>
       ),
       action: (url) => {
-        // Support fb-messenger protocol or fallback dialog
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         if (isMobile) {
           window.location.href = `fb-messenger://share/?link=${encodeURIComponent(url)}`;
@@ -156,8 +149,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
     },
     {
       id: 'telegram',
-      name: 'تلجرام',
-      nameEn: 'Telegram',
+      name: 'Telegram',
       bgColor: 'bg-[#229ED9]',
       textColor: 'text-white',
       borderColor: 'border-[#229ED9]/40',
@@ -173,8 +165,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
     },
     {
       id: 'instagram',
-      name: 'انستجرام',
-      nameEn: 'Instagram',
+      name: 'Instagram',
       bgColor: 'bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]',
       textColor: 'text-white',
       borderColor: 'border-[#dc2743]/40',
@@ -185,14 +176,13 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
         </svg>
       ),
       action: () => {
-        copyToClipboard('انستجرام');
+        copyToClipboard('Instagram');
         window.open('https://www.instagram.com/', '_blank');
       },
     },
     {
       id: 'pinterest',
-      name: 'بينترست',
-      nameEn: 'Pinterest',
+      name: 'Pinterest',
       bgColor: 'bg-[#E60023]',
       textColor: 'text-white',
       borderColor: 'border-[#E60023]/40',
@@ -208,8 +198,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
     },
     {
       id: 'snapchat',
-      name: 'سناب شات',
-      nameEn: 'Snapchat',
+      name: 'Snapchat',
       bgColor: 'bg-[#FFFC00]',
       textColor: 'text-slate-950 font-bold',
       borderColor: 'border-[#E6E300]',
@@ -230,8 +219,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
     },
     {
       id: 'tiktok',
-      name: 'تيك توك',
-      nameEn: 'TikTok',
+      name: 'TikTok',
       bgColor: 'bg-black',
       textColor: 'text-white',
       borderColor: 'border-slate-800',
@@ -242,14 +230,13 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
         </svg>
       ),
       action: () => {
-        copyToClipboard('تيك توك');
+        copyToClipboard('TikTok');
         window.open('https://www.tiktok.com/', '_blank');
       },
     },
     {
       id: 'linkedin',
-      name: 'لينكد إن',
-      nameEn: 'LinkedIn',
+      name: 'LinkedIn',
       bgColor: 'bg-[#0A66C2]',
       textColor: 'text-white',
       borderColor: 'border-[#0A66C2]/40',
@@ -269,7 +256,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
     <div className={`w-full ${className}`}>
       {/* Toast Feedback Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 start-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-slate-900/95 text-emerald-400 border border-emerald-500/50 shadow-2xl backdrop-blur-md text-xs sm:text-sm font-semibold flex items-center gap-2 animate-bounce">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-slate-900/95 text-emerald-400 border border-emerald-500/50 shadow-2xl backdrop-blur-md text-xs sm:text-sm font-semibold flex items-center gap-2 animate-bounce">
           <Check className="w-4 h-4 text-emerald-400" />
           <span>{toastMessage}</span>
         </div>
@@ -282,7 +269,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
           : 'bg-gradient-to-b from-slate-50 to-white border-slate-200 shadow-xs'
       }`}>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-2.5 text-center sm:text-start">
+          <div className="flex items-center gap-2.5 text-center sm:text-left">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-md ${
               isDark ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-amber-100 text-amber-700'
             }`}>
@@ -290,10 +277,10 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
             </div>
             <div>
               <h3 className={`font-black font-game text-sm sm:text-base ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                شارك اللعبة مع أصدقائك
+                Share With Friends & Competitors
               </h3>
               <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                تحدَّ أصدقاءك في سباق سيارات المدينة السريعة بنقرة واحدة!
+                Challenge friends to a high-speed city highway race with one click!
               </p>
             </div>
           </div>
@@ -308,17 +295,17 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
                 ? 'bg-slate-800/80 hover:bg-slate-800 text-slate-200 border-slate-700 hover:border-slate-600'
                 : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
             }`}
-            title="نسخ رابط اللعبة"
+            title="Copy Game Link"
           >
             {copied === 'general' ? (
               <>
                 <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span>تم نسخ الرابط!</span>
+                <span>Link Copied!</span>
               </>
             ) : (
               <>
                 <Copy className="w-3.5 h-3.5 text-amber-500" />
-                <span>نسخ الرابط</span>
+                <span>Copy Link</span>
               </>
             )}
           </button>
@@ -338,8 +325,8 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
                     ? 'bg-slate-800/50 hover:bg-slate-800 border-slate-700/70 text-slate-200'
                     : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
                 }`}
-                title={`مشاركة عبر ${platform.name}`}
-                aria-label={`مشاركة على ${platform.name}`}
+                title={`Share on ${platform.name}`}
+                aria-label={`Share on ${platform.name}`}
               >
                 {/* Platform Icon Badge */}
                 <div

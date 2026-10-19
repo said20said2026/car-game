@@ -10,7 +10,6 @@ import {
   Lock,
   Globe,
   Sparkles,
-  HelpCircle,
   AlertTriangle,
 } from 'lucide-react';
 
@@ -53,29 +52,29 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
   };
 
   const navItems = [
-    { id: 'privacy', label: 'سياسة الخصوصية', icon: Shield },
-    { id: 'terms', label: 'شروط الخدمة', icon: FileText },
-    { id: 'disclaimer', label: 'إخلاء المسؤولية', icon: AlertTriangle },
-    { id: 'contact', label: 'اتصل بنا', icon: Mail },
-    { id: 'about', label: 'من نحن', icon: Info },
+    { id: 'privacy', label: 'Privacy Policy', icon: Shield },
+    { id: 'terms', label: 'Terms of Service', icon: FileText },
+    { id: 'disclaimer', label: 'Disclaimer', icon: AlertTriangle },
+    { id: 'contact', label: 'Contact Us', icon: Mail },
+    { id: 'about', label: 'About Us', icon: Info },
   ] as const;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md">
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md" dir="ltr">
+      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col text-slate-100 text-left">
         {/* Modal Top Bar */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-800 bg-slate-950/50">
           <div className="flex items-center gap-2">
             <Globe className="w-5 h-5 text-amber-400" />
             <div className="text-base sm:text-lg font-bold font-game text-white">
-              بوابة المعلومات والسياسات القانونية · games-children.com
+              Legal & Information Center · games-children.com
             </div>
           </div>
 
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-            aria-label="إغلاق النافذة"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
@@ -105,194 +104,168 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
 
         {/* Modal Body / Tab Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-7 text-xs sm:text-sm text-slate-300 leading-relaxed space-y-6">
-          {/* TAB 1: سياسة الخصوصية (PRIVACY POLICY) */}
+          {/* TAB 1: PRIVACY POLICY */}
           {activeTab === 'privacy' && (
             <div className="space-y-6 animate-fade-in">
               <div className="border-b border-slate-800 pb-4">
                 <h2 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
                   <Lock className="w-5 h-5 text-amber-400" />
-                  <span>سياسة الخصوصية (Privacy Policy)</span>
+                  <span>Privacy Policy</span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  آخر تحديث: 2026 · تتوافق هذه السياسة مع معايير Google AdSense واللائحة العامة لحماية البيانات (GDPR)
+                  Last Updated: 2026 · Compliant with Google AdSense Policies, COPPA & GDPR Guidelines
                 </p>
               </div>
 
               <section className="space-y-3">
-                <h3 className="text-base font-bold text-white">1. التزامنا بخصوصيتك</h3>
+                <h3 className="text-base font-bold text-white">1. Our Commitment to Your Privacy</h3>
                 <p>
-                  نحن في موقع <strong>games-children.com</strong> نولي أهمية قصوى لخصوصية زوارنا. توضح هذه الوثيقة أنواع المعلومات الشخصية التي يتم استلامها وجمعها عند استخدامك للعبة سباق سيارات المدينة السريعة وكيفية حمايتها واستخدامها.
+                  At <strong>games-children.com</strong>, the privacy of our visitors is of paramount importance to us. This Privacy Policy document outlines the types of personal and non-personal information received and collected when you play City Speed Heroes, and how that information is safeguarded.
                 </p>
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-base font-bold text-white">2. ملفات تعريف الارتباط وإعلانات Google AdSense</h3>
+                <h3 className="text-base font-bold text-white">2. Cookies & Google AdSense Advertising</h3>
                 <p>
-                  يستخدم موقعنا خدمات إعلانية مقدمة من أطراف ثالثة، وعلى رأسها <strong>Google AdSense</strong>:
+                  Our website displays advertisements served by third-party advertising partners, notably <strong>Google AdSense</strong>:
                 </p>
-                <ul className="list-disc pr-6 space-y-2">
+                <ul className="list-disc pl-6 space-y-2">
                   <li>
-                    تستخدم شركة Google ملفات تعريف الارتباط (مثل ملف DART) لعرض الإعلانات للمستخدمين استناداً إلى زيارتهم لهذا الموقع وغيره من المواقع على شبكة الإنترنت.
+                    Google, as a third-party vendor, uses cookies (including the DoubleClick DART cookie) to serve ads based on prior visits to this website or other websites on the internet.
                   </li>
                   <li>
-                    يجوز للمستخدمين إلغاء استخدام ملف تعريف الارتباط DART بزيارة سياسة الخصوصية الخاصة بشبكة إعلانات Google ومحتواها.
+                    Users may opt out of personalized advertising by visiting Google Ads Settings (www.google.com/settings/ads) or through the Network Advertising Initiative opt-out page.
                   </li>
                   <li>
-                    قد تستخدم شبكات الإعلانات التابعة لجهات خارجية تقنيات (مثل ملفات تعريف الارتباط أو إشارات الويب) لقياس فاعلية حملاتها الإعلانية أو لتخصيص محتوى الإعلانات التي تراها.
+                    Third-party ad networks may also use cookies or web beacons to measure the effectiveness of their advertisements and personalize advertising content.
                   </li>
                 </ul>
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-base font-bold text-white">3. التخزين المحلي للعبة (LocalStorage)</h3>
+                <h3 className="text-base font-bold text-white">3. Local Browser Storage (HTML5 LocalStorage)</h3>
                 <p>
-                  تستخدم اللعبة خاصية التخزين المحلي في متصفحك (HTML5 LocalStorage) حصرياً لحفظ تقدمك الشخصي في اللعبة (مثل: عدد العملات المجمعة، السيارات المفتوحة، مستويات ترقية المحرك، وأعلى رقم قياسي محقق). هذه البيانات تُحفظ محلياً على جهازك ولا نقوم برفعها أو نقلها إلى أي خوادم خارجية.
+                  City Speed Heroes uses your browser’s local storage (LocalStorage) exclusively to store your personal offline game progress, such as collected gold coins, unlocked supercars, engine upgrade levels, and your highest record score. This data is stored strictly on your local device and is never uploaded, tracked, or sold to external servers.
                 </p>
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-base font-bold text-white">4. خصوصية الأطفال واليافعين</h3>
+                <h3 className="text-base font-bold text-white">4. Children's Online Privacy (COPPA Compliance)</h3>
                 <p>
-                  موقعنا آمن ومصمم لتقديم محتوى ترفيهي هادف ونظيف للأطفال البالغين والناشئين وجميع الفئات العمرية. لا نطلب تسجيل حساب، ولا نجمع أسماء المستخدمين الحقيقية أو عناوين منازلهم أو أرقام هواتفهم.
+                  We are deeply committed to child safety and strictly observe COPPA (Children’s Online Privacy Protection Act) regulations. We do not require registration, do not collect personal names, real addresses, phone numbers, or geolocations from any player.
                 </p>
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-base font-bold text-white">5. التواصل بشأن الخصوصية</h3>
+                <h3 className="text-base font-bold text-white">5. Privacy Inquiries & Contact</h3>
                 <p>
-                  إذا كانت لديك أي استفسارات أو أسئلة حول سياسة الخصوصية الخاصة بنا، يمكنك التواصل معنا مباشرة عبر البريد الإلكتروني الرسمي: <strong className="text-amber-400">samipico425@gmail.com</strong>.
+                  If you have any questions, concerns, or requests regarding this Privacy Policy, feel free to contact our administrative team directly via email: <strong className="text-amber-400">samipico425@gmail.com</strong>.
                 </p>
               </section>
             </div>
           )}
 
-          {/* TAB 2: شروط الخدمة (TERMS OF SERVICE) */}
+          {/* TAB 2: TERMS OF SERVICE */}
           {activeTab === 'terms' && (
             <div className="space-y-6 animate-fade-in">
               <div className="border-b border-slate-800 pb-4">
                 <h2 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
                   <FileText className="w-5 h-5 text-amber-400" />
-                  <span>شروط الخدمة والاستخدام (Terms of Service)</span>
+                  <span>Terms of Service</span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  شروط الاستخدام القانونية للعبة وموقع games-children.com
+                  Legal terms and user guidelines for City Speed Heroes on games-children.com
                 </p>
               </div>
 
               <section className="space-y-3">
-                <h3 className="text-base font-bold text-white">1. الموافقة على الشروط</h3>
+                <h3 className="text-base font-bold text-white">1. Acceptance of Terms</h3>
                 <p>
-                  بمجرد دخولك إلى هذا الموقع ولعب <strong>لعبة سباق سيارات المدينة السريعة</strong>، فإنك توافق على الالتزام بشروط وأحكام الاستخدام الموضحة هنا، وجميع القوانين واللوائح المعمول بها محلياً ودولياً.
+                  By accessing, browsing, or playing <strong>City Speed Heroes</strong> on games-children.com, you agree to be bound by these Terms of Service, all applicable local and international laws, and regulations.
                 </p>
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-base font-bold text-white">2. حقوق الملكية الفكرية</h3>
+                <h3 className="text-base font-bold text-white">2. Intellectual Property Rights</h3>
                 <p>
-                  كافة الأصول البرمجية، والأكواد المصدرية، وتصميمات سيارات السباق، والمحرك الصوتي، والمحتوى النصي المنشور على الموقع هي ملك حصري لموقع <strong>games-children.com</strong>، ومحمية بموجب قوانين حقوق النشر والعلامات التجارية المعمول بها.
+                  All software code, graphics, interactive canvas elements, audio soundscapes, and written editorial content published on this website are the proprietary property of <strong>games-children.com</strong> and are protected under international copyright and intellectual property treaties.
                 </p>
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-base font-bold text-white">3. الاستخدام المقبول</h3>
+                <h3 className="text-base font-bold text-white">3. Acceptable Use Policy</h3>
                 <p>
-                  يُسمح للمستخدمين بالاستمتاع باللعبة لأغراض الترفيه الشخصي غير التجاري. ويُحظر تماماً:
+                  Users are granted a personal, non-exclusive, revocable license to play the game for personal, non-commercial entertainment. You agree not to:
                 </p>
-                <ul className="list-disc pr-6 space-y-1.5 text-slate-300">
-                  <li>محاولة اختراق أو تعطيل أو إغراق خوادم الموقع بحركة مرور ضارة.</li>
-                  <li>استخدام برمجيات غير مصرح بها للتلاعب بالنقاط أو الإعلانات المعروضة.</li>
-                  <li>إعادة هندسة الأكواد أو نسخ المحتوى لأغراض تجارية مضللة دون إذن كتابي مسبق.</li>
+                <ul className="list-disc pl-6 space-y-1.5 text-slate-300">
+                  <li>Attempt to compromise, disrupt, or flood site servers with automated bot traffic or malicious requests.</li>
+                  <li>Use unauthorized scripts, memory injectors, or ad-block spoofers to manipulate scores or revenue systems.</li>
+                  <li>Reverse-engineer or re-host game assets without prior written consent.</li>
                 </ul>
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-base font-bold text-white">4. إخلاء المسؤولية</h3>
+                <h3 className="text-base font-bold text-white">4. Disclaimer of Warranties</h3>
                 <p>
-                  يتم تقديم اللعبة ومحتوى الموقع "كما هو" (AS IS) دون أي ضمانات صريحة أو ضمنية. نحن نسعى دائماً لضمان استقرار وسلاسة اللعب بدون انقطاع، ولكننا لا نتحمل المسؤولية عن أي انقطاع مفاجئ ناتج عن المتصفح أو مزودي خدمة الإنترنت.
+                  The game and all associated features are provided on an "AS IS" and "AS AVAILABLE" basis without warranties of any kind. While we strive to ensure 99.9% uptime and smooth 60 FPS performance, we are not liable for transient browser crashes or internet dropouts.
                 </p>
               </section>
             </div>
           )}
 
-          {/* TAB: إخلاء المسؤولية (DISCLAIMER) */}
+          {/* TAB 3: LEGAL DISCLAIMER */}
           {activeTab === 'disclaimer' && (
             <div className="space-y-6 animate-fade-in">
               <div className="border-b border-slate-800 pb-4">
                 <h2 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-amber-400" />
-                  <span>إخلاء المسؤولية (Legal Disclaimer)</span>
+                  <span>Legal Disclaimer</span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  تاريخ السريان: 2026 · تنبيهات قانونية وإرشادات استخدام موقع games-children.com
+                  Effective Date: 2026 · Safety advisories and legal notices for games-children.com
                 </p>
               </div>
 
               <section className="space-y-2">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <span>1. إخلاء المسؤولية العامة والمحتوى الترفيهي</span>
-                </h3>
+                <h3 className="text-base font-bold text-white">1. General Entertainment Advisory</h3>
                 <p>
-                  يتم تقديم محتوى لعبة <strong>سباق سيارات المدينة السريعة للأبطال</strong> وكافة المواد التفاعلية والمعلومات المتاحة على موقع <code>games-children.com</code> لأغراض الترفيه والتسلية فقط. إن تجربة قيادة المركبات الافتراضية ومناورات تفادي الحارات والسرعات الفائقة وحركات الانجراف هي محض محاكاة برمجية رقمية خيالية ولا تمثل بأي شكل من الأشكال قواعد القيادة الواقعية على الطرق السريعة العامة.
+                  <strong>City Speed Heroes</strong> is designed and published solely for casual video game entertainment on games-children.com. The speeds, near-miss passes, nitro boosts, and lane-swerving tactics depicted within the game are purely fictional arcade simulations and do not represent real-world driving physics or highway safety laws.
                 </p>
               </section>
 
               <section className="space-y-2">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <span>2. السلامة المرورية وعدم تقليد القيادة في الواقع</span>
-                </h3>
+                <h3 className="text-base font-bold text-white">2. Real-World Traffic Safety Notice</h3>
                 <p>
-                  نحث جميع مستخدمينا وزوارنا من مختلف الأعمار، ولا سيما الفئات الشابة، على الالتزام الصارم بقوانين السير والمرور المعمول بها في بلدانهم، وعدم محاولة تقليد أو تطبيق أي من الحركات البهلوانية أو المناورات الخطيرة (مثل التجاوز الوشيك، القيادة بسرعات مفرطة، أو استخدام مكابح اليد المفاجئة) أثناء قيادة السيارات في الواقع الفعلي. السلامة على الطريق مسؤولية مشتركة وأولى أولويات الحياة اليومية.
+                  We strongly urge all players—especially teenage and new drivers—to strictly follow all posted speed limits, seatbelt regulations, and traffic laws in their jurisdiction. Never attempt or simulate any aggressive driving, high-speed weaving, or emergency braking in real motor vehicles. Road safety is everyone's responsibility.
                 </p>
               </section>
 
               <section className="space-y-2">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <span>3. حقوق الملكية الفكرية والعلامات التجارية</span>
-                </h3>
+                <h3 className="text-base font-bold text-white">3. Trademarks & Brand Non-Affiliation</h3>
                 <p>
-                  جميع نماذج السيارات والمجسمات ثلاثية الأبعاد والتأثيرات الصوتية المستخدمة في اللعبة إما مصممة خصيصاً للمشروع أو مستوحاة من فئات رياضية عامة أو مُرخصة ضمن رخص المصادر المفتوحة للاستخدام الترفيهي. إن أي تشابه في الأسماء أو الهياكل مع علامات تجارية واقعية لشركات تصنيع السيارات هو تشابه تخيلي بحت ولا يشير إلى أي شراكة أو رعاية أو موافقة رسمية من تلك الشركات.
+                  All vehicle designs, body silhouettes, sound effects, and styling cues are artistic creations or open-source stylized models. Any resemblance to real automobile manufacturers, trademarks, or proprietary names is purely coincidental and does not constitute an endorsement, sponsorship, or licensing agreement by those respective brand holders.
                 </p>
               </section>
 
               <section className="space-y-2">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <span>4. الإعلانات التابعة لجهات خارجية ومعايير Google AdSense</span>
-                </h3>
+                <h3 className="text-base font-bold text-white">4. Third-Party Advertisements</h3>
                 <p>
-                  يحتوي الموقع على إعلانات رقمية تُدار عبر شبكة <strong>Google AdSense</strong>. إن ظهور أي إعلان لسلعة أو خدمة أو رابط خارجي على الموقع لا يعني تزكيتنا أو ضماننا لمحتوى ذلك الإعلان أو جودته. يتحمل المستخدم المسؤولية الكاملة عند النقر على الروابط الخارجية أو التعامل التجاري مع المعلنين المستقلين.
-                </p>
-              </section>
-
-              <section className="space-y-2">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <span>5. حدود المسؤولية الفنية والبرمجية</span>
-                </h3>
-                <p>
-                  يُتاح الموقع ومحتواه "كما هو" (AS IS) و "حسب المتوفر" دون أي ضمانات ضمنية بشأن التوافق المطلق مع جميع الأجهزة أو المتصفحات أو انعدام فترات التوقف المؤقت للصيانة التقنية. لا يتحمل الموقع أي مسؤولية عن أي أضرار مباشرة أو غير مباشرة قد تنشأ عن استخدام اللعبة أو فقدان بيانات النقاط المحفوظة محلياً (LocalStorage) في متصفح المستخدم.
-                </p>
-              </section>
-
-              <section className="space-y-2">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <span>6. حماية الأطفال وإرشادات العائلة</span>
-                </h3>
-                <p>
-                  تم تصميم هذه اللعبة لتكون بيئة ترفيهية نظيفة وآمنة لجميع أفراد الأسرة، خالية من مشاهد العنف الواقعي أو المحتوى غير الملائم. وننصح أولياء الأمور بمتابعة الأوقات التي يقضيها أطفالهم في ممارسة الألعاب الإلكترونية لضمان التوازن الصحي بين الأنشطة اليومية والدراسة.
+                  Advertisements appearing on this site are served by third-party platforms including Google AdSense. games-children.com does not endorse or assume liability for the products, claims, or services advertised by third-party sponsors.
                 </p>
               </section>
             </div>
           )}
 
-          {/* TAB 3: اتصل بنا (CONTACT US) */}
+          {/* TAB 4: CONTACT US */}
           {activeTab === 'contact' && (
             <div className="space-y-6 animate-fade-in">
               <div className="border-b border-slate-800 pb-4">
                 <h2 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
                   <Mail className="w-5 h-5 text-amber-400" />
-                  <span>اتصل بنا (Contact Us)</span>
+                  <span>Contact Us & Player Support</span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  يسعدنا استقبال استفساراتك واقتراحاتك حول اللعبة أو الشراكات الإعلانية
+                  We welcome feedback, suggestions for new supercars, bug reports, and business inquiries
                 </p>
               </div>
 
@@ -302,68 +275,67 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                   {contactSubmitted ? (
                     <div className="p-6 bg-emerald-950/60 border border-emerald-500/50 rounded-2xl text-center space-y-3">
                       <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
-                      <div className="text-base font-bold text-white">تم إرسال رسالتك بنجاح!</div>
+                      <div className="text-base font-bold text-white">Message Sent Successfully!</div>
                       <p className="text-xs text-slate-300">
-                        شكراً لتواصلك معنا. سنقوم بمراجعة رسالتك والرد عليك عبر بريدك الإلكتروني في أقرب وقت.
+                        Thank you for reaching out. We will review your message and reply to your email as soon as possible.
                       </p>
                     </div>
                   ) : (
                     <form onSubmit={handleContactSubmit} className="space-y-4">
                       <div>
                         <label className="block text-xs font-semibold text-slate-300 mb-1">
-                          الاسم الكامل
+                          Full Name
                         </label>
                         <input
                           type="text"
                           required
                           value={contactName}
                           onChange={(e) => setContactName(e.target.value)}
-                          placeholder="مثال: أحمد محمد"
+                          placeholder="e.g. Alex Johnson"
                           className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-amber-400"
                         />
                       </div>
 
                       <div>
                         <label className="block text-xs font-semibold text-slate-300 mb-1">
-                          البريد الإلكتروني
+                          Email Address
                         </label>
                         <input
                           type="email"
                           required
                           value={contactEmail}
                           onChange={(e) => setContactEmail(e.target.value)}
-                          placeholder="example@email.com"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-amber-400 text-left"
-                          dir="ltr"
+                          placeholder="name@example.com"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-amber-400"
                         />
                       </div>
 
                       <div>
                         <label className="block text-xs font-semibold text-slate-300 mb-1">
-                          موضوع الرسالة
+                          Subject
                         </label>
                         <select
                           value={contactSubject}
                           onChange={(e) => setContactSubject(e.target.value)}
                           className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs sm:text-sm focus:outline-none focus:border-amber-400"
                         >
-                          <option value="general">استفسار عام</option>
-                          <option value="feedback">اقتراح لتطوير اللعبة وإضافة سيارات</option>
-                          <option value="bug">الإبلاغ عن مشكلة برمجية (Bug Report)</option>
-                          <option value="ads">استفسار بخصوص الإعلانات والشراكات</option>
+                          <option value="general">General Feedback</option>
+                          <option value="feedback">Car & Track Suggestion</option>
+                          <option value="bug">Bug Report / Performance Issue</option>
+                          <option value="ads">Advertising & Partnership Inquiry</option>
                         </select>
                       </div>
 
                       <div>
                         <label className="block text-xs font-semibold text-slate-300 mb-1">
-                          نص الرسالة
+                          Message
                         </label>
                         <textarea
                           required
                           rows={4}
                           value={contactMessage}
                           onChange={(e) => setContactMessage(e.target.value)}
-                          placeholder="اكتب رسالتك أو ملاحظاتك هنا..."
+                          placeholder="Type your message, suggestions, or question here..."
                           className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-amber-400 resize-none"
                         />
                       </div>
@@ -373,7 +345,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                         className="w-full py-3 px-4 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-xl transition-all shadow-md shadow-amber-400/20 flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm"
                       >
                         <Send className="w-4 h-4" />
-                        <span>إرسال الرسالة الآن</span>
+                        <span>Send Message</span>
                       </button>
                     </form>
                   )}
@@ -383,12 +355,12 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                 <div className="md:col-span-2 space-y-4 bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-slate-800/80">
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-amber-400" />
-                    <span>معلومات التواصل المباشر</span>
+                    <span>Direct Channels</span>
                   </h3>
 
                   <div className="space-y-3 text-xs">
                     <div>
-                      <div className="text-slate-400 font-semibold mb-0.5">البريد الإلكتروني المعتمد:</div>
+                      <div className="text-slate-400 font-semibold mb-0.5">Support Email:</div>
                       <a
                         href="mailto:samipico425@gmail.com"
                         className="text-amber-400 font-mono hover:underline text-xs"
@@ -398,97 +370,71 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                     </div>
 
                     <div>
-                      <div className="text-slate-400 font-semibold mb-0.5">الموقع الرسمي:</div>
-                      <div className="text-slate-200 font-mono">https://games-children.com</div>
+                      <div className="text-slate-400 font-semibold mb-0.5">Website:</div>
+                      <div className="text-slate-200 font-mono">https://www.games-children.com</div>
                     </div>
 
                     <div>
-                      <div className="text-slate-400 font-semibold mb-0.5">ساعات المتابعة:</div>
-                      <div className="text-slate-300">يومياً من 9:00 صباحاً حتى 6:00 مساءً (الرد خلال 24 ساعة)</div>
+                      <div className="text-slate-400 font-semibold mb-0.5">Support Hours:</div>
+                      <div className="text-slate-300">Monday - Friday (Response within 24 hours)</div>
                     </div>
                   </div>
 
                   <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400">
-                    نرحب بجميع اقتراحات اللاعبين لإضافة ميزات ومضامير وسيارات جديدة في التحديثات الدورية!
+                    We review all player feedback to introduce new tracks, cars, and gameplay features in our regular updates!
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* TAB 4: من نحن (ABOUT US) */}
+          {/* TAB 5: ABOUT US */}
           {activeTab === 'about' && (
             <div className="space-y-6 animate-fade-in">
               <div className="border-b border-slate-800 pb-4">
                 <h2 className="text-xl sm:text-2xl font-bold font-game text-white flex items-center gap-2">
                   <Info className="w-5 h-5 text-amber-400" />
-                  <span>من نحن (About Us) · ألعاب سباق سيارات المدينة</span>
+                  <span>About Us · games-children.com</span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  رؤيتنا ورسالتنا في تقديم ألعاب متصفح عربية خفيفة واحترافية
+                  Our mission to bring safe, lightning-fast browser gaming to players across USA, Canada, Netherlands & worldwide
                 </p>
               </div>
 
               <section className="space-y-3">
-                <h3 className="text-base font-bold text-white">من نحن؟</h3>
+                <h3 className="text-base font-bold text-white">Who We Are</h3>
                 <p>
-                  نحن فريق من مطوري الألعاب ومصممي تجارب الويب العرب، أنشأنا منصة <strong>games-children.com</strong> بهدف تقديم تجربة ألعاب أركيد تفاعلية متطورة للمستخدم العربي ومحبي السرعة من الأطفال البالغين والناشئين والشباب، دون تعقيدات التثبيت وبدون استهلاك مساحات الذاكرة.
+                  At <strong>games-children.com</strong>, we are an independent game studio passionate about building lightweight, high-performance web games. City Speed Heroes combines the thrill of classic arcade racing with modern HTML5 pseudo-3D graphics, delivering instantaneous gameplay directly in any modern browser without heavy downloads or device memory bloat.
                 </p>
-
-                <figure className="my-4 rounded-xl overflow-hidden border border-slate-800 bg-slate-950">
-                  <picture>
-                    <source srcSet="/assets/social-cover.webp" type="image/webp" />
-                    <img
-                      src="/assets/social-cover.jpg"
-                      alt="فريق تطوير لعبة سباق سيارات المدينة السريعة للأبطال ومضمار السباق التفاعلي"
-                      width={1200}
-                      height={630}
-                      className="w-full h-auto object-cover max-h-[220px]"
-                      loading="lazy"
-                    />
-                  </picture>
-                </figure>
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-base font-bold text-white">رسالتنا وهدفنا</h3>
-                <p>
-                  رسالتنا هي إثراء المحتوى الترفيهي العربي على شبكة الإنترنت بألعاب ذات أداء تقني عالٍ تنافس الألعاب العالمية:
-                </p>
+                <h3 className="text-base font-bold text-white">Our Core Commitments</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
-                    <div className="font-bold text-amber-400 text-xs sm:text-sm">بيئة لعب آمنة وموثوقة</div>
+                    <div className="font-bold text-amber-400 text-xs sm:text-sm">Family-Safe & COPPA Compliant</div>
                     <p className="text-[11px] text-slate-300">
-                      خالية من أي محتوى غير لائق أو برمجيات خبيثة، مع الالتزام التام بإرشادات جوجل لألعاب الأطفال والأسرة.
+                      Zero tracking of minors, no predatory microtransactions, and strict adherence to Google AdSense family safety guidelines.
                     </p>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
-                    <div className="font-bold text-sky-400 text-xs sm:text-sm">أعلى كفاءة وسرعة تحميل</div>
+                    <div className="font-bold text-sky-400 text-xs sm:text-sm">Instant 60 FPS Performance</div>
                     <p className="text-[11px] text-slate-300">
-                      الاعتماد على تقنيات HTML5 و Web Audio لتشغيل اللعبة في أجزاء من الثانية دون انتظار طويل.
+                      Built with modern HTML5 Canvas, Web Audio API, and TypeScript for silky smooth frame rates on mobile, tablet, and desktop.
                     </p>
                   </div>
                 </div>
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-base font-bold text-white">تقنيات تطوير اللعبة</h3>
-                <p>
-                  تم بناء <strong>لعبة سباق سيارات المدينة السريعة</strong> باستخدام أحدث تقنيات الويب:
-                </p>
-                <ul className="list-disc pr-6 space-y-1.5 text-slate-300">
-                  <li><strong>HTML5 Canvas 2.5D:</strong> لرسم مسارات الطريق المتعرجة والمركبات بمعدل 60 إطاراً في الثانية.</li>
-                  <li><strong>Web Audio API:</strong> لتوليد أصوات محركات واقعية وتأثيرات النيترو والانجراف البرمجية.</li>
-                  <li><strong>React & TypeScript:</strong> لواجهات مستخدم فائقة الاستجابة وخالية من الأخطاء.</li>
-                  <li><strong>تصميم متجاوب بالكامل:</strong> يتأقلم بدقة مع شاشات الهواتف الذكية والأجهزة اللوحية والحواسيب المكتبية.</li>
+                <h3 className="text-base font-bold text-white">Engineering & Tech Stack</h3>
+                <ul className="list-disc pl-6 space-y-1.5 text-slate-300">
+                  <li><strong>HTML5 Canvas 2.5D Engine:</strong> Ultra-responsive road curvature rendering and high-speed parallax backgrounds at 60 FPS.</li>
+                  <li><strong>Web Audio API:</strong> Dynamic procedural engine revs, turbo spools, nitrous hiss, and drift screech sound effects.</li>
+                  <li><strong>React & TypeScript:</strong> Seamless state management, garage upgrades, and career achievements.</li>
+                  <li><strong>Cross-Platform Responsiveness:</strong> Smooth touch steering on iOS & Android, and fluid WASD/arrow keys on PC & Mac.</li>
                 </ul>
-              </section>
-
-              <section className="space-y-2 border-t border-slate-800 pt-4">
-                <p className="text-xs text-slate-400">
-                  نتمنى لكم أوقاتاً ممتعة وحافلة بالإثارة والسرعة في سباقات المدينة!
-                </p>
               </section>
             </div>
           )}

@@ -52,15 +52,15 @@ export function generateDailyMissions(dateStr: string): DailyMission[] {
 
   // Pool of mission variations
   const distanceVariants = [
-    { target: 2000, reward: 120, title: 'قاطع المسافات اليومي', desc: 'اقطع مسافة إجمالية قدرها 2,000 متر في شوارع المدينة' },
-    { target: 2500, reward: 150, title: 'عداء الطرق السريعة', desc: 'اقطع مسافة إجمالية تبلغ 2,500 متر اليوم' },
-    { target: 3000, reward: 180, title: 'ماراثون السرعة القصوى', desc: 'اقطع مسافة إجمالية قدرها 3,000 متر اليوم' },
+    { target: 2000, reward: 120, title: 'Daily Distance Driver', desc: 'Drive a total distance of 2,000 meters on city highways' },
+    { target: 2500, reward: 150, title: 'Highway Cruiser', desc: 'Drive a total distance of 2,500 meters today' },
+    { target: 3000, reward: 180, title: 'High-Speed Marathon', desc: 'Cover an epic 3,000 meters total distance today' },
   ];
 
   const coinsVariants = [
-    { target: 40, reward: 120, title: 'جامع الذهب اليومي', desc: 'اجمع 40 عملة ذهبية من الطريق خلال سباقات اليوم' },
-    { target: 60, reward: 150, title: 'صائد الكنوز اللامعة', desc: 'اجمع 60 عملة ذهبية من الطريق خلال اليوم' },
-    { target: 80, reward: 200, title: 'ثروة شوارع المدينة', desc: 'اجمع 80 عملة ذهبية اليوم لتطوير سيارتك في المرآب' },
+    { target: 40, reward: 120, title: 'Daily Gold Collector', desc: 'Collect 40 gold coins on the road during today\'s races' },
+    { target: 60, reward: 150, title: 'Shiny Treasure Hunter', desc: 'Snag 60 gold coins on the road today' },
+    { target: 80, reward: 200, title: 'City Road Fortune', desc: 'Gather 80 gold coins today to upgrade your garage fleet' },
   ];
 
   const skillVariants = [
@@ -68,36 +68,36 @@ export function generateDailyMissions(dateStr: string): DailyMission[] {
       type: 'near_miss' as DailyMissionType,
       target: 5,
       reward: 150,
-      title: 'سيد التفادي الخارق',
-      desc: 'قم بتفادي 5 سيارات بتجاوز وشيك عالي الإثارة',
-      unit: 'مرات',
+      title: 'Near Miss Master',
+      desc: 'Dodge 5 traffic cars with high-thrill close near-miss passes',
+      unit: 'times',
       iconName: 'near_miss' as const,
     },
     {
       type: 'nitro_boost' as DailyMissionType,
       target: 6,
       reward: 150,
-      title: 'عاشق النيترو الصاروخي',
-      desc: 'قم بتفعيل النيترو 6 مرات للانطلاق بأقصى سرعة',
-      unit: 'مرات',
+      title: 'Nitro Boost Addict',
+      desc: 'Ignite nitrous boost 6 times for supersonic speeds',
+      unit: 'times',
       iconName: 'nitro' as const,
     },
     {
       type: 'single_score' as DailyMissionType,
       target: 800,
       reward: 180,
-      title: 'رقم قياسي مبهر',
-      desc: 'سجّل 800 نقطة على الأقل في جولة سباق فردية واحدة',
-      unit: 'نقطة',
+      title: 'Record Breaker',
+      desc: 'Score at least 800 points in a single racing session',
+      unit: 'pts',
       iconName: 'score' as const,
     },
     {
       type: 'races' as DailyMissionType,
       target: 3,
       reward: 150,
-      title: 'متسابق اليوم النشيط',
-      desc: 'خُض 3 سباقات كاملة اليوم لتأكيد مهاراتك القيادية',
-      unit: 'سباقات',
+      title: 'Active Daily Racer',
+      desc: 'Complete 3 full races today to prove your driving skills',
+      unit: 'races',
       iconName: 'races' as const,
     },
   ];
@@ -114,7 +114,7 @@ export function generateDailyMissions(dateStr: string): DailyMission[] {
       description: distChoice.desc,
       target: distChoice.target,
       current: 0,
-      unit: 'متر',
+      unit: 'm',
       rewardCoins: distChoice.reward,
       claimed: false,
       iconName: 'distance',
@@ -126,7 +126,7 @@ export function generateDailyMissions(dateStr: string): DailyMission[] {
       description: coinsChoice.desc,
       target: coinsChoice.target,
       current: 0,
-      unit: 'عملة',
+      unit: 'coins',
       rewardCoins: coinsChoice.reward,
       claimed: false,
       iconName: 'coins',

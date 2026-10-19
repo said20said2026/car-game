@@ -11,7 +11,6 @@ import {
   Gift,
   CheckCircle2,
   Play,
-  Award,
 } from 'lucide-react';
 import {
   DailyChallengesState,
@@ -67,7 +66,7 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
     if (res.success) {
       soundManager.playRewardFanfare();
       setChallenges(res.newState);
-      setCelebrationToast(`مبروك! تم استلام مكافأة "${title}" (+${res.rewardCoins} عملة ذهبية) 🎁`);
+      setCelebrationToast(`Awesome! Claimed reward for "${title}" (+${res.rewardCoins} Gold Coins) 🎁`);
       setTimeout(() => setCelebrationToast(null), 3500);
 
       if (onCoinsChange) {
@@ -81,7 +80,7 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
     if (res.success) {
       soundManager.playRewardFanfare();
       setChallenges(res.newState);
-      setCelebrationToast(`إنجاز أسطوري! فتحت الصندوق الذهبي اليومي وحصلت على +${res.rewardCoins} عملة إضافية! 🏆✨`);
+      setCelebrationToast(`Legendary achievement! Opened Grand Daily Chest: +${res.rewardCoins} Bonus Coins! 🏆✨`);
       setTimeout(() => setCelebrationToast(null), 4000);
 
       if (onCoinsChange) {
@@ -126,14 +125,14 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl sm:text-2xl font-bold font-game tracking-tight">
-                التحدي اليومي والمهام الخاصة
+                Daily Challenges & Quests
               </h2>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-sans font-bold border border-amber-500/30">
-                {summary.completed} من {summary.total} مكتمل
+                {summary.completed} of {summary.total} Completed
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-              مهام حصرية تتجدد يومياً: اكسب حتى <span className="text-amber-400 font-bold font-mono">+{totalPossibleCoins}</span> عملة ذهبية وطوّر سياراتك
+              Exclusive daily quests: Earn up to <span className="text-amber-400 font-bold font-mono">+{totalPossibleCoins}</span> gold coins to upgrade supercars
             </p>
           </div>
         </div>
@@ -142,7 +141,7 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
         <div className="flex items-center gap-3 shrink-0 flex-wrap">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 font-mono">
             <Clock className="w-4 h-4 text-amber-400" />
-            <span>يتجدد خلال:</span>
+            <span>Resets in:</span>
             <span className="text-amber-400 font-bold font-mono">{timeLeft}</span>
           </div>
 
@@ -152,7 +151,7 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
               className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
             >
               <Play className="w-3.5 h-3.5 fill-slate-950" />
-              <span>انطلق للسباق الآن</span>
+              <span>Start Race Now</span>
             </button>
           )}
         </div>
@@ -192,7 +191,7 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
                   </div>
                   <span className="text-[11px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 font-bold border border-amber-500/30 flex items-center gap-1">
                     <Coins className="w-3 h-3 text-amber-400" />
-                    +{mission.rewardCoins} عملة
+                    +{mission.rewardCoins} Coins
                   </span>
                 </div>
 
@@ -206,10 +205,10 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
               {/* Progress & Claim Button */}
               <div className="mt-4 pt-3 border-t border-slate-800/80 space-y-2.5">
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400 font-medium">التقدم الحالي:</span>
+                  <span className="text-slate-400 font-medium">Progress:</span>
                   <span className="font-mono font-bold text-slate-200 tabular-nums">
                     {mission.current.toLocaleString()} / {mission.target.toLocaleString()} {mission.unit}
-                    <span className="text-amber-400 mr-1 font-sans">({percent}%)</span>
+                    <span className="text-amber-400 ml-1 font-sans">({percent}%)</span>
                   </span>
                 </div>
 
@@ -228,7 +227,7 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
                 {mission.claimed ? (
                   <div className="w-full py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center justify-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>تم استلام المكافأة</span>
+                    <span>Reward Claimed</span>
                   </div>
                 ) : isCompleted ? (
                   <button
@@ -236,11 +235,11 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
                     className="w-full py-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xs shadow-md shadow-amber-500/25 flex items-center justify-center gap-1.5 cursor-pointer transition-all animate-pulse"
                   >
                     <Gift className="w-3.5 h-3.5 fill-slate-950" />
-                    <span>استلم المكافأة (+{mission.rewardCoins}) 🎁</span>
+                    <span>Claim Reward (+{mission.rewardCoins}) 🎁</span>
                   </button>
                 ) : (
                   <div className="w-full py-2 rounded-lg bg-slate-900/90 border border-slate-800 text-slate-400 text-xs font-medium text-center">
-                    قيد الإنجاز في السباق
+                    In Progress
                   </div>
                 )}
               </div>
@@ -263,17 +262,17 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-black text-base sm:text-lg text-white">الصندوق الذهبي اليومي الخارق</h3>
+              <h3 className="font-black text-base sm:text-lg text-white">Grand Daily Golden Chest</h3>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/25 text-amber-300 font-bold border border-amber-500/40">
-                +{challenges.grandRewardCoins} عملة إضافية 🏆
+                +{challenges.grandRewardCoins} Bonus Coins 🏆
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
               {challenges.grandChestClaimed
-                ? 'تم فتح الصندوق الذهبي اليوم بنجاح! عد غداً للحصول على صندوق جديد وتحديات حصرية.'
+                ? 'Grand Chest claimed today! Check back tomorrow for brand new challenges.'
                 : summary.completed === summary.total
-                ? 'رائع جداً! أنهيت جميع مهام اليوم الـ 3. اضغط أدناه لاستلام جائزتك الكبرى الآن!'
-                : `أنجز جميع مهام اليوم الـ 3 لفتح الصندوق الذهبي الكبير والحصول على +${challenges.grandRewardCoins} عملة إضافية.`}
+                ? 'Incredible! You completed all 3 daily missions. Click to claim your grand chest reward!'
+                : `Complete all 3 daily quests to unlock the Grand Golden Chest and earn +${challenges.grandRewardCoins} extra coins.`}
             </p>
           </div>
         </div>
@@ -282,7 +281,7 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
           {challenges.grandChestClaimed ? (
             <div className="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-emerald-400 text-xs font-bold flex items-center justify-center gap-2">
               <CheckCircle2 className="w-4 h-4" />
-              <span>تم فتح الصندوق اليوم ✓</span>
+              <span>Chest Claimed Today ✓</span>
             </div>
           ) : summary.completed === summary.total ? (
             <button
@@ -290,11 +289,11 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 hover:from-yellow-300 hover:to-amber-300 text-slate-950 font-black text-sm shadow-xl shadow-yellow-500/30 flex items-center justify-center gap-2 cursor-pointer transition-all animate-bounce"
             >
               <Sparkles className="w-4 h-4 fill-slate-950" />
-              <span>افتح الصندوق الذهبي (+{challenges.grandRewardCoins}) 🏆</span>
+              <span>Open Golden Chest (+{challenges.grandRewardCoins}) 🏆</span>
             </button>
           ) : (
             <div className="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-500 text-xs font-semibold text-center">
-              مغلق ({summary.completed} من {summary.total} مهام مكتملة)
+              Locked ({summary.completed} of {summary.total} quests done)
             </div>
           )}
         </div>

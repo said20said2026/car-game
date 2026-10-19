@@ -250,7 +250,7 @@ export function calculateGhostDelta(
     return {
       meters: 0,
       status: 'tied',
-      text: 'متعادلان ⚔️',
+      text: 'Neck & Neck ⚔️',
     };
   }
 
@@ -258,13 +258,13 @@ export function calculateGhostDelta(
     return {
       meters: absDiff,
       status: 'ahead',
-      text: `+${absDiff.toFixed(1)}م متقدم 🟢`,
+      text: `+${absDiff.toFixed(1)}m Ahead 🟢`,
     };
   }
 
   return {
     meters: absDiff,
     status: 'behind',
-    text: `-${absDiff.toFixed(1)}م خلف الشبح 🔴`,
+    text: `-${absDiff.toFixed(1)}m Behind 🔴`,
   };
 }

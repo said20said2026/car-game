@@ -114,7 +114,7 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({ className = 
   return (
     <div
       className={`absolute top-14 sm:top-16 left-1/2 -translate-x-1/2 z-40 flex flex-col gap-2.5 w-[92vw] max-w-md pointer-events-none ${className}`}
-      dir="rtl"
+      dir="ltr"
     >
       {toasts.map((toast) => {
         const theme = getStyleClasses(toast);
@@ -154,7 +154,7 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({ className = 
                 <button
                   onClick={() => handleDismiss(toast.id)}
                   className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/60 transition-colors cursor-pointer"
-                  title="إغلاق التنبيه"
+                  title="Dismiss Notification"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>

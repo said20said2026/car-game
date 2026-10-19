@@ -40,37 +40,37 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <img
             src="/assets/logo.webp"
-            alt="شعار لعبة سباق سيارات المدينة السريعة للأبطال"
+            alt="City Speed Heroes Logo - Free 3D Car Racing Game"
             width={36}
             height={36}
             className="w-9 h-9 rounded-lg object-contain shadow-xs border border-amber-500/20"
             loading="eager"
           />
-          <span className="text-amber-500">ألعاب</span>
-          <span>سباق سيارات المدينة</span>
+          <span className="text-amber-500">City Speed</span>
+          <span>Heroes</span>
         </a>
 
         {/* Zone 2: Nav links */}
         <nav className="hidden md:flex items-center gap-5 text-xs sm:text-sm font-medium opacity-90">
           <a href="#game-container" className="hover:text-amber-500 transition-colors whitespace-nowrap shrink-0">
-            شاشة اللعبة
+            Game Arena
           </a>
           <a href="#instructions" className="hover:text-amber-500 transition-colors whitespace-nowrap shrink-0">
-            طريقة التحكم
+            Controls & Guide
           </a>
           <a
             href="#cars"
             onClick={handleScrollToCars}
             className="hover:text-amber-500 transition-colors whitespace-nowrap shrink-0 font-bold text-amber-500"
           >
-            أنواع السيارات
+            Supercars Fleet
           </a>
         </nav>
 
         {/* Zone 3: Actions (Theme Light/Dark Switcher + Garage + Play Now) */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
 
-          {/* زر تغيير إضاءة الصفحة (Dark / Light Mode Toggle) */}
+          {/* Theme switcher */}
           <button
             onClick={onToggleTheme}
             className={`p-2 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
@@ -78,13 +78,13 @@ export const Header: React.FC<HeaderProps> = ({
                 ? 'bg-slate-900 text-amber-400 border-slate-700 hover:bg-slate-800'
                 : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'
             }`}
-            title={isDark ? 'التبديل إلى الوضع النهاري (إضاءة فاتحة)' : 'التبديل إلى الوضع الليلي (إضاءة داكنة)'}
+            title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
             aria-label="Toggle Theme Lighting"
           >
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-slate-800" />}
           </button>
 
-          {/* زر أنواع السيارات / المرآب السريع */}
+          {/* Garage button */}
           <button
             onClick={onOpenGarage}
             className={`hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
@@ -92,19 +92,19 @@ export const Header: React.FC<HeaderProps> = ({
                 ? 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-700'
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
             }`}
-            title="المرآب لتطوير واختيار السيارات"
+            title="Open Garage to Upgrade Supercars"
           >
             <Wrench className="w-3.5 h-3.5 text-amber-500" />
-            <span>المرآب</span>
+            <span>Garage</span>
           </button>
 
-          {/* زر العب الآن */}
+          {/* Play Now button */}
           <button
             onClick={onPlayClick}
             className="px-4 py-2 text-xs sm:text-sm font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-xl transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 shadow-md shadow-amber-400/20 active:scale-95 cursor-pointer"
           >
             <Play className="w-3.5 h-3.5 fill-slate-950" />
-            <span>العب الآن</span>
+            <span>Play Now</span>
           </button>
         </div>
       </div>

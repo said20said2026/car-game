@@ -77,13 +77,13 @@ export const GarageModal: React.FC<GarageModalProps> = ({
     savePlayerStats(updated);
     setStats(updated);
     soundManager.playClick();
-    setStatusMessage('تم تفعيل هذه السيارة للسباق القادم!');
+    setStatusMessage('This supercar is now active for your next race!');
     setTimeout(() => setStatusMessage(null), 2500);
   };
 
   const handleUnlockCar = () => {
     if (coins < selectedCar.price) {
-      setStatusMessage('عفواً، لا تمتلك ما يكفي من العملات الذهبية!');
+      setStatusMessage('Not enough gold coins to unlock this vehicle!');
       setTimeout(() => setStatusMessage(null), 2500);
       return;
     }
@@ -108,19 +108,19 @@ export const GarageModal: React.FC<GarageModalProps> = ({
     setStats(updated);
     onCoinsChange(newCoins);
     soundManager.playCoinCascade(4);
-    setStatusMessage('مبروك! تم فتح السيارة بنجاح وتجهيزها للسباق.');
+    setStatusMessage('Supercar unlocked successfully! Ready for the track.');
     setTimeout(() => setStatusMessage(null), 3000);
   };
 
   const handleWashCar = () => {
     if (carDirt <= 0) {
-      setStatusMessage('السيارة نظيفة ولامعة بالفعل كأنها جديدة! ✨');
+      setStatusMessage('This vehicle is already sparkling clean! ✨');
       setTimeout(() => setStatusMessage(null), 2500);
       return;
     }
 
     if (coins < CAR_WASH_COST) {
-      setStatusMessage(`تحتاج إلى ${CAR_WASH_COST} عملة ذهبية لغسيل وتلميع السيارة!`);
+      setStatusMessage(`You need ${CAR_WASH_COST} coins for a full car wash and detail!`);
       setTimeout(() => setStatusMessage(null), 2500);
       return;
     }
@@ -143,7 +143,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
       savePlayerStats(updated);
       setStats(updated);
       setIsWashing(false);
-      setStatusMessage('تم غسيل وتلميع السيارة بنجاح! عادت السيارة تلمع كأنها خرجت من المصنع ✨🚿');
+      setStatusMessage('Car washed & detailed! Looking factory fresh ✨🚿');
       setTimeout(() => setStatusMessage(null), 3500);
     }, 1100);
   };
@@ -154,7 +154,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
 
     const cost = UPGRADE_COSTS[currentLevel];
     if (coins < cost) {
-      setStatusMessage('تحتاج إلى المزيد من العملات لشراء هذه الترقية!');
+      setStatusMessage('You need more coins to purchase this upgrade!');
       setTimeout(() => setStatusMessage(null), 2500);
       return;
     }
@@ -178,7 +178,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
     setStats(updated);
     onCoinsChange(newCoins);
     soundManager.playCoinCascade(3);
-    setStatusMessage('تمت ترقية الجزء بنجاح وزيادة قدرات السيارة!');
+    setStatusMessage('Part upgraded successfully! Vehicle stats increased.');
     setTimeout(() => setStatusMessage(null), 2500);
   };
 
@@ -192,9 +192,9 @@ export const GarageModal: React.FC<GarageModalProps> = ({
               <Wrench className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold font-game">مرآب السباق وتطوير المحركات</h2>
+              <h2 className="text-xl sm:text-2xl font-bold font-game">Racing Garage & Performance Tuning</h2>
               <p className="text-xs text-slate-400">
-                اختر سيارتك المفضلة وقم بتعديل المحرك والنيترو لتحقيق أقصى سرعة
+                Select your supercar, tune the engine, upgrade nitrous, and wash off highway mud
               </p>
             </div>
           </div>
@@ -207,7 +207,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
             <button
               onClick={onClose}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-              aria-label="إغلاق"
+              aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>
@@ -233,7 +233,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
               <button
                 key={car.id}
                 onClick={() => handleSelectCar(car)}
-                className={`relative p-3 rounded-xl border text-start transition-all cursor-pointer flex flex-col justify-between min-h-[110px] ${
+                className={`relative p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[110px] ${
                   isSelected
                     ? 'bg-slate-800/90 border-amber-500 shadow-md ring-1 ring-amber-500/50'
                     : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-800/50'
@@ -244,7 +244,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                     <span className="w-3 h-3 rounded-full" style={{ backgroundColor: car.color }} />
                     <div className="flex items-center gap-1">
                       {carD > 25 && (
-                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60 font-mono" title={`مستوى الاتساخ: ${carD}%`}>
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60 font-mono" title={`Dirt Level: ${carD}%`}>
                           🍂 {carD}%
                         </span>
                       )}
@@ -252,13 +252,13 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                       {isActive && <Check className="w-4 h-4 text-emerald-400" />}
                     </div>
                   </div>
-                  <div className="text-xs font-bold text-white line-clamp-1">{car.arabicName}</div>
-                  <div className="text-[10px] text-slate-400">{car.baseSpeed} كم/س</div>
+                  <div className="text-xs font-bold text-white line-clamp-1">{car.name}</div>
+                  <div className="text-[10px] text-slate-400">{car.baseSpeed} km/h</div>
                 </div>
 
                 <div className="pt-2 text-[11px] font-semibold">
                   {unlocked ? (
-                    <span className="text-emerald-400 text-[10px]">مفتوحة</span>
+                    <span className="text-emerald-400 text-[10px]">Unlocked</span>
                   ) : (
                     <span className="text-amber-400 flex items-center gap-1 text-[10px]">
                       <Coins className="w-3 h-3" />
@@ -282,12 +282,12 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                 </span>
                 {isCurrentActive && (
                   <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold">
-                    السيارة الحالية
+                    Active Racer
                   </span>
                 )}
               </div>
 
-              <h3 className="text-2xl font-black font-game text-white">{selectedCar.arabicName}</h3>
+              <h3 className="text-2xl font-black font-game text-white">{selectedCar.name}</h3>
               <p className="text-xs text-slate-300 mt-2 leading-relaxed">
                 {selectedCar.description}
               </p>
@@ -299,7 +299,6 @@ export const GarageModal: React.FC<GarageModalProps> = ({
               {isWashing && (
                 <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden flex flex-col justify-between p-2">
                   <div className="absolute inset-0 bg-sky-500/10 backdrop-blur-[1px] animate-pulse" />
-                  {/* Water jets streaming down */}
                   <div className="flex justify-around w-full opacity-80">
                     {[1, 2, 3, 4, 5, 6].map((i) => (
                       <div
@@ -312,7 +311,6 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                       />
                     ))}
                   </div>
-                  {/* Sudsy Soap foam bubbles */}
                   <div className="flex justify-center items-center gap-2 mt-auto pb-2">
                     {[1, 2, 3, 4, 5].map((b) => (
                       <span
@@ -330,24 +328,24 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                 {isWashing ? (
                   <span className="text-sky-300 flex items-center gap-1">
                     <Droplets className="w-3 h-3 animate-spin" />
-                    <span>جاري ضخ الماء والغسيل...</span>
+                    <span>Washing & Detailing...</span>
                   </span>
                 ) : carDirt <= 10 ? (
                   <span className="text-emerald-400 flex items-center gap-1">
                     <Sparkles className="w-3 h-3" />
-                    <span>نظيفة ولامعة 100%</span>
+                    <span>100% Clean & Sparkling</span>
                   </span>
                 ) : carDirt <= 40 ? (
                   <span className="text-amber-400 flex items-center gap-1">
-                    <span>💨 غبار طريق ({carDirt}%)</span>
+                    <span>💨 Road Dust ({carDirt}%)</span>
                   </span>
                 ) : carDirt <= 75 ? (
                   <span className="text-orange-400 flex items-center gap-1">
-                    <span>🍂 أوساخ وطين ({carDirt}%)</span>
+                    <span>🍂 Road Mud ({carDirt}%)</span>
                   </span>
                 ) : (
                   <span className="text-rose-400 flex items-center gap-1">
-                    <span>🧽 موحلة بشدة ({carDirt}%)</span>
+                    <span>🧽 Heavily Mudded ({carDirt}%)</span>
                   </span>
                 )}
               </div>
@@ -388,7 +386,6 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                       background: `linear-gradient(to top, rgba(78, 48, 25, ${Math.min(0.92, (carDirt / 100) * 0.95)}) 0%, rgba(105, 70, 38, ${Math.min(0.75, (carDirt / 100) * 0.7)}) 55%, rgba(140, 95, 50, ${Math.min(0.5, (carDirt / 100) * 0.45)}) 100%)`,
                     }}
                   >
-                    {/* Procedural Mud Splotches on Body & Bumper */}
                     <div className="absolute bottom-0 inset-x-0 h-4 bg-amber-950/80 rounded-b-xl" />
                     <div className="absolute bottom-1 left-2 w-3.5 h-2.5 rounded-full bg-amber-950/90 blur-[0.5px]" />
                     <div className="absolute bottom-2 right-3 w-4 h-3 rounded-full bg-stone-900/80 blur-[0.5px]" />
@@ -416,7 +413,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-white">
                   <Droplets className="w-4 h-4 text-sky-400" />
-                  <span>نظافة هيكل السيارة</span>
+                  <span>Body Cleanliness</span>
                 </div>
                 <span
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
@@ -429,7 +426,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                       : 'text-rose-400 bg-rose-500/10 border-rose-500/30'
                   }`}
                 >
-                  {cleanliness}% نظافة
+                  {cleanliness}% Clean
                 </span>
               </div>
 
@@ -463,17 +460,17 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                 {isWashing ? (
                   <>
                     <Droplets className="w-3.5 h-3.5 animate-spin" />
-                    <span>جاري ضخ الماء ورغوة الغسيل...</span>
+                    <span>Washing & Detailing In Progress...</span>
                   </>
                 ) : carDirt <= 0 ? (
                   <>
                     <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>السيارة نظيفة ولامعة تماماً ✨</span>
+                    <span>Vehicle is 100% Clean ✨</span>
                   </>
                 ) : (
                   <>
                     <Droplets className="w-3.5 h-3.5 text-sky-200" />
-                    <span>غسيل وتلميع السيارة ({CAR_WASH_COST} عملة) 🧽</span>
+                    <span>Wash & Detail Supercar ({CAR_WASH_COST} Coins) 🧽</span>
                   </>
                 )}
               </button>
@@ -492,7 +489,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                   }`}
                 >
                   <Check className="w-4 h-4" />
-                  {isCurrentActive ? 'مختارة حالياً للسباق' : 'قيادة هذه السيارة الآن'}
+                  {isCurrentActive ? 'Selected For Next Race' : 'Drive This Car Now'}
                 </button>
               ) : (
                 <button
@@ -500,7 +497,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                   className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <Lock className="w-4 h-4" />
-                  <span>شراء وفتح السيارة ({selectedCar.price} عملة)</span>
+                  <span>Unlock Supercar ({selectedCar.price} Coins)</span>
                 </button>
               )}
             </div>
@@ -510,7 +507,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
           <div className="lg:col-span-7 space-y-4">
             <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>مواصفات الأداء وترقيات القطع</span>
+              <span>Performance Specs & Garage Upgrades</span>
             </h3>
 
             {/* Upgrade 1: Top Speed */}
@@ -519,9 +516,9 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="font-bold text-white flex items-center gap-1.5">
                     <Gauge className="w-3.5 h-3.5 text-sky-400" />
-                    السرعة القصوى
+                    Top Speed
                   </span>
-                  <span className="text-sky-400 font-game font-bold">{effectiveStats.topSpeed} كم/ساعة</span>
+                  <span className="text-sky-400 font-game font-bold">{effectiveStats.topSpeed} km/h</span>
                 </div>
                 {/* 5-step Level pip indicators */}
                 <div className="flex gap-1.5">
@@ -542,7 +539,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                   className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1 transition-colors whitespace-nowrap cursor-pointer"
                 >
                   <Coins className="w-3 h-3" />
-                  ترقية ({UPGRADE_COSTS[currentUpgrades.speedLevel]})
+                  Upgrade ({UPGRADE_COSTS[currentUpgrades.speedLevel]})
                 </button>
               )}
             </div>
@@ -553,7 +550,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="font-bold text-white flex items-center gap-1.5">
                     <Zap className="w-3.5 h-3.5 text-amber-400" />
-                    التسارع وقوة الانطلاق
+                    Acceleration & Torque
                   </span>
                   <span className="text-amber-400 font-game font-bold">{effectiveStats.acceleration}%</span>
                 </div>
@@ -575,7 +572,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                   className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1 transition-colors whitespace-nowrap cursor-pointer"
                 >
                   <Coins className="w-3 h-3" />
-                  ترقية ({UPGRADE_COSTS[currentUpgrades.accelLevel]})
+                  Upgrade ({UPGRADE_COSTS[currentUpgrades.accelLevel]})
                 </button>
               )}
             </div>
@@ -586,7 +583,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="font-bold text-white flex items-center gap-1.5">
                     <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                    التحكم والانجراف (Drift)
+                    Handling & Drift Control
                   </span>
                   <span className="text-emerald-400 font-game font-bold">{effectiveStats.handling}%</span>
                 </div>
@@ -608,7 +605,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                   className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1 transition-colors whitespace-nowrap cursor-pointer"
                 >
                   <Coins className="w-3 h-3" />
-                  ترقية ({UPGRADE_COSTS[currentUpgrades.handlingLevel]})
+                  Upgrade ({UPGRADE_COSTS[currentUpgrades.handlingLevel]})
                 </button>
               )}
             </div>
@@ -619,7 +616,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="font-bold text-white flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                    سعة خزان النيترو
+                    Nitrous Oxide Capacity & Recharge
                   </span>
                   <span className="text-purple-400 font-game font-bold">{effectiveStats.nitro}%</span>
                 </div>
@@ -641,7 +638,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
                   className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1 transition-colors whitespace-nowrap cursor-pointer"
                 >
                   <Coins className="w-3 h-3" />
-                  ترقية ({UPGRADE_COSTS[currentUpgrades.nitroLevel]})
+                  Upgrade ({UPGRADE_COSTS[currentUpgrades.nitroLevel]})
                 </button>
               )}
             </div>

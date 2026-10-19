@@ -38,7 +38,7 @@ export const AdSlot: React.FC<AdSlotProps> = ({
     >
       <div className="w-full max-w-4xl min-h-[90px] sm:min-h-[100px] rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-2 sm:p-3 flex flex-col items-center justify-center text-center transition-all overflow-hidden">
         <span className="text-[10px] font-medium tracking-wider text-slate-500 uppercase mb-1">
-          إعلان · ADVERTISEMENT
+          ADVERTISEMENT
         </span>
 
         {/* Live AdSense element */}
@@ -57,7 +57,7 @@ export const AdSlot: React.FC<AdSlotProps> = ({
           <span>Google AdSense (ca-pub-9316249900269214)</span>
           <span className="hidden sm:inline text-slate-700">|</span>
           <span className="font-mono text-[10px]">
-            {format === 'horizontal' ? 'متجاوب تلقائياً · Responsive' : '300x250 مستطيل'}
+            {format === 'horizontal' ? 'Auto-Responsive Banner' : '300x250 Medium Rectangle'}
           </span>
         </div>
       </div>

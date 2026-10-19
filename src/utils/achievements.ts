@@ -27,8 +27,8 @@ export interface AchievementDef {
 export const ACHIEVEMENTS_LIST: AchievementDef[] = [
   {
     id: 'first_race',
-    title: 'الانطلاقة الأولى',
-    description: 'أكمل أول سباق لك في شوارع المدينة',
+    title: 'First Ignition',
+    description: 'Complete your first race on city streets',
     category: 'races',
     iconName: 'flag',
     targetValue: 1,
@@ -37,8 +37,8 @@ export const ACHIEVEMENTS_LIST: AchievementDef[] = [
   },
   {
     id: 'daily_racer',
-    title: 'بطل السباقات اليومية',
-    description: 'خُض 3 سباقات على الأقل خلال نفس اليوم',
+    title: 'Daily Champion',
+    description: 'Complete at least 3 races on the same day',
     category: 'races',
     iconName: 'flame',
     targetValue: 3,
@@ -47,8 +47,8 @@ export const ACHIEVEMENTS_LIST: AchievementDef[] = [
   },
   {
     id: 'ten_races',
-    title: 'متسابق محترف',
-    description: 'شارك في 10 سباقات مختلفة في مسيرتك',
+    title: 'Pro Racer',
+    description: 'Participate in 10 full races across your career',
     category: 'races',
     iconName: 'trophy',
     targetValue: 10,
@@ -57,8 +57,8 @@ export const ACHIEVEMENTS_LIST: AchievementDef[] = [
   },
   {
     id: 'overtake_10',
-    title: 'مناور مبتدئ',
-    description: 'تجاوز 10 سيارات بنجاح في شوارع المدينة',
+    title: 'Rookie Overtaker',
+    description: 'Successfully pass 10 traffic vehicles on the road',
     category: 'overtake',
     iconName: 'zap',
     targetValue: 10,
@@ -67,8 +67,8 @@ export const ACHIEVEMENTS_LIST: AchievementDef[] = [
   },
   {
     id: 'overtake_30',
-    title: 'سيد التجاوز السريع',
-    description: 'تجاوز 30 سيارة بنجاح دون اصطدام',
+    title: 'Highway Swerver',
+    description: 'Successfully pass 30 traffic cars without crashing',
     category: 'overtake',
     iconName: 'car',
     targetValue: 30,
@@ -77,8 +77,8 @@ export const ACHIEVEMENTS_LIST: AchievementDef[] = [
   },
   {
     id: 'overtake_60',
-    title: 'ملك الطرق السريعة',
-    description: 'تجاوز 60 سيارة في مسيرتك الاحترافية',
+    title: 'Speedway King',
+    description: 'Overtake 60 vehicles across your racing journey',
     category: 'overtake',
     iconName: 'flame',
     targetValue: 60,
@@ -87,8 +87,8 @@ export const ACHIEVEMENTS_LIST: AchievementDef[] = [
   },
   {
     id: 'overtake_100',
-    title: 'أسطورة المناورات',
-    description: 'تجاوز 100 سيارة وأثبت تفوقك المطلق على الجميع',
+    title: 'Traffic Legend',
+    description: 'Overtake 100 vehicles and prove absolute highway dominance',
     category: 'overtake',
     iconName: 'trophy',
     targetValue: 100,
@@ -97,8 +97,8 @@ export const ACHIEVEMENTS_LIST: AchievementDef[] = [
   },
   {
     id: 'top_speed',
-    title: 'سرعة البرق',
-    description: 'حقق رقماً قياسياً بالنقاط يتجاوز 1,500 نقطة',
+    title: 'Lightning Pace',
+    description: 'Achieve a score exceeding 1,500 points',
     category: 'record',
     iconName: 'zap',
     targetValue: 1500,
@@ -107,8 +107,8 @@ export const ACHIEVEMENTS_LIST: AchievementDef[] = [
   },
   {
     id: 'record_breaker',
-    title: 'كاسر الأرقام القياسية',
-    description: 'حقق رقماً قياسياً استثنائياً يتجاوز 3,000 نقطة',
+    title: 'Record Smasher',
+    description: 'Achieve an exceptional score exceeding 3,000 points',
     category: 'record',
     iconName: 'trophy',
     targetValue: 3000,
@@ -117,8 +117,8 @@ export const ACHIEVEMENTS_LIST: AchievementDef[] = [
   },
   {
     id: 'coin_collector',
-    title: 'جامع الذهب',
-    description: 'اجمع أكثر من 500 عملة ذهبية في رصيدك',
+    title: 'Gold Tycoon',
+    description: 'Amass over 500 gold coins in your wallet',
     category: 'garage',
     iconName: 'coins',
     targetValue: 500,
@@ -127,8 +127,8 @@ export const ACHIEVEMENTS_LIST: AchievementDef[] = [
   },
   {
     id: 'marathon_driver',
-    title: 'قاطع المسافات',
-    description: 'اقطع مسافة تزيد عن 2,000 متر في سباق واحد',
+    title: 'Endurance Legend',
+    description: 'Cover over 2,000 meters in a single race session',
     category: 'distance',
     iconName: 'award',
     targetValue: 2000,
@@ -137,8 +137,8 @@ export const ACHIEVEMENTS_LIST: AchievementDef[] = [
   },
   {
     id: 'car_collector',
-    title: 'عاشق السيارات الخارقة',
-    description: 'افتح سيارتين على الأقل في المرآب الخاص بك',
+    title: 'Supercar Connoisseur',
+    description: 'Unlock at least 2 different supercars in your garage',
     category: 'garage',
     iconName: 'car',
     targetValue: 2,
@@ -203,11 +203,11 @@ export function checkAndUnlockAchievements(
       // Trigger celebratory toast
       dispatchGameToast({
         type: 'achievement',
-        title: `إنجاز جديد: ${ach.title}! 🏆`,
-        description: `${ach.description} (+${ach.reward} عملة ذهبية)`,
+        title: `Achievement Unlocked: ${ach.title}! 🏆`,
+        description: `${ach.description} (+${ach.reward} Gold Coins)`,
         iconName: ach.iconName,
         reward: ach.reward,
-        badgeText: 'إنجاز مكتمل',
+        badgeText: 'Completed',
       });
     }
   }

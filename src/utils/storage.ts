@@ -4,8 +4,8 @@ export const CARS_DATA: CarConfig[] = [
   {
     id: 'red_rocket',
     name: 'Red Rocket GT',
-    arabicName: 'الصاروخ الأحمر GT',
-    type: 'سيارة رياضية تيربو',
+    arabicName: 'Red Rocket GT',
+    type: 'Turbo Sports Coupe',
     price: 0,
     baseSpeed: 190,
     baseAcceleration: 65,
@@ -14,13 +14,13 @@ export const CARS_DATA: CarConfig[] = [
     color: '#ef4444',
     accentColor: '#f97316',
     unlocked: true,
-    description: 'سيارة السباق الافتراضية، متوازنة ورشيقة للغاية ومثالية لبدء احتراف سباقات شوارع المدينة.',
+    description: 'The iconic default racer. Agile, well-balanced, and engineered for high-speed city highway dominance.',
   },
   {
     id: 'night_phantom',
-    name: 'Night Phantom',
-    arabicName: 'شبح الليل الأسود',
-    type: 'عضلات أمريكية خارقة',
+    name: 'Night Phantom V8',
+    arabicName: 'Night Phantom V8',
+    type: 'American Super Muscle',
     price: 800,
     baseSpeed: 230,
     baseAcceleration: 80,
@@ -29,13 +29,13 @@ export const CARS_DATA: CarConfig[] = [
     color: '#1e293b',
     accentColor: '#38bdf8',
     unlocked: false,
-    description: 'وحش العضلات الكلاسيكي المعدل، عزم دوران هائل وسرعة اندفاع لا تُقهر في الطرق المستقيمة.',
+    description: 'A classic raw muscle machine with thunderous V8 torque, crushing top acceleration on wide open freeways.',
   },
   {
     id: 'cyber_neon',
     name: 'Cyber Neon Hypercar',
-    arabicName: 'وحش النيون السيبراني',
-    type: 'هايبركار فضائية مستقبلية',
+    arabicName: 'Cyber Neon Hypercar',
+    type: 'Futuristic Aero Hypercar',
     price: 1800,
     baseSpeed: 275,
     baseAcceleration: 90,
@@ -44,28 +44,28 @@ export const CARS_DATA: CarConfig[] = [
     color: '#06b6d4',
     accentColor: '#ec4899',
     unlocked: false,
-    description: 'تصميم هوائي ديناميكي مستقبلي مع إضاءات نيون نفاثة وثبات استثنائي في المنعطفات الشديدة.',
+    description: 'A futuristic aerodynamic road weapon equipped with neon LED aero fins and razor-sharp high-speed cornering.',
   },
   {
-    id: 'golden_falcon',
-    name: 'Golden Falcon',
-    arabicName: 'الصقر الذهبي الخارق',
-    type: 'سيارة أساطير فاخرة',
-    price: 3200,
-    baseSpeed: 320,
-    baseAcceleration: 95,
-    baseHandling: 95,
-    baseNitro: 100,
-    color: '#eab308',
-    accentColor: '#fbbf24',
+    id: 'desert_stormer',
+    name: 'Desert Stormer 4x4',
+    arabicName: 'Desert Stormer 4x4',
+    type: 'All-Terrain 4x4 Supercar',
+    price: 2100,
+    baseSpeed: 240,
+    baseAcceleration: 85,
+    baseHandling: 92,
+    baseNitro: 80,
+    color: '#d97706',
+    accentColor: '#f59e0b',
     unlocked: false,
-    description: 'قمة هندسة سباقات السيارات الفارهة، مطلية بالذهب وتولد قوة تسارع خارقة مع خزان نيترو فائق.',
+    description: 'Built for intense desert sandstorms and rain slicks, providing unstoppable all-wheel-drive grip.',
   },
   {
     id: 'police_interceptor',
     name: 'Police Interceptor Spec-V',
-    arabicName: 'مركبة المطاردة الخاصة Spec-V',
-    type: 'مركبة تدخل سريع مدرعة',
+    arabicName: 'Police Interceptor Spec-V',
+    type: 'Tactical Pursuit Cruiser',
     price: 2400,
     baseSpeed: 250,
     baseAcceleration: 88,
@@ -74,7 +74,22 @@ export const CARS_DATA: CarConfig[] = [
     color: '#2563eb',
     accentColor: '#dc2626',
     unlocked: false,
-    description: 'مجهزة بأنوار تنبيه سريعة وهيكل فولاذي يقلل من تأثير الاصطدام بالعقبات ومخاريط الطرق.',
+    description: 'Armored pursuit beast with tactical strobe sirens and high impact resistance against road obstacles.',
+  },
+  {
+    id: 'golden_falcon',
+    name: 'Golden Falcon Apex',
+    arabicName: 'Golden Falcon Apex',
+    type: 'Legendary Hypercar',
+    price: 3200,
+    baseSpeed: 320,
+    baseAcceleration: 95,
+    baseHandling: 95,
+    baseNitro: 100,
+    color: '#eab308',
+    accentColor: '#fbbf24',
+    unlocked: false,
+    description: 'The crown jewel of supercar engineering with pure gold carbon weave, twin-turbo hybrid thrust, and unlimited nitro flow.',
   },
 ];
 
@@ -245,7 +260,7 @@ export function recordDailyRace(): DailyRacesData {
 }
 
 // ----------------------------------------------------
-// Leaderboard (أفضل 5 لاعبين) LocalStorage Management
+// Leaderboard (Top 5 Racers) LocalStorage Management
 // ----------------------------------------------------
 
 export interface LeaderboardEntry {
@@ -261,11 +276,11 @@ export const LEADERBOARD_STORAGE_KEY = 'fast_city_racing_leaderboard';
 export const PLAYER_NAME_STORAGE_KEY = 'fast_city_racing_player_name';
 
 export const DEFAULT_LEADERBOARD: LeaderboardEntry[] = [
-  { id: 'lb-1', name: 'شبح الحلبة ⚡', score: 18500, date: 'اليوم', carName: 'فايبر النيون' },
-  { id: 'lb-2', name: 'صقر المدينة 🦅', score: 14200, date: 'اليوم', carName: 'الوحش الكلاسيكي' },
-  { id: 'lb-3', name: 'توربو الرياض 🏎️', score: 11800, date: 'أمس', carName: 'البرق الذهبي' },
-  { id: 'lb-4', name: 'سائق الليل 🌙', score: 9500, date: 'أمس', carName: 'الصاروخ الأحمر' },
-  { id: 'lb-5', name: 'بطل السرعة 🔥', score: 7200, date: 'منذ يومين', carName: 'الصاروخ الأحمر' },
+  { id: 'lb-1', name: 'SpeedPhantom ⚡', score: 18500, date: 'Today', carName: 'Cyber Neon Hypercar' },
+  { id: 'lb-2', name: 'FalconApex 🦅', score: 14200, date: 'Today', carName: 'Night Phantom V8' },
+  { id: 'lb-3', name: 'TurboVortex 🏎️', score: 11800, date: 'Yesterday', carName: 'Golden Falcon Apex' },
+  { id: 'lb-4', name: 'NightRider 🌙', score: 9500, date: 'Yesterday', carName: 'Red Rocket GT' },
+  { id: 'lb-5', name: 'NitroStorm 🔥', score: 7200, date: '2 days ago', carName: 'Red Rocket GT' },
 ];
 
 export function loadPlayerName(): string {
@@ -275,11 +290,11 @@ export function loadPlayerName(): string {
       return saved.trim();
     }
   } catch {}
-  return 'المتسابق البطل';
+  return 'Speed Hero';
 }
 
 export function savePlayerName(name: string): string {
-  const clean = (name || '').trim() || 'المتسابق البطل';
+  const clean = (name || '').trim() || 'Speed Hero';
   try {
     localStorage.setItem(PLAYER_NAME_STORAGE_KEY, clean);
   } catch {}
@@ -336,8 +351,8 @@ export function addLeaderboardScore(
     id: `lb-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
     name: playerName,
     score: Math.max(0, Math.floor(score)),
-    date: 'اليوم',
-    carName: carName || 'سيارة السباق',
+    date: 'Today',
+    carName: carName || 'Supercar Racer',
     isCurrentPlayer: true,
   };
 

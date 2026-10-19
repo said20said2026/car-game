@@ -200,7 +200,7 @@ function renderGhostVehicle(
   ctx.save();
   ctx.rotate(-ghostData.tilt); // Keep badge horizontal
   const tagY = -gH - 18;
-  const tagText = `👻 شبح أفضل جولة (${Math.round(ghostData.speed)} كم/س)`;
+  const tagText = `👻 Ghost PB (${Math.round(ghostData.speed)} km/h)`;
   ctx.font = 'bold 9px sans-serif';
   const tagW = ctx.measureText(tagText).width + 14;
 
@@ -406,6 +406,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const collectiblesRef = useRef<RoadCollectible[]>([]);
   const obstaclesRef = useRef<RoadObstacle[]>([]);
   const particlesRef = useRef<Particle[]>([]);
+  const crashFlashRef = useRef<number>(0); // 0 to 1 for collision screen flash & impact bloom
   const roadCurveRef = useRef({ current: 0, target: 0, timer: 0 });
   const carGhostsRef = useRef<Array<{
     x: number;
@@ -982,8 +983,11 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         }
         p.x = Math.max(-1.15, Math.min(1.15, p.x));
 
-        // Camera shake dampening
+        // Camera shake dampening & collision flash decay
         p.shake *= 0.9;
+        if (crashFlashRef.current > 0) {
+          crashFlashRef.current = Math.max(0, crashFlashRef.current - dt * 2.8);
+        }
 
         // Distance & score
         const distanceStep = (p.speed / 3.6) * dt;
@@ -1113,31 +1117,35 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             p.comboTimer = 3.5;
             p.score += 75 * p.combo;
             setComboMultiplier(p.combo);
-            setComboMessage(`تجاوز وشيك! +${75 * p.combo}`);
+            setComboMessage(`Near Miss! +${75 * p.combo}`);
             soundManager.playNearMiss();
           }
 
           // Collision detection
           if (Math.abs(car.z) < 22 && Math.abs(car.x - p.x) < 0.24) {
-            // Crash impact
-            p.shake = 16;
+            // Crash impact: Intense camera shake, speed loss, health drop, and screen flash!
+            p.shake = 28;
             p.speed *= 0.35;
             p.health -= 35;
+            crashFlashRef.current = 1.0; // Trigger brilliant collision screen flash
             setCarHealth(Math.max(0, p.health));
             soundManager.playCrash();
 
-            // Spawn crash debris particles (optimized count on mobile)
-            const crashDebrisCount = (isMobileDevice || performanceMode) ? 8 : 16;
+            // Spawn explosive crash debris & scattering spark particles (optimized on mobile)
+            const crashDebrisCount = (isMobileDevice || performanceMode) ? 22 : 42;
+            const sparkColors = ['#ffffff', '#fef08a', '#f97316', '#ef4444', '#f59e0b', '#dc2626'];
             for (let k = 0; k < crashDebrisCount; k++) {
+              const angle = Math.random() * Math.PI * 2;
+              const velocity = 100 + Math.random() * 400;
               particlesRef.current.push({
-                x: width / 2 + p.x * (width * 0.3),
-                y: height * 0.82,
-                vx: (Math.random() - 0.5) * 350,
-                vy: -Math.random() * 280,
-                life: 0.6,
-                maxLife: 0.6,
-                color: Math.random() > 0.5 ? '#f97316' : '#ef4444',
-                size: 3 + Math.random() * 3,
+                x: width / 2 + p.x * (width * 0.3) + (Math.random() - 0.5) * 30,
+                y: height * 0.82 + (Math.random() - 0.5) * 20,
+                vx: Math.cos(angle) * velocity,
+                vy: Math.sin(angle) * velocity - 90, // upward explosion arc
+                life: 0.5 + Math.random() * 0.45,
+                maxLife: 0.85,
+                color: sparkColors[Math.floor(Math.random() * sparkColors.length)],
+                size: 2.5 + Math.random() * 5.5,
               });
             }
 
@@ -1163,11 +1171,11 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
 
             // Milestone toasts for overtaking cars in this run
             const overtakeMilestones: Record<number, { title: string; desc: string; coins: number; icon: 'zap' | 'car' | 'flame' | 'trophy' | 'sparkles' }> = {
-              5: { title: 'تجاوز سريع! ⚡', desc: 'تجاوزت 5 سيارات في شوارع المدينة بنجاح!', coins: 30, icon: 'zap' },
-              10: { title: 'مناور بارع! 🏎️', desc: 'تجاوزت 10 سيارات في الزحام الشديد دون اصطدام!', coins: 75, icon: 'car' },
-              25: { title: 'سيد الطرق السريعة! 🔥', desc: 'إنجاز مذهل! تجاوزت 25 سيارة في سباق واحد!', coins: 150, icon: 'flame' },
-              50: { title: 'أسطورة المناورة الخارقة! 👑', desc: 'تحكم لا يُقهر! 50 سيارة متجاوزة في سباق واحد!', coins: 300, icon: 'trophy' },
-              100: { title: 'قناص المسارات الأسطوري! 🌟', desc: 'مستوى عالمي! تجاوزت 100 سيارة بنجاح أسطوري!', coins: 600, icon: 'sparkles' },
+              5: { title: 'Speed Overtake! ⚡', desc: 'Successfully overtook 5 cars in city traffic!', coins: 30, icon: 'zap' },
+              10: { title: 'Master Driver! 🏎️', desc: 'Threaded through 10 cars in heavy traffic without crashing!', coins: 75, icon: 'car' },
+              25: { title: 'Highway King! 🔥', desc: 'Epic skill! Overtook 25 vehicles in a single run!', coins: 150, icon: 'flame' },
+              50: { title: 'Traffic Phantom! 👑', desc: 'Invincible maneuvers! 50 cars overtaken in one race!', coins: 300, icon: 'trophy' },
+              100: { title: 'Legendary Speedster! 🌟', desc: 'World-class mastery! 100 cars overtaken!', coins: 600, icon: 'sparkles' },
             };
 
             if (overtakeMilestones[count] && !overtakeMilestonesTriggeredRef.current.has(count)) {
@@ -1182,7 +1190,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 description: m.desc,
                 iconName: m.icon,
                 reward: m.coins,
-                badgeText: `${count} سيارات`,
+                badgeText: `${count} Cars`,
               });
             }
 
@@ -1615,7 +1623,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             if (ghostPrevAheadRef.current === false && isPlayerAhead && !hasOvertakenGhostRef.current && p.distance > 25) {
               hasOvertakenGhostRef.current = true;
               soundManager.playGhostOvertake();
-              setGhostNotification('👻 تجاوزت سيارة الشبح! أنت تتقدم على أفضل جولة سابقة 🔥');
+              setGhostNotification('👻 Ghost Overtaken! Ahead of your personal best! 🔥');
               setTimeout(() => setGhostNotification(null), 3500);
             }
             ghostPrevAheadRef.current = isPlayerAhead;
@@ -1652,11 +1660,11 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
 
             dispatchGameToast({
               type: 'record',
-              title: 'رقم قياسي جديد حطمته الآن! 🏆',
-              description: `تجاوزت رقمك القياسي السابق (${initialHighScoreRef.current.toLocaleString()} نقطة)! أحرزت الآن ${currentFloorScore.toLocaleString()} نقطة!`,
+              title: 'New High Score Smashed! 🏆',
+              description: `You beat your previous best of (${initialHighScoreRef.current.toLocaleString()} pts)! Current score: ${currentFloorScore.toLocaleString()} pts!`,
               iconName: 'trophy',
               reward: 100,
-              badgeText: 'رقم قياسي جديد',
+              badgeText: 'New Record',
             });
 
             const currentStats = loadPlayerStats();
@@ -1675,11 +1683,11 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
 
             dispatchGameToast({
               type: 'record',
-              title: 'أول رقم قياسي استثنائي! 🏆',
-              description: `أداء أسطوري! كسرت حاجز الـ 1,000 نقطة لأول مرة وسجلت ${currentFloorScore.toLocaleString()} نقطة!`,
+              title: 'Epic 1,000+ Milestone! 🏆',
+              description: `Legendary run! You crossed the 1,000 points barrier and scored ${currentFloorScore.toLocaleString()} pts!`,
               iconName: 'trophy',
               reward: 100,
-              badgeText: 'رقم قياسي',
+              badgeText: 'Milestone',
             });
 
             const currentStats = loadPlayerStats();
@@ -2386,7 +2394,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         ctx.globalAlpha = 1.0;
       }
 
-      // 11. NITRO BLUE SCREEN BLOOM (وهج أزرق للشاشة) & PERIPHERAL MOTION BLUR
+      // 11. NITRO BLUE SCREEN BLOOM & PERIPHERAL MOTION BLUR
       if (isNitro) {
         ctx.save();
         ctx.globalCompositeOperation = 'screen';
@@ -2429,6 +2437,42 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         ctx.restore();
       }
 
+      // 12. CRASH / COLLISION SCREEN FLASH & IMPACT BLOOM (Visual Excitement Feedback)
+      if (crashFlashRef.current > 0.01) {
+        const flashAlpha = Math.min(1.0, crashFlashRef.current);
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+
+        // Radiant explosion blast wave centered on car collision point
+        const crashGrad = ctx.createRadialGradient(
+          width / 2 + p.x * (width * 0.3),
+          height * 0.82,
+          8,
+          width / 2,
+          height * 0.72,
+          Math.hypot(width, height) * 0.8
+        );
+        crashGrad.addColorStop(0, `rgba(255, 255, 255, ${0.92 * flashAlpha})`);
+        crashGrad.addColorStop(0.18, `rgba(254, 240, 138, ${0.8 * flashAlpha})`);
+        crashGrad.addColorStop(0.42, `rgba(249, 115, 22, ${0.62 * flashAlpha})`);
+        crashGrad.addColorStop(0.72, `rgba(239, 68, 68, ${0.45 * flashAlpha})`);
+        crashGrad.addColorStop(1, `rgba(185, 28, 28, ${0.12 * flashAlpha})`);
+        ctx.fillStyle = crashGrad;
+        ctx.fillRect(0, 0, width, height);
+
+        // High-tension danger warning border pulse
+        ctx.strokeStyle = `rgba(239, 68, 68, ${0.92 * flashAlpha})`;
+        ctx.lineWidth = 8 * flashAlpha;
+        ctx.strokeRect(0, 0, width, height);
+
+        // Inner glowing danger border
+        ctx.strokeStyle = `rgba(254, 240, 138, ${0.75 * flashAlpha})`;
+        ctx.lineWidth = 3 * flashAlpha;
+        ctx.strokeRect(5, 5, width - 10, height - 10);
+
+        ctx.restore();
+      }
+
       ctx.restore(); // Undo translate shake
       ctx.restore(); // Undo DPR scale
 
@@ -2462,16 +2506,16 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           </div>
 
           <div className="hidden sm:flex items-center gap-1 text-slate-300">
-            <span className="text-slate-400">النقاط:</span>
+            <span className="text-slate-400">Score:</span>
             <span className="font-bold tabular-nums font-game text-white text-base">
               {currentScore.toLocaleString()}
             </span>
           </div>
 
           <div className="flex items-center gap-1 text-slate-300">
-            <span className="text-slate-400">المسافة:</span>
+            <span className="text-slate-400">Distance:</span>
             <span className="font-bold tabular-nums font-game text-emerald-400">
-              {(runDistance / 1000).toFixed(2)} كم
+              {(runDistance / 1000).toFixed(2)} km
             </span>
           </div>
 
@@ -2479,7 +2523,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           {gameState === 'PLAYING' && (
             <div className="flex items-center gap-1 text-cyan-300 font-bold font-game bg-cyan-950/50 px-2 py-0.5 rounded-lg border border-cyan-500/30">
               <Zap className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="text-slate-400 font-sans text-xs hidden xs:inline">تجاوز:</span>
+              <span className="text-slate-400 font-sans text-xs hidden xs:inline">Passed:</span>
               <span className="tabular-nums text-xs sm:text-sm text-cyan-300">
                 {raceOvertakes}
               </span>
@@ -2491,7 +2535,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         {comboMultiplier > 1 && (
           <div className="animate-bounce flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 border border-amber-400/50 rounded-full text-amber-300 text-xs font-bold font-game">
             <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-            <span>{comboMessage || `مضاعف x${comboMultiplier}`}</span>
+            <span>{comboMessage || `Multiplier x${comboMultiplier}`}</span>
           </div>
         )}
 
@@ -2506,12 +2550,12 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-sm shadow-emerald-500/10'
                 : 'bg-slate-900/80 text-slate-400 border-slate-700/60 hover:text-white hover:bg-slate-800'
             }`}
-            title={performanceMode ? 'نمط الأداء التوربو مفعّل (60 FPS)' : 'تفعيل نمط تسريع الأداء للجوال'}
+            title={performanceMode ? 'Turbo 60 FPS Mode Active' : 'Enable 60 FPS Mobile Turbo'}
             aria-label="Toggle High Performance Mode"
           >
             <Zap className={`w-3.5 h-3.5 ${performanceMode ? 'text-emerald-400 fill-emerald-400' : 'text-slate-400'}`} />
             <span className="text-[10px] sm:text-[11px] font-bold font-game">
-              {performanceMode ? `${fps} FPS ⚡` : 'توربو'}
+              {performanceMode ? `${fps} FPS ⚡` : 'TURBO'}
             </span>
           </button>
 
@@ -2524,17 +2568,17 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/30'
                 : 'bg-slate-900/80 text-slate-300 border-slate-700/60 hover:text-white hover:bg-slate-800'
             }`}
-            title="التحكم بمستوى الصوت والموسيقى التفاعلية"
+            title="Audio & Interactive Music Controls"
             aria-label="Audio and Interactive Music Controls"
           >
             <Sliders className={`w-4 h-4 ${showAudioModal ? 'text-slate-950' : 'text-amber-400'}`} />
             <span className="hidden sm:inline text-[11px] font-bold">
-              التحكم بالصوت
+              Audio
             </span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${
               showAudioModal ? 'bg-black/20 text-slate-950' : 'bg-slate-800 text-amber-300'
             }`}>
-              {musicEnabled ? `${Math.round(musicVolume * 100)}%` : 'كتم'}
+              {musicEnabled ? `${Math.round(musicVolume * 100)}%` : 'Mute'}
             </span>
           </button>
 
@@ -2547,7 +2591,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-500/20'
                 : 'bg-slate-900/80 text-slate-400 border-slate-700/60 hover:text-white hover:bg-slate-800'
             }`}
-            title={musicEnabled ? 'إيقاف موسيقى السباق الحماسية' : 'تشغيل موسيقى السباق الحماسية'}
+            title={musicEnabled ? 'Stop Race Music' : 'Play Race Music'}
             aria-label="Toggle Race Music"
           >
             {musicEnabled ? (
@@ -2556,7 +2600,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               <Music2 className="w-4 h-4 text-slate-400" />
             )}
             <span className="hidden md:inline text-[11px] font-bold">
-              {musicEnabled ? 'موسيقى السباق' : 'الموسيقى: متوقفة'}
+              {musicEnabled ? 'Race Music' : 'Music: Off'}
             </span>
             {musicEnabled && (
               <span className="flex h-2 w-2 relative">
@@ -2571,7 +2615,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             type="button"
             onClick={toggleSound}
             className="p-1.5 rounded-lg bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/60 transition-colors cursor-pointer"
-            title={soundEnabled ? 'كتم المؤثرات الصوتية' : 'تشغيل المؤثرات الصوتية'}
+            title={soundEnabled ? 'Mute SFX' : 'Enable SFX'}
             aria-label="Sound Toggle"
           >
             {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-red-400" />}
@@ -2581,7 +2625,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             <button
               onClick={pauseGame}
               className="p-1.5 rounded-lg bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/60 transition-colors"
-              title="إيقاف مؤقت"
+              title="Pause"
               aria-label="Pause Game"
             >
               <Pause className="w-4 h-4" />
@@ -2597,12 +2641,12 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               onOpenGarage();
             }}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700/60 text-xs font-medium transition-colors relative"
-            title="المرآب لتطوير وغسيل السيارات"
+            title="Garage & Car Wash"
           >
             <Wrench className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">المرآب</span>
+            <span className="hidden sm:inline">Garage</span>
             {carDirtRef.current > 20 && (
-              <span className="text-[10px] px-1 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60 font-mono" title="السيارة متسخة وبحاجة لغسيل">
+              <span className="text-[10px] px-1 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60 font-mono" title="Car is dirty, wash in Garage">
                 🧽
               </span>
             )}
@@ -2617,10 +2661,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-500/20 animate-pulse'
                 : 'bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700/60'
             }`}
-            title="التحدي اليومي والمكافآت"
+            title="Daily Quests & Rewards"
           >
             <Target className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline font-bold">التحدي اليومي</span>
+            <span className="hidden sm:inline font-bold">Daily Quests</span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${
               dailySummary.unclaimedCount > 0
                 ? 'bg-amber-400 text-slate-950 animate-bounce'
@@ -2643,16 +2687,16 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-sm shadow-cyan-500/20'
                 : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400 border border-slate-700/60'
             }`}
-            title={ghostEnabled ? 'إخفاء سيارة الشبح (Ghost Car)' : 'تفعيل وإظهار سيارة الشبح (Ghost Car)'}
+            title={ghostEnabled ? 'Hide Ghost Car' : 'Enable Ghost Car'}
             aria-label="Toggle Ghost Car"
           >
             <Ghost className={`w-3.5 h-3.5 ${ghostEnabled ? 'text-cyan-300 animate-pulse' : 'text-slate-400'}`} />
             <span className="hidden sm:inline font-bold">
-              {ghostEnabled ? 'الشبح' : 'الشبح (معطّل)'}
+              {ghostEnabled ? 'Ghost' : 'Ghost (Off)'}
             </span>
             {activeGhostRef.current && ghostEnabled && (
               <span className="text-[10px] px-1 py-0.2 rounded bg-cyan-950/90 text-cyan-300 border border-cyan-800/60 font-mono hidden md:inline">
-                {activeGhostRef.current.totalDistance}م
+                {activeGhostRef.current.totalDistance}m
               </span>
             )}
           </button>
@@ -2660,7 +2704,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           <button
             onClick={toggleFullscreen}
             className="p-1.5 rounded-lg bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/60 transition-colors hidden sm:block"
-            title="شاشة كاملة"
+            title="Fullscreen"
             aria-label="Fullscreen"
           >
             <Maximize2 className="w-4 h-4" />
@@ -2741,7 +2785,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           <div className="absolute top-12 left-1/2 -translate-x-1/2 sm:top-14 z-20 pointer-events-none flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full bg-slate-950/85 backdrop-blur-md border border-cyan-500/40 shadow-lg shadow-cyan-500/10 text-xs font-bold font-mono">
             <div className="flex items-center gap-1 text-cyan-300">
               <Ghost className="w-3.5 h-3.5 animate-pulse" />
-              <span className="text-[10px] sm:text-[11px] font-sans font-bold text-white hidden xs:inline">الشبح:</span>
+              <span className="text-[10px] sm:text-[11px] font-sans font-bold text-white hidden xs:inline">Ghost:</span>
             </div>
             <span
               className={`px-1.5 py-0.2 rounded text-[10px] sm:text-[11px] font-bold ${
@@ -2752,10 +2796,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   : 'bg-amber-500/25 text-amber-300 border border-amber-500/40'
               }`}
             >
-              {ghostDelta?.text || 'المسار متطابق'}
+              {ghostDelta?.text || 'Track Matched'}
             </span>
             <span className="text-[9px] sm:text-[10px] text-slate-400 font-sans hidden sm:inline">
-              (أفضل: {activeGhostRef.current.totalDistance}م)
+              (Best: {activeGhostRef.current.totalDistance}m)
             </span>
           </div>
         )}
@@ -2783,7 +2827,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   <span className="text-xl sm:text-2xl font-black font-game tabular-nums text-white leading-none">
                     {currentSpeed}
                   </span>
-                  <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">كم/س</span>
+                  <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">KM/H</span>
                 </div>
                 {/* Health Bar */}
                 <div className="flex items-center gap-1.5 mt-1">
@@ -2802,7 +2846,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               </div>
             </div>
 
-            {/* 2. DYNAMIC NITRO VISUAL GAUGE (بجانب شريط سرعة السيارة) */}
+            {/* 2. DYNAMIC NITRO VISUAL GAUGE */}
             <div
               className={`flex items-center gap-2 sm:gap-2.5 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-slate-950/85 backdrop-blur-md rounded-xl border transition-all duration-200 shadow-lg ${
                 isNitroActive
@@ -2892,17 +2936,17 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   {isNitroActive ? (
                     <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded font-black bg-amber-500/25 text-amber-300 border border-amber-500/40 animate-pulse flex items-center gap-0.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping inline-block" />
-                      منطلق 🔥
+                      BOOSTING 🔥
                     </span>
                   ) : nitroAmount >= 25 ? (
                     <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-0.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block" />
-                      جاهز ⚡
+                      READY ⚡
                     </span>
                   ) : (
                     <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded font-bold bg-slate-800/90 text-slate-400 border border-slate-700/60 flex items-center gap-0.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse inline-block" />
-                      شحن ⏳
+                      CHARGING ⏳
                     </span>
                   )}
                 </div>
@@ -2994,10 +3038,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 onPointerCancel={() => {
                   keysRef.current.down = false;
                 }}
-                className="w-13 h-13 sm:w-12 sm:h-12 rounded-xl bg-slate-800 active:bg-red-700 text-white flex items-center justify-center font-bold text-xs border border-slate-600 shadow-md touch-none select-none cursor-pointer"
+                className="w-13 h-13 sm:w-12 sm:h-12 rounded-xl bg-slate-800 active:bg-red-700 text-white flex items-center justify-center font-bold text-xs border border-slate-600 shadow-md touch-none select-none cursor-pointer uppercase tracking-wider"
                 aria-label="Brake"
               >
-                فرامل
+                BRAKE
               </button>
             </div>
           </>
@@ -3008,20 +3052,20 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 sm:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto">
             <div className="max-w-md w-full text-center space-y-4 sm:space-y-5 my-auto">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold">
-                <span>أقوى ألعاب سباق سيارات الشوارع لعام 2026</span>
+                <span>Ultimate 3D Street Racing Game of 2026</span>
               </div>
 
               <h2 className="text-2xl sm:text-4xl font-black font-game text-white tracking-tight leading-tight">
-                سباق سيارات المدينة السريعة
+                City Speed Heroes
               </h2>
 
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                انطلق بأقصى سرعة في قلب شوارع المدينة، تفادى سيارات المرور، اجمع العملات الذهبية، واستخدم النيترو لتحطيم الأرقام القياسية!
+                Accelerate through bustling city streets at maximum velocity, dodge dense traffic, collect gold coins, and ignite nitro boosts to smash high scores!
               </p>
 
               {/* Track environment selector */}
               <div className="space-y-1.5">
-                <span className="text-xs font-medium text-slate-400">اختر مسار السباق والطقس:</span>
+                <span className="text-xs font-medium text-slate-400">Select Track & Weather:</span>
                 <div className="flex items-center justify-center gap-2 flex-wrap">
                   <button
                     type="button"
@@ -3033,7 +3077,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                     }`}
                   >
                     <Sun className="w-3.5 h-3.5" />
-                    النهار
+                    Sunny Day
                   </button>
 
                   <button
@@ -3046,7 +3090,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                     }`}
                   >
                     <Sunset className="w-3.5 h-3.5" />
-                    الغروب
+                    Sunset Horizon
                   </button>
 
                   <button
@@ -3059,7 +3103,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                     }`}
                   >
                     <Moon className="w-3.5 h-3.5" />
-                    النيون الليلي
+                    Neon Night
                   </button>
 
                   <button
@@ -3072,7 +3116,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                     }`}
                   >
                     <CloudRain className="w-3.5 h-3.5" />
-                    مطر
+                    Rainstorm
                   </button>
                 </div>
               </div>
@@ -3080,8 +3124,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               {/* High Score Banner */}
               {highScore > 0 && (
                 <div className="text-xs text-slate-400">
-                  أفضل رقم قياسي محقق:{' '}
-                  <span className="font-bold text-amber-400 font-game">{highScore.toLocaleString()} نقطة</span>
+                  Personal Best Record:{' '}
+                  <span className="font-bold text-amber-400 font-game">{highScore.toLocaleString()} pts</span>
                 </div>
               )}
 
@@ -3089,14 +3133,14 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               {ghostRunInfo ? (
                 <div className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-200">
                   <Ghost className="w-4 h-4 text-cyan-300 animate-pulse shrink-0" />
-                  <span>شبح أفضل جولة مسجل:</span>
-                  <span className="font-bold font-mono text-cyan-300">{ghostRunInfo.totalDistance.toLocaleString()} م</span>
+                  <span>Ghost PB Recorded:</span>
+                  <span className="font-bold font-mono text-cyan-300">{ghostRunInfo.totalDistance.toLocaleString()} m</span>
                   <span className="text-[11px] text-slate-400">({ghostRunInfo.carName})</span>
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2 text-xs text-cyan-300/80">
                   <Ghost className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>سيارة الشبح جاهزة للتسجيل في أول سباق لك! 👻</span>
+                  <span>Ghost Car is primed to record your first epic lap! 👻</span>
                 </div>
               )}
 
@@ -3116,7 +3160,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   ) : (
                     <Music2 className="w-3.5 h-3.5 text-slate-400" />
                   )}
-                  <span>الموسيقى: {musicEnabled ? 'مفعلة' : 'متوقفة'}</span>
+                  <span>Music: {musicEnabled ? 'ON' : 'OFF'}</span>
                 </button>
 
                 <button
@@ -3133,7 +3177,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   }`}
                 >
                   <Ghost className={`w-3.5 h-3.5 ${ghostEnabled ? 'text-cyan-400' : 'text-slate-400'}`} />
-                  <span>سيارة الشبح: {ghostEnabled ? 'مفعّلة 👻' : 'معطلة'}</span>
+                  <span>Ghost Car: {ghostEnabled ? 'ON 👻' : 'OFF'}</span>
                 </button>
 
                 <button
@@ -3146,7 +3190,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   }`}
                 >
                   <Zap className={`w-3.5 h-3.5 ${performanceMode ? 'text-emerald-400 fill-emerald-400' : 'text-slate-400'}`} />
-                  <span>تسريع الجوال (60 FPS): {performanceMode ? 'مفعّل ⚡' : 'عادي'}</span>
+                  <span>Turbo 60 FPS: {performanceMode ? 'ON ⚡' : 'OFF'}</span>
                 </button>
               </div>
 
@@ -3161,7 +3205,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   className="btn-play w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-400 hover:from-emerald-300 hover:to-teal-300 active:scale-95 text-slate-950 font-black text-base sm:text-lg rounded-xl flex items-center justify-center gap-2.5 transition-all cursor-pointer"
                 >
                   <Play className="w-5 h-5 fill-slate-950" />
-                  <span>العب الآن - انطلق بالسباق</span>
+                  <span>Race Now - Start Game</span>
                 </button>
 
                 <button
@@ -3173,7 +3217,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   className="w-full sm:w-auto px-6 py-3.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold text-sm rounded-xl border border-slate-700/80 flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
                   <Wrench className="w-4 h-4 text-amber-400" />
-                  <span>المرآب والترقيات</span>
+                  <span>Garage & Upgrades</span>
                 </button>
 
                 <button
@@ -3183,20 +3227,20 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                     document.getElementById('leaderboard')?.scrollIntoView({ behavior: 'smooth' });
                   }}
                   className="w-full sm:w-auto px-5 py-3.5 bg-slate-900/90 hover:bg-slate-800 active:scale-95 text-amber-400 font-bold text-sm rounded-xl border border-amber-500/30 flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                  title="عرض لوحة أفضل 5 لاعبين"
+                  title="View Top 5 Leaderboard"
                 >
                   <Trophy className="w-4 h-4 text-amber-400" />
-                  <span>لوحة المتصدرين 🏆</span>
+                  <span>Leaderboard 🏆</span>
                 </button>
               </div>
 
               {/* Quick Controls Guide */}
               <div className="pt-1 text-[11px] text-slate-400 flex items-center justify-center gap-3 flex-wrap">
-                <span>التوجيه: أسهم / WASD</span>
+                <span>Steer: Arrows / WASD</span>
                 <span>•</span>
-                <span>النيترو: زر مسافة Space</span>
+                <span>Nitro: Spacebar / Shift</span>
                 <span>•</span>
-                <span>الفرامل: السهم للأسفل / S</span>
+                <span>Brake: Down / S</span>
               </div>
             </div>
           </div>
@@ -3206,13 +3250,13 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         {gameState === 'PAUSED' && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
             <div className="max-w-xs w-full text-center space-y-4">
-              <h3 className="text-2xl font-bold font-game text-white">السباق متوقف مؤقتاً</h3>
+              <h3 className="text-2xl font-bold font-game text-white">Race Paused</h3>
               <div className="space-y-2">
                 <button
                   onClick={resumeGame}
                   className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg transition-colors cursor-pointer"
                 >
-                  متابعة القيادة
+                  Resume Driving
                 </button>
 
                 {/* Ghost Car Toggle in Pause Menu */}
@@ -3230,7 +3274,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   }`}
                 >
                   <Ghost className="w-4 h-4 text-cyan-400" />
-                  <span>سيارة الشبح (Ghost Car): {ghostEnabled ? 'مفعّلة 👻' : 'معطلة'}</span>
+                  <span>Ghost Car: {ghostEnabled ? 'ON 👻' : 'OFF'}</span>
                 </button>
 
                 {/* Audio & Music Control Button in Pause Menu */}
@@ -3240,7 +3284,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   className="w-full py-2 px-4 rounded-lg border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm shadow-amber-500/10"
                 >
                   <Sliders className="w-4 h-4 text-amber-400" />
-                  <span>التحكم في الصوت والموسيقى 🎚️ ({Math.round(musicVolume * 100)}%)</span>
+                  <span>Audio & Music Controls 🎚️ ({Math.round(musicVolume * 100)}%)</span>
                 </button>
 
                 {/* Music toggle during pause */}
@@ -3254,14 +3298,14 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   }`}
                 >
                   {musicEnabled ? <Music className="w-4 h-4 text-amber-400" /> : <Music2 className="w-4 h-4 text-slate-400" />}
-                  <span>موسيقى السباق: {musicEnabled ? 'مفعلة (تشغيل)' : 'متوقفة (كتم)'}</span>
+                  <span>Race Music: {musicEnabled ? 'Playing' : 'Muted'}</span>
                 </button>
 
                 <button
                   onClick={startGame}
                   className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg border border-slate-700 transition-colors cursor-pointer"
                 >
-                  إعادة تشغيل السباق
+                  Restart Race
                 </button>
                 <button
                   onClick={() => {
@@ -3271,7 +3315,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   }}
                   className="w-full py-2.5 px-4 bg-slate-900/60 hover:bg-slate-800 text-slate-300 rounded-lg transition-colors text-xs cursor-pointer"
                 >
-                  العودة للقائمة الرئيسية
+                  Return to Main Menu
                 </button>
               </div>
             </div>
@@ -3284,29 +3328,29 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             <div className="max-w-sm w-full text-center space-y-4">
               <div className="inline-flex items-center gap-2 text-red-400 font-bold text-sm">
                 <ShieldAlert className="w-5 h-5 text-red-500" />
-                <span>انتهى السباق بالاصطدام!</span>
+                <span>Race Finished - Crash Impact!</span>
               </div>
 
-              <h3 className="text-3xl font-black font-game text-white">نتيجة السباق</h3>
+              <h3 className="text-3xl font-black font-game text-white">Race Results</h3>
 
               {/* Stats Box */}
               <div className="grid grid-cols-2 gap-2.5 p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 text-start text-xs">
                 <div>
-                  <div className="text-slate-400">النقاط الإجمالية:</div>
+                  <div className="text-slate-400">Total Score:</div>
                   <div className="text-lg font-bold font-game text-white">
                     {currentScore.toLocaleString()}
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-slate-400">المسافة المقطوعة:</div>
+                  <div className="text-slate-400">Distance Traveled:</div>
                   <div className="text-lg font-bold font-game text-emerald-400">
-                    {(runDistance / 1000).toFixed(2)} كم
+                    {(runDistance / 1000).toFixed(2)} km
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-slate-400">العملات المجمعة:</div>
+                  <div className="text-slate-400">Coins Collected:</div>
                   <div className="text-base font-bold font-game text-amber-400 flex items-center gap-1">
                     <Coins className="w-3.5 h-3.5" />
                     +{runCoins}
@@ -3314,7 +3358,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 </div>
 
                 <div>
-                  <div className="text-slate-400">الرقم القياسي:</div>
+                  <div className="text-slate-400">Personal Best:</div>
                   <div className="text-base font-bold font-game text-sky-400">
                     {highScore.toLocaleString()}
                   </div>
@@ -3324,10 +3368,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 <div className="col-span-2 p-2 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs">
                   <span className="text-slate-400 flex items-center gap-1.5 font-medium">
                     <Zap className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>السيارات المتجاوزة في الجولة:</span>
+                    <span>Cars Overtaken in Run:</span>
                   </span>
                   <span className="font-bold text-cyan-300 font-game text-sm tabular-nums">
-                    {raceOvertakes} سيارة
+                    {raceOvertakes} cars
                   </span>
                 </div>
 
@@ -3335,26 +3379,26 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 <div className="col-span-2 p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5 text-slate-300 font-medium">
                     <Droplets className="w-3.5 h-3.5 text-sky-400" />
-                    <span>حالة هيكل السيارة:</span>
+                    <span>Car Body Condition:</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {runDirt <= 15 ? (
                       <span className="text-emerald-400 font-bold flex items-center gap-1">
                         <Sparkles className="w-3.5 h-3.5" />
-                        <span>نظيفة ولامعة ({runDirt}%)</span>
+                        <span>Clean & Shiny ({runDirt}%)</span>
                       </span>
                     ) : runDirt <= 50 ? (
                       <span className="text-amber-400 font-bold flex items-center gap-1">
-                        <span>💨 غبار طريق ({runDirt}%)</span>
+                        <span>💨 Road Dust ({runDirt}%)</span>
                       </span>
                     ) : (
                       <span className="text-orange-400 font-bold flex items-center gap-1">
-                        <span>🍂 متسخة بالطين ({runDirt}%)</span>
+                        <span>🍂 Muddy Road Dirt ({runDirt}%)</span>
                       </span>
                     )}
                     {runDirt > 25 && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">
-                        اغسلها في المرآب 🧽
+                        Wash in Garage 🧽
                       </span>
                     )}
                   </div>
@@ -3378,26 +3422,26 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                     </div>
                     <div className="text-start">
                       <div className="font-bold flex items-center gap-1.5">
-                        <span>سيارة الشبح (Ghost Car)</span>
+                        <span>Ghost Car</span>
                         {isNewRecordBroken && (
                           <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-400/25 text-cyan-200 font-bold border border-cyan-400/40 animate-pulse">
-                            رقم قياسي جديد! 🏆
+                            New Record Smashed! 🏆
                           </span>
                         )}
                       </div>
                       <div className="text-[11px] opacity-80">
                         {isNewRecordBroken
-                          ? `حطمت رقم الشبح السابق! تم حفظ مسارك الجديد: ${runDistance.toLocaleString()} م`
+                          ? `Smashed Ghost PB! New record saved: ${runDistance.toLocaleString()} m`
                           : ghostRunInfo
-                          ? `أفضل مسار مسجل: ${ghostRunInfo.totalDistance.toLocaleString()} م بواسطة (${ghostRunInfo.carName})`
-                          : 'أول جولة لك تم تسجيلها كشبح لمنافسته في السباقات القادمة!'}
+                          ? `Best track record: ${ghostRunInfo.totalDistance.toLocaleString()} m by (${ghostRunInfo.carName})`
+                          : 'Your first run was saved as the Ghost Car to race against!'}
                       </div>
                     </div>
                   </div>
                   <div className="font-mono font-bold text-end shrink-0">
                     {isNewRecordBroken ? (
                       <span className="text-cyan-300 font-bold text-xs sm:text-sm">
-                        +{runDistance - (ghostRunInfo?.totalDistance || 0)}م متقدم 🔥
+                        +{runDistance - (ghostRunInfo?.totalDistance || 0)}m Ahead 🔥
                       </span>
                     ) : ghostRunInfo ? (
                       <span
@@ -3406,11 +3450,11 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                         }`}
                       >
                         {runDistance >= ghostRunInfo.totalDistance
-                          ? 'تغلبت على الشبح 🏁'
-                          : `${(ghostRunInfo.totalDistance - runDistance).toLocaleString()}م متبقي`}
+                          ? 'Ghost Beaten 🏁'
+                          : `${(ghostRunInfo.totalDistance - runDistance).toLocaleString()}m remaining`}
                       </span>
                     ) : (
-                      <span className="text-cyan-400 text-xs">مسار محفوظ ✓</span>
+                      <span className="text-cyan-400 text-xs">Track Saved ✓</span>
                     )}
                   </div>
                 </div>
@@ -3421,15 +3465,15 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                     <Target className="w-4 h-4 text-amber-400 shrink-0" />
                     <div className="text-start">
                       <div className="font-bold text-white flex items-center gap-1.5">
-                        <span>التحدي اليومي</span>
+                        <span>Daily Quests</span>
                         <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono">
                           {dailySummary.completed}/{dailySummary.total}
                         </span>
                       </div>
                       <div className="text-[11px] text-slate-400">
                         {dailySummary.unclaimedCount > 0
-                          ? `لديك ${dailySummary.unclaimedCount} مكافأة جاهزة للاستلام!`
-                          : 'تابع تقدمك في مهام اليوم لربح العملات'}
+                          ? `You have ${dailySummary.unclaimedCount} quest rewards ready to claim!`
+                          : 'Complete daily quests to earn bonus coins'}
                       </div>
                     </div>
                   </div>
@@ -3442,7 +3486,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                     }`}
                   >
                     <Gift className="w-3.5 h-3.5" />
-                    <span>{dailySummary.unclaimedCount > 0 ? 'استلم المكافآت 🎁' : 'عرض التحديات'}</span>
+                    <span>{dailySummary.unclaimedCount > 0 ? 'Claim Rewards 🎁' : 'View Quests'}</span>
                   </button>
                 </div>
               </div>
@@ -3454,7 +3498,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   className="btn-play w-full sm:flex-1 py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  <span>العب مجدداً</span>
+                  <span>Play Again</span>
                 </button>
 
                 <button
@@ -3462,7 +3506,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   className="w-full sm:w-auto py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl border border-slate-700 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Wrench className="w-4 h-4 text-amber-400" />
-                  <span>المرآب وغسيل السيارة 🧽</span>
+                  <span>Garage & Car Wash 🧽</span>
                 </button>
 
                 <button
@@ -3472,7 +3516,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   className="w-full sm:w-auto py-3 px-4 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold rounded-xl border border-amber-500/40 transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-xs"
                 >
                   <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                  <span>لوحة المتصدرين 🏆</span>
+                  <span>Leaderboard 🏆</span>
                 </button>
               </div>
             </div>
@@ -3482,25 +3526,25 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         {/* INTERACTIVE AUDIO & MUSIC CONTROL MODAL */}
         {showAudioModal && (
           <div className="absolute inset-0 z-40 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="bg-slate-900/95 border border-amber-500/40 rounded-2xl p-4 sm:p-5 max-w-md w-full shadow-2xl shadow-amber-500/10 space-y-4 text-right">
+            <div className="bg-slate-900/95 border border-amber-500/40 rounded-2xl p-4 sm:p-5 max-w-md w-full shadow-2xl shadow-amber-500/10 space-y-4 text-left">
               {/* Header */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                    <Sliders className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold font-game text-white flex items-center gap-2">
+                    Audio & Music Controls 🎚️
+                  </h3>
+                </div>
                 <button
                   type="button"
                   onClick={toggleAudioModal}
                   className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  title="إغلاق لوحة الصوت"
+                  title="Close Audio Settings"
                 >
                   <X className="w-4 h-4" />
                 </button>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base sm:text-lg font-bold font-game text-white flex items-center gap-2">
-                    التحكم بالصوت والموسيقى 🎚️
-                  </h3>
-                  <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40">
-                    <Sliders className="w-4 h-4" />
-                  </div>
-                </div>
               </div>
 
               {/* Live Interactive Pitch & Speed Telemetry */}
@@ -3508,40 +3552,44 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
                     <Activity className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                    <span>تفاعل الموسيقى المباشر مع السرعة</span>
+                    <span>Dynamic Speed Pitch Reaction</span>
                   </div>
                   <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    {speedPitchEnabled ? 'متصل بالمحرك ⚡' : 'ثابت 🔒'}
+                    {speedPitchEnabled ? 'Engine Linked ⚡' : 'Locked 🔒'}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <div className="text-[10px] text-slate-400 font-medium">إيقاع الموسيقى</div>
+                    <div className="text-[10px] text-slate-400 font-medium">Music Tempo</div>
                     <div className="text-sm font-bold font-mono text-amber-400">
-                      {musicEnabled ? `${liveMusicBpm} BPM` : 'متوقف'}
+                      {musicEnabled ? `${liveMusicBpm} BPM` : 'Stopped'}
                     </div>
                   </div>
                   <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <div className="text-[10px] text-slate-400 font-medium">حدة النغمة (Pitch)</div>
+                    <div className="text-[10px] text-slate-400 font-medium">Pitch Shift</div>
                     <div className="text-sm font-bold font-mono text-amber-400">
                       {livePitchShift >= 0 ? `+${livePitchShift}` : livePitchShift} st
                     </div>
                   </div>
                   <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <div className="text-[10px] text-slate-400 font-medium">سرعة السيارة</div>
+                    <div className="text-[10px] text-slate-400 font-medium">Car Speed</div>
                     <div className="text-sm font-bold font-mono text-emerald-400">
-                      {Math.round(currentSpeed)} كم/س
+                      {Math.round(currentSpeed)} KM/H
                     </div>
                   </div>
                 </div>
                 <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
-                  🎶 ترتفع نغمة الموسيقى وحدتها وإيقاعها طردياً كلما ضغطت على دواسة الوقود أو النيترو، وتهدأ عند الفرملة!
+                  🎶 The musical rhythm and pitch dynamically elevate as you accelerate or use nitro, softening dynamically during braking!
                 </p>
               </div>
 
               {/* Music Volume Section */}
               <div className="space-y-2 p-3 rounded-xl bg-slate-950/50 border border-slate-800/80">
                 <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <Music className="w-4 h-4 text-amber-400" />
+                    <span>Energetic Race Music</span>
+                  </label>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -3553,16 +3601,12 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                       }`}
                     >
                       {musicEnabled ? <Music className="w-3.5 h-3.5 text-amber-400" /> : <Music2 className="w-3.5 h-3.5 text-slate-400" />}
-                      <span>{musicEnabled ? 'تشغيل' : 'كتم'}</span>
+                      <span>{musicEnabled ? 'Playing' : 'Muted'}</span>
                     </button>
                     <span className="font-mono text-xs font-bold text-amber-400">
                       {Math.round(musicVolume * 100)}%
                     </span>
                   </div>
-                  <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <span>موسيقى السباق الحماسية</span>
-                    <Music className="w-4 h-4 text-amber-400" />
-                  </label>
                 </div>
                 <input
                   type="range"
@@ -3576,6 +3620,9 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
 
                 {/* Speed Pitch Feature Toggle */}
                 <div className="flex items-center justify-between pt-2 border-t border-slate-800/60">
+                  <span className="text-xs text-slate-300">
+                    Dynamic Pitch Reaction to Car Speed
+                  </span>
                   <button
                     type="button"
                     onClick={handleSpeedPitchToggle}
@@ -3585,19 +3632,20 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   >
                     <span
                       className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        speedPitchEnabled ? 'translate-x-0' : 'translate-x-4'
+                        speedPitchEnabled ? 'translate-x-4' : 'translate-x-0'
                       }`}
                     />
                   </button>
-                  <span className="text-xs text-slate-300">
-                    تغيير حدة النغمات مع سرعة السيارة (Pitch Reaction)
-                  </span>
                 </div>
               </div>
 
               {/* Sound Effects Volume Section */}
               <div className="space-y-2 p-3 rounded-xl bg-slate-950/50 border border-slate-800/80">
                 <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <Volume2 className="w-4 h-4 text-emerald-400" />
+                    <span>Engine & Sound Effects (SFX)</span>
+                  </label>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -3609,16 +3657,12 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                       }`}
                     >
                       {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-emerald-400" /> : <VolumeX className="w-3.5 h-3.5 text-slate-400" />}
-                      <span>{soundEnabled ? 'تشغيل' : 'كتم'}</span>
+                      <span>{soundEnabled ? 'Active' : 'Muted'}</span>
                     </button>
                     <span className="font-mono text-xs font-bold text-emerald-400">
                       {Math.round(soundVolume * 100)}%
                     </span>
                   </div>
-                  <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <span>صوت المحرك والمؤثرات (SFX)</span>
-                    <Volume2 className="w-4 h-4 text-emerald-400" />
-                  </label>
                 </div>
                 <input
                   type="range"
@@ -3641,7 +3685,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   }}
                   className="flex-1 py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-center cursor-pointer"
                 >
-                  كتم الكل 🔇
+                  Mute All 🔇
                 </button>
                 <button
                   type="button"
@@ -3651,7 +3695,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   }}
                   className="flex-1 py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-center cursor-pointer"
                 >
-                  هادئ 🔉
+                  Quiet 🔉
                 </button>
                 <button
                   type="button"
@@ -3661,7 +3705,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   }}
                   className="flex-1 py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-center cursor-pointer"
                 >
-                  متوازن 🔊
+                  Balanced 🔊
                 </button>
                 <button
                   type="button"
@@ -3671,7 +3715,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   }}
                   className="flex-1 py-1 px-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors text-center cursor-pointer font-bold"
                 >
-                  أقصى حماس ⚡
+                  Max Hype ⚡
                 </button>
               </div>
 
@@ -3681,7 +3725,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 onClick={toggleAudioModal}
                 className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-500/20"
               >
-                حفظ وإغلاق
+                Save & Close
               </button>
             </div>
           </div>
