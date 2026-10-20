@@ -156,4 +156,52 @@
   will-change: transform, opacity, filter;
 }
 
+/* Smooth Pause State Transitions on Game Container & Overlay */
+@keyframes pause-overlay-fade-in {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
+
+@keyframes pause-modal-scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pause-container-glow {
+  0%, 100% {
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.2), 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 45px rgba(245, 158, 11, 0.35), 0 25px 50px -12px rgba(0, 0, 0, 0.85);
+  }
+}
+
+.animate-pause-fade-in {
+  animation: pause-overlay-fade-in 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, backdrop-filter;
+}
+
+.animate-pause-modal-in {
+  animation: pause-modal-scale-in 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+.pause-glow-pulse {
+  animation: pause-container-glow 2.5s ease-in-out infinite;
+}
+
 

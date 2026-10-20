@@ -30,6 +30,9 @@ import {
   Target,
   Gift,
   Ghost,
+  Keyboard,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 import {
   GameState,
@@ -274,6 +277,30 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const lastRecordTimeRef = useRef<number>(0);
   const hasOvertakenGhostRef = useRef<boolean>(false);
   const ghostPrevAheadRef = useRef<boolean | null>(null);
+  // Persistent Controls Overlay State & Key Visualizer
+  const [showControlsOverlay, setShowControlsOverlay] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('metro_racers_controls_overlay');
+      if (saved !== null) return saved === 'true';
+      return window.innerWidth >= 640;
+    }
+    return true;
+  });
+  const [activePressedKeys, setActivePressedKeys] = useState<{
+    left: boolean;
+    right: boolean;
+    up: boolean;
+    down: boolean;
+    nitro: boolean;
+    space: boolean;
+  }>({
+    left: false,
+    right: false,
+    up: false,
+    down: false,
+    nitro: false,
+    space: false,
+  });
 
   useEffect(() => {
     const handleGhostSettings = (e: Event) => {
@@ -568,20 +595,25 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
 
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
         keysRef.current.left = true;
+        setActivePressedKeys((prev) => (prev.left ? prev : { ...prev, left: true }));
       }
       if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
         keysRef.current.right = true;
+        setActivePressedKeys((prev) => (prev.right ? prev : { ...prev, right: true }));
       }
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
         keysRef.current.up = true;
+        setActivePressedKeys((prev) => (prev.up ? prev : { ...prev, up: true }));
       }
       if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
         keysRef.current.down = true;
+        setActivePressedKeys((prev) => (prev.down ? prev : { ...prev, down: true }));
       }
       if (e.key === ' ' || e.code === 'Space' || e.key === 'Shift') {
         keysRef.current.nitro = true;
         keysRef.current.space = true;
         keysRef.current.drift = true;
+        setActivePressedKeys((prev) => (prev.space ? prev : { ...prev, space: true, nitro: true }));
       }
       if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
         if (gameState === 'PLAYING') {
@@ -595,20 +627,25 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
         keysRef.current.left = false;
+        setActivePressedKeys((prev) => (!prev.left ? prev : { ...prev, left: false }));
       }
       if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
         keysRef.current.right = false;
+        setActivePressedKeys((prev) => (!prev.right ? prev : { ...prev, right: false }));
       }
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
         keysRef.current.up = false;
+        setActivePressedKeys((prev) => (!prev.up ? prev : { ...prev, up: false }));
       }
       if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
         keysRef.current.down = false;
+        setActivePressedKeys((prev) => (!prev.down ? prev : { ...prev, down: false }));
       }
       if (e.key === ' ' || e.code === 'Space' || e.key === 'Shift') {
         keysRef.current.nitro = false;
         keysRef.current.space = false;
         keysRef.current.drift = false;
+        setActivePressedKeys((prev) => (!prev.space ? prev : { ...prev, space: false, nitro: false }));
       }
     };
 
@@ -2811,6 +2848,148 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               <Ghost className="w-4 h-4 text-cyan-300 animate-spin shrink-0" />
               <span>{ghostNotification}</span>
             </div>
+          </div>
+        )}
+
+        {/* PERSISTENT CONTROLS OVERLAY DIRECTLY ON THE GAME SCREEN */}
+        {gameState === 'PLAYING' && (
+          <div
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 pointer-events-auto select-none"
+            aria-label="Current Key Bindings Controls Reference"
+          >
+            {showControlsOverlay ? (
+              <div className="bg-slate-950/85 hover:bg-slate-950/95 backdrop-blur-md rounded-xl border border-slate-800/90 shadow-2xl p-2 sm:p-2.5 transition-all text-left max-w-[210px] sm:max-w-[230px]">
+                {/* Header with Title & Collapse Button */}
+                <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-800/70 gap-2">
+                  <div className="flex items-center gap-1.5 text-slate-200">
+                    <Keyboard className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="text-[11px] sm:text-xs font-bold font-game tracking-wide text-white">
+                      Controls
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !showControlsOverlay;
+                      setShowControlsOverlay(next);
+                      try {
+                        localStorage.setItem('metro_racers_controls_overlay', String(next));
+                      } catch {}
+                    }}
+                    className="p-0.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    title="Minimize Controls Overlay"
+                    aria-label="Minimize Controls"
+                  >
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Key Bindings List with Active Key Lighting */}
+                <div className="space-y-1 text-[10px] sm:text-[11px]">
+                  {/* Steer */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-slate-400 font-medium">Steer:</span>
+                    <div className="flex items-center gap-1 font-mono">
+                      <span
+                        className={`px-1.5 py-0.5 rounded border text-[10px] font-bold transition-all ${
+                          activePressedKeys.left
+                            ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-[0_0_8px_rgba(251,191,36,0.6)] scale-105'
+                            : 'bg-slate-900 text-slate-300 border-slate-700/80'
+                        }`}
+                      >
+                        ◄ A
+                      </span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded border text-[10px] font-bold transition-all ${
+                          activePressedKeys.right
+                            ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-[0_0_8px_rgba(251,191,36,0.6)] scale-105'
+                            : 'bg-slate-900 text-slate-300 border-slate-700/80'
+                        }`}
+                      >
+                        ► D
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Accelerate */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-slate-400 font-medium">Drive:</span>
+                    <div className="flex items-center gap-1 font-mono">
+                      <span
+                        className={`px-1.5 py-0.5 rounded border text-[10px] font-bold transition-all ${
+                          activePressedKeys.up
+                            ? 'bg-emerald-400 text-slate-950 border-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.6)] scale-105'
+                            : 'bg-slate-900 text-slate-300 border-slate-700/80'
+                        }`}
+                      >
+                        ▲ W
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Brake */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-slate-400 font-medium">Brake:</span>
+                    <div className="flex items-center gap-1 font-mono">
+                      <span
+                        className={`px-1.5 py-0.5 rounded border text-[10px] font-bold transition-all ${
+                          activePressedKeys.down
+                            ? 'bg-rose-500 text-white border-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.6)] scale-105'
+                            : 'bg-slate-900 text-slate-300 border-slate-700/80'
+                        }`}
+                      >
+                        ▼ S
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Nitro */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-slate-400 font-medium flex items-center gap-1">
+                      <span>Nitro:</span>
+                      <Flame className="w-2.5 h-2.5 text-amber-400" />
+                    </span>
+                    <div className="flex items-center gap-1 font-mono">
+                      <span
+                        className={`px-1.5 py-0.5 rounded border text-[10px] font-bold transition-all ${
+                          activePressedKeys.space || activePressedKeys.nitro || isNitroActive
+                            ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 border-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.7)] scale-105'
+                            : 'bg-slate-900 text-amber-300 border-amber-500/40'
+                        }`}
+                      >
+                        Space / Shift
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Pause */}
+                  <div className="flex items-center justify-between gap-2 pt-0.5 border-t border-slate-800/50">
+                    <span className="text-slate-500 font-medium text-[9px] sm:text-[10px]">Pause:</span>
+                    <span className="px-1.5 py-0.2 rounded bg-slate-900 text-slate-400 border border-slate-800 font-mono text-[9px]">
+                      P / Esc
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Minimized Floating Pill */
+              <button
+                type="button"
+                onClick={() => {
+                  setShowControlsOverlay(true);
+                  try {
+                    localStorage.setItem('metro_racers_controls_overlay', 'true');
+                  } catch {}
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-slate-800/80 hover:border-amber-500/50 text-slate-300 hover:text-white backdrop-blur-md shadow-lg transition-all text-[11px] font-medium cursor-pointer"
+                title="Expand Controls Overlay"
+                aria-label="Expand Controls Overlay"
+              >
+                <Keyboard className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-game font-bold text-xs text-white">Controls</span>
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+            )}
           </div>
         )}
 
