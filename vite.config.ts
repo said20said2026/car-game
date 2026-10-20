@@ -29,8 +29,18 @@ export default defineConfig(() => {
               return;
             }
             const cleanUrl = req.url?.split('?')[0];
+            if (cleanUrl === '/ads.txt') {
+              const adsPath = path.resolve(__dirname, 'public/ads.txt');
+              if (fs.existsSync(adsPath)) {
+                res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+                res.setHeader('Cache-Control', 'public, max-age=3600');
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                res.end(fs.readFileSync(adsPath));
+                return;
+              }
+            }
             if (cleanUrl && cleanUrl !== '/') {
-              const staticPages = ['/privacy', '/terms', '/about', '/contact', '/cars', '/instructions'];
+              const staticPages = ['/privacy', '/terms', '/about', '/contact', '/cars', '/instructions', '/disclaimer'];
               if (staticPages.includes(cleanUrl)) {
                 const filePath = path.resolve(__dirname, `public${cleanUrl}.html`);
                 if (fs.existsSync(filePath)) {

@@ -45,21 +45,12 @@ export const AdSlot: React.FC<AdSlotProps> = ({
         <ins
           ref={adRef}
           className="adsbygoogle block w-full"
-          style={{ display: 'block', minHeight: '60px' }}
+          style={{ display: 'block', minHeight: '90px' }}
           data-ad-client="ca-pub-9316249900269214"
           data-ad-slot={adSlotNumber || 'auto'}
           data-ad-format={format === 'rectangle' ? 'rectangle' : 'auto'}
           data-full-width-responsive="true"
         />
-
-        {/* Fallback & compliance indicator */}
-        <div className="text-[11px] text-slate-500 flex flex-col sm:flex-row items-center gap-1 sm:gap-2 mt-1">
-          <span>Google AdSense (ca-pub-9316249900269214)</span>
-          <span className="hidden sm:inline text-slate-700">|</span>
-          <span className="font-mono text-[10px]">
-            {format === 'horizontal' ? 'Auto-Responsive Banner' : '300x250 Medium Rectangle'}
-          </span>
-        </div>
       </div>
     </div>
   );
