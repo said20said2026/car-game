@@ -1,91 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <!-- الصفحة الرئيسية ولعبة السباق الخارقة -->
+  <!-- Homepage and 3D Racing Game -->
   <url>
     <loc>https://www.games-children.com/</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://www.games-children.com/assets/social-cover.jpg</image:loc>
-      <image:title>لعبة سباق سيارات المدينة السريعة للأبطال</image:title>
-      <image:caption>لعبة سباق السيارات الخارقة في المدينة مجاناً على المتصفح للأطفال والبالغين</image:caption>
+      <image:title>Metro Racers - Free 3D Car Racing Game Online</image:title>
+      <image:caption>Free online 3D supercar racing game in the browser with no download required</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://www.games-children.com/assets/social-cover.webp</image:loc>
-      <image:title>لعبة سباق سيارات المدينة السريعة للأبطال بصيغة WebP</image:title>
-      <image:caption>ألعاب سيارات ثلاثية الأبعاد خفيفة وسريعة التحميل بدون تنزيل</image:caption>
+      <image:title>Metro Racers - WebP Cover</image:title>
+      <image:caption>Lightweight high-speed 60 FPS 3D canvas web racing game</image:caption>
     </image:image>
   </url>
 
-  <!-- صفحة واستعراض أنواع وتطوير السيارات -->
+  <!-- Supercars Fleet & Garage Upgrades Page -->
   <url>
     <loc>https://www.games-children.com/cars</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://www.games-children.com/assets/social-cover.webp</image:loc>
-      <image:title>أنواع سيارات السباق الخارقة في اللعبة</image:title>
-      <image:caption>دليل سيارات السباق وترقيات السرعة والمحرك والنيترو في المرآب</image:caption>
+      <image:title>Supercars Fleet and Garage Upgrades</image:title>
+      <image:caption>Supercar performance specs, top speed, handling, and engine tuning guide</image:caption>
     </image:image>
   </url>
 
-  <!-- صفحة طريقة اللعب والتحكم -->
+  <!-- Gameplay & Controls Instructions Page -->
   <url>
     <loc>https://www.games-children.com/instructions</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://www.games-children.com/assets/gameplay-preview.webp</image:loc>
-      <image:title>طريقة اللعب وإرشادات التحكم</image:title>
-      <image:caption>إرشادات التحكم باللمس ولوحة المفاتيح في لعبة سباق سيارات المدينة</image:caption>
+      <image:title>City Speed Heroes How to Play &amp; Controls</image:title>
+      <image:caption>Keyboard and mobile touch controls guide with pro scoring tactics</image:caption>
     </image:image>
   </url>
 
-  <!-- صفحة سياسة الخصوصية الأساسية لأدسنس ومشرفي المواقع -->
+  <!-- Privacy Policy for AdSense & Compliance -->
   <url>
     <loc>https://www.games-children.com/privacy</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
-  <!-- صفحة شروط الاستخدام والخدمة -->
+  <!-- Terms of Service & Acceptable Use -->
   <url>
     <loc>https://www.games-children.com/terms</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
-  <!-- صفحة من نحن ومعلومات الموقع -->
+  <!-- About Us & Team Mission -->
   <url>
     <loc>https://www.games-children.com/about</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <image:image>
       <image:loc>https://www.games-children.com/assets/social-cover.webp</image:loc>
-      <image:title>فريق عمل لعبة سباق سيارات المدينة السريعة</image:title>
-      <image:caption>منصة ألعاب أركيد متطورة ومجانية للأطفال والبالغين</image:caption>
+      <image:title>City Speed Heroes Developer &amp; Publishing Team</image:title>
+      <image:caption>Free web arcade games platform safe for all players</image:caption>
     </image:image>
   </url>
 
-  <!-- صفحة اتصل بنا ونموذج التواصل المباشر -->
+  <!-- Contact Us Form & Direct Inquiries -->
   <url>
     <loc>https://www.games-children.com/contact</loc>
-    <lastmod>2026-10-17</lastmod>
+    <lastmod>2026-10-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
-  <!-- صفحة إخلاء المسؤولية القانونية -->
+  <!-- Legal Disclaimer & Safety Notices -->
   <url>
     <loc>https://www.games-children.com/disclaimer</loc>
-    <lastmod>2026-10-17</lastmod>
+    <lastmod>2026-10-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

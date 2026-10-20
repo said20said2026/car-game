@@ -21,11 +21,12 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
         {/* Top Row: Brand & AdSense Status */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="space-y-1 text-center sm:text-left">
-            <div className={`font-bold font-game text-base ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              City Speed Heroes - Free 3D Car Racing Game Online
+            <div className={`font-bold font-game text-base sm:text-lg flex items-center justify-center sm:justify-start gap-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <span className="text-[#ffcc00]">METRO RACERS</span>
+              <span className="text-xs font-normal text-slate-400">(Formerly known as City Speed Heroes)</span>
             </div>
-            <p className={isDark ? 'text-slate-500 text-xs' : 'text-slate-500 text-xs'}>
-              Free browser car racing game on games-children.com · All Rights Reserved © 2026
+            <p className={isDark ? 'text-slate-400 text-xs' : 'text-slate-500 text-xs'}>
+              &copy; 2026 <strong>Metro Racers</strong>. Powered by <a href="https://www.games-children.com/" className="text-[#ffcc00] hover:underline font-semibold">games-children.com</a>. All Rights Reserved.
             </p>
           </div>
 
@@ -194,14 +195,14 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
             ? 'bg-slate-900/30 border-slate-800/60 text-slate-400'
             : 'bg-slate-50 border-slate-200 text-slate-600'
         }`}>
-          <div className="font-bold text-xs text-amber-500 font-game">
-            City Speed Heroes Racing Guide & Highlights:
+          <div className="font-bold text-xs text-[#ffcc00] font-game">
+            Metro Racers High-Speed Racing Highlights:
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
               <span className="font-semibold block text-slate-300 mb-1">Online Highway Racing:</span>
               <p className="opacity-80">
-                City Speed Heroes 3D · High-speed traffic dodge · Lane swerving gameplay · Nitrous boost rush · Daily challenge quests · Champions high score leaderboard.
+                Metro Racers (formerly City Speed Heroes) 3D · High-speed traffic dodge · Lane swerving gameplay · Nitrous boost rush · Daily challenge quests · Champions high score leaderboard.
               </p>
             </div>
             <div>
@@ -230,7 +231,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
           isDark ? 'border-slate-900 text-slate-500' : 'border-slate-100 text-slate-500'
         }`}>
           <p className="m-0">
-            <strong className="text-amber-400/90 font-bold">• Disclaimer:</strong> City Speed Heroes is designed exclusively for games-children.com to provide a fun, safe, high-speed arcade simulation for entertainment purposes only. It does not represent real-world traffic laws. Drive safely in real life.
+            <strong className="text-amber-400/90 font-bold">• Disclaimer:</strong> Metro Racers (formerly City Speed Heroes) is designed exclusively for games-children.com to provide a fun, safe, high-speed arcade simulation for entertainment purposes only. It does not represent real-world traffic laws. Drive safely in real life.
           </p>
           <a
             href="/disclaimer"

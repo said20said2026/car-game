@@ -3051,12 +3051,12 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         {gameState === 'MENU' && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 sm:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto">
             <div className="max-w-md w-full text-center space-y-4 sm:space-y-5 my-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold">
-                <span>Ultimate 3D Street Racing Game of 2026</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-semibold">
+                <span>Formerly known as City Speed Heroes</span>
               </div>
 
-              <h2 className="text-2xl sm:text-4xl font-black font-game text-white tracking-tight leading-tight">
-                City Speed Heroes
+              <h2 className="text-3xl sm:text-5xl font-black font-game text-[#ffcc00] tracking-wider leading-tight">
+                METRO RACERS
               </h2>
 
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">

@@ -33,42 +33,43 @@
   ExpiresByType font/woff2 "access plus 1 year"
 </IfModule>
 
-# إعدادات توجيه السيو لملف .htaccess (خوادم Apache / LiteSpeed)
+# SEO & Routing configuration for Apache / LiteSpeed servers
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
 
-  # 1. إجبار بروتوكول التشفير HTTPS لجميع الزوار
+  # 1. Force HTTPS encryption for all visitors
   RewriteCond %{HTTPS} off
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-  # 2. إزالة الشرطة المائلة الأخيرة المزدوجة لمنع تكرار المحتوى
+  # 2. Remove trailing slashes to prevent duplicate content
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{REQUEST_URI} (.+)/$
   RewriteRule ^ %1 [R=301,L]
 
-  # استثناء الملفات الثابتة المعرفة
+  # Static file passthroughs
   RewriteRule ^googleba8a8f81976877d7\.html$ - [L]
   RewriteRule ^ai-catalog\.json$ - [L]
   RewriteRule ^sitemap\.xml$ - [L]
   RewriteRule ^robots\.txt$ - [L]
   RewriteRule ^ads\.txt$ - [L]
 
-  # توجيه الصفحات الثابتة إلى ملفات HTML
+  # Route friendly URLs to static HTML files
   RewriteRule ^privacy$ privacy.html [L]
   RewriteRule ^terms$ terms.html [L]
   RewriteRule ^about$ about.html [L]
   RewriteRule ^contact$ contact.html [L]
   RewriteRule ^cars$ cars.html [L]
   RewriteRule ^instructions$ instructions.html [L]
+  RewriteRule ^disclaimer$ disclaimer.html [L]
 
-  # توجيه باقي المسارات إلى التطبيق الرئيسي (SPA Fallback)
+  # SPA Fallback for all other routes
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
 </IfModule>
 
-# 3. تفعيل ضغط GZIP لتسريع الموقع
+# 3. Enable GZIP compression for maximum page load speed
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json image/svg+xml
 </IfModule>

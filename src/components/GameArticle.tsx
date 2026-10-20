@@ -102,13 +102,16 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
       {/* Main Hero Overview */}
       <section className="space-y-4">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          City Speed Heroes - Free 3D Car Racing Game Online
+          Metro Racers - Free 3D Car Racing Game Online
         </h2>
+        <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider">
+          Formerly known as City Speed Heroes
+        </p>
         <p className="text-base sm:text-lg opacity-90 leading-relaxed">
-          Welcome to <strong>City Speed Heroes</strong>, the premier free 3D browser car racing and highway driving simulation on <strong>games-children.com</strong>! If you love high-octane speed, dodging intense rush-hour traffic, and tuning exotic supercars, this game delivers pure arcade adrenaline directly in your web browser with zero downloads.
+          Welcome to <strong>Metro Racers</strong> (formerly known as City Speed Heroes), the premier free 3D browser car racing and highway driving simulation on <strong>games-children.com</strong>! If you love high-octane speed, dodging intense rush-hour traffic, and tuning exotic supercars, this game delivers pure arcade adrenaline directly in your web browser with zero downloads.
         </p>
         <p className="text-sm sm:text-base opacity-85 leading-relaxed">
-          Engineered for players across the United States, Canada, the Netherlands, and around the globe, City Speed Heroes combines silky-smooth 60 FPS pseudo-3D graphics, procedural engine acoustics, dynamic weather tracks, and deep garage upgrades. Race anytime on PC, Mac, Chromebook, iPhone, iPad, or Android!
+          Engineered for players across the United States, Canada, the Netherlands, and around the globe, Metro Racers combines silky-smooth 60 FPS pseudo-3D graphics, procedural engine acoustics, dynamic weather tracks, and deep garage upgrades. Race anytime on PC, Mac, Chromebook, iPhone, iPad, or Android!
         </p>
 
         {/* High-res gameplay preview image */}
@@ -515,7 +518,9 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {[
-                'City Speed Heroes 3D',
+                'Metro Racers',
+                'Metro Racers 3D',
+                'City Speed Heroes',
                 'Free online car games',
                 'Browser racing simulator',
                 'Lane swerving game',
@@ -569,9 +574,9 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
                 'SEO tips and user experience',
                 'Safe family gaming 100%',
                 'Supercars fleet & garage upgrades',
-                'أفضل خدمات games-children.com',
-                'دليل شامل ومراجعات مفصلة باللغة العربية',
-                'نصائح تحسين محركات البحث وتجربة المستخدم',
+                'High performance 60 FPS racing',
+                'Instant browser play zero downloads',
+                'Global leaderboard & daily challenges',
               ].map((term, i) => (
                 <span
                   key={i}

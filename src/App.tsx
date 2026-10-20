@@ -208,18 +208,22 @@ export default function App() {
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* Main Hero Header (SEO Optimized for USA, Canada, Netherlands, Global) */}
         <div className="text-center sm:text-start space-y-3">
-          <div className="inline-flex items-center gap-2 text-xs font-semibold text-amber-500">
-            <span>#1 Free Online Browser 3D Car Racing Game</span>
-            <span>·</span>
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-amber-500 flex-wrap">
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 font-bold uppercase tracking-wider text-[10px]">
+              Formerly known as City Speed Heroes
+            </span>
+            <span className="hidden sm:inline">·</span>
+            <span>#1 Free Online 3D Car Racing Game</span>
+            <span className="hidden sm:inline">·</span>
             <span>No Download Required</span>
           </div>
 
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black font-game tracking-tight leading-tight">
-            City Speed Heroes - Free 3D Car Racing Game Online
+            Metro Racers - Free 3D Car Racing Game Online
           </h1>
 
           <p className="text-sm sm:text-base opacity-85 max-w-2xl leading-relaxed">
-            Play City Speed Heroes for free on games-children.com! Experience realistic 3D highway racing, dodge intense traffic, unlock nitrous speed boosts, and beat global high score records with zero downloads on desktop, tablet, and mobile.
+            Play Metro Racers online for free! Experience high-speed 3D car racing, dodge city traffic, unlock supercars, and break records directly in your browser with no download required.
           </p>
 
           <div className="pt-1 flex items-center gap-3 flex-wrap">
@@ -280,7 +284,8 @@ export default function App() {
         <AdSlot slotId="header-leaderboard" format="horizontal" />
 
         {/* Main 3D Racing Game Canvas Section */}
-        <section id="game-container" className="scroll-mt-20">
+        <section id="game-arena" className="scroll-mt-20">
+          <div id="game-container" />
           <RacingGame
             ref={racingRef}
             onOpenGarage={() => handleOpenGarage()}
@@ -288,6 +293,41 @@ export default function App() {
             onCoinsChange={setCoins}
           />
         </section>
+
+        {/* SEO Optimized Text Sections (About Metro Racers & Controls Guide) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section
+            id="about-game"
+            className={`p-5 sm:p-6 rounded-2xl border transition-colors ${
+              theme === 'dark'
+                ? 'bg-slate-900/60 border-slate-800/80 text-slate-200'
+                : 'bg-white border-slate-200 text-slate-800 shadow-xs'
+            }`}
+          >
+            <h2 className="text-xl sm:text-2xl font-black font-game text-[#ffcc00] mb-2.5">
+              About Metro Racers
+            </h2>
+            <p className="text-xs sm:text-sm leading-relaxed opacity-90">
+              Welcome to <strong>Metro Racers</strong>, the ultimate online entertainment portal combining the instant thrill of classic arcade mechanics with high-fidelity 3D modern car driving simulation. Engineered specifically for speed enthusiasts, this game offers an exceptional racing adventure directly inside your web browser. No installation or downloads required—enjoy seamless deployment on PC or mobile platforms instantly via <a href="https://www.games-children.com/" className="text-[#ffcc00] underline font-semibold">games-children.com</a>.
+            </p>
+          </section>
+
+          <section
+            id="gameplay-guide"
+            className={`p-5 sm:p-6 rounded-2xl border transition-colors ${
+              theme === 'dark'
+                ? 'bg-slate-900/60 border-slate-800/80 text-slate-200'
+                : 'bg-white border-slate-200 text-slate-800 shadow-xs'
+            }`}
+          >
+            <h2 className="text-xl sm:text-2xl font-black font-game text-[#ffcc00] mb-2.5">
+              How to Play & Controls
+            </h2>
+            <p className="text-xs sm:text-sm leading-relaxed opacity-90">
+              Master your lane swerving techniques, dodge heavy metropolitan traffic, trigger your nitro boosts, and execute drifting maneuvers to dominate the scoreboard. Check our integrated control layouts for keyboard inputs and mobile responsive touch controls within the main dashboard panels.
+            </p>
+          </section>
+        </div>
 
         {/* Daily Quests, Special Missions & Reward Milestones */}
         <DailyChallengesSection

@@ -33,35 +33,44 @@ export const Header: React.FC<HeaderProps> = ({
         ? 'border-slate-800 bg-slate-950/85 text-slate-100'
         : 'border-slate-200 bg-white/90 text-slate-900 shadow-xs'
     }`}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 sm:gap-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 sm:gap-6">
         <a
           href="/"
-          className="text-lg sm:text-xl font-black font-game tracking-tight whitespace-nowrap shrink-0 flex items-center gap-2"
+          className="tracking-tight whitespace-nowrap shrink-0 flex items-center gap-2.5 group"
         >
           <img
             src="/assets/logo.webp"
-            alt="City Speed Heroes Logo - Free 3D Car Racing Game"
-            width={36}
-            height={36}
-            className="w-9 h-9 rounded-lg object-contain shadow-xs border border-amber-500/20"
+            alt="Metro Racers Logo - Free 3D Car Racing Game Online"
+            width={40}
+            height={40}
+            className="w-10 h-10 rounded-xl object-contain shadow-xs border border-amber-500/30 group-hover:scale-105 transition-transform"
             loading="eager"
           />
-          <span className="text-amber-500">City Speed</span>
-          <span>Heroes</span>
+          <div className="flex flex-col text-left">
+            <span className="text-xl sm:text-2xl font-black font-game tracking-wider leading-none text-[#ffcc00] group-hover:text-amber-300 transition-colors">
+              METRO RACERS
+            </span>
+            <span className="text-[10px] sm:text-[11px] font-medium text-slate-400 leading-tight">
+              Formerly known as City Speed Heroes
+            </span>
+          </div>
         </a>
 
         {/* Zone 2: Nav links */}
-        <nav className="hidden md:flex items-center gap-5 text-xs sm:text-sm font-medium opacity-90">
-          <a href="#game-container" className="hover:text-amber-500 transition-colors whitespace-nowrap shrink-0">
+        <nav className="hidden lg:flex items-center gap-5 text-xs sm:text-sm font-medium opacity-90">
+          <a href="#game-arena" className="hover:text-amber-400 transition-colors whitespace-nowrap shrink-0 font-semibold">
             Game Arena
           </a>
-          <a href="#instructions" className="hover:text-amber-500 transition-colors whitespace-nowrap shrink-0">
-            Controls & Guide
+          <a href="#about-game" className="hover:text-amber-400 transition-colors whitespace-nowrap shrink-0">
+            About
+          </a>
+          <a href="#gameplay-guide" className="hover:text-amber-400 transition-colors whitespace-nowrap shrink-0">
+            How to Play
           </a>
           <a
             href="#cars"
             onClick={handleScrollToCars}
-            className="hover:text-amber-500 transition-colors whitespace-nowrap shrink-0 font-bold text-amber-500"
+            className="hover:text-amber-400 transition-colors whitespace-nowrap shrink-0 font-bold text-amber-400"
           >
             Supercars Fleet
           </a>

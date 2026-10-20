@@ -1,10 +1,10 @@
-# ملف توجيه عناكب محركات البحث (Robots.txt)
-# يوضع في المجلد الرئيسي لموقعك مباشرة (root directory)
+# Robots.txt for games-children.com - Search Engine Crawler Directive
+# Root directory configuration
 
 User-agent: *
 Allow: /
 
-# حظر المسارات الحساسة ولوحات التحكم الشائعة
+# Disallow sensitive endpoints and admin dashboards
 Disallow: /admin/
 Disallow: /wp-admin/
 Disallow: /login/
@@ -12,8 +12,8 @@ Disallow: /checkout/
 Disallow: /search/
 Disallow: /cgi-bin/
 
-# السماح لملفات التنسيق والجافاسكربت المهمة للفهرسة
+# Allow CSS and JS assets required for rendering and indexing
 Allow: /wp-admin/admin-ajax.php
 
-# مسار خريطة الموقع البرمجية
+# XML Sitemap endpoint
 Sitemap: https://www.games-children.com/sitemap.xml
