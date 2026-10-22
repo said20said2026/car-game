@@ -126,6 +126,7 @@ export function loadPlayerStats(): PlayerStats {
         carDirt: parsed.carDirt ?? {
           red_rocket: 0,
         },
+        driftSmokeSettings: parsed.driftSmokeSettings ?? {},
         ghostCarEnabled: parsed.ghostCarEnabled ?? true,
         totalOvertakes: parsed.totalOvertakes ?? 0,
         unlockedAchievements: parsed.unlockedAchievements ?? [],
@@ -153,6 +154,7 @@ export function loadPlayerStats(): PlayerStats {
     carDirt: {
       red_rocket: 0,
     },
+    driftSmokeSettings: {},
     ghostCarEnabled: true,
     totalOvertakes: 0,
     unlockedAchievements: [],

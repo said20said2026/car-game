@@ -25,6 +25,20 @@ export interface CarUpgrades {
   nitroLevel: number;
 }
 
+export type DriftSmokeMode =
+  | 'car_theme'      // Signature blend of car primary + accent colors
+  | 'car_primary'    // Match car body paint
+  | 'car_accent'     // Match car accent / aero glow
+  | 'classic_black'  // Burnt rubber asphalt black
+  | 'custom';        // Custom chosen color palette
+
+export interface DriftSmokeConfig {
+  mode: DriftSmokeMode;
+  customColor?: string; // Hex color if custom
+  intensity?: 'subtle' | 'standard' | 'dense';
+  sparkEnabled?: boolean;
+}
+
 export interface PlayerStats {
   coins: number;
   highScore: number;
@@ -40,6 +54,7 @@ export interface PlayerStats {
   upgrades: Record<string, CarUpgrades>;
   unlockedCars: string[];
   carDirt?: Record<string, number>;
+  driftSmokeSettings?: Record<string, DriftSmokeConfig>; // Per-car customized drift smoke colors
   ghostCarEnabled?: boolean;
   totalOvertakes?: number; // Total cars safely overtaken across all races
   unlockedAchievements?: string[]; // IDs of unlocked achievements
@@ -57,6 +72,12 @@ export interface TrafficVehicle {
   targetX: number;
   laneChangeTimer: number;
   overtaken?: boolean; // Safe pass/overtake flag
+  damaged?: boolean; // Visual damage flag when collided
+  damageSide?: 'left' | 'right' | 'center';
+  spinVx?: number;
+  spinAngle?: number;
+  smokeTimer?: number;
+  scratches?: Array<{ x: number; y: number; len: number; angle: number; width: number }>;
 }
 
 export interface RoadCollectible {

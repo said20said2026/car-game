@@ -33,6 +33,7 @@ import {
   Keyboard,
   ChevronUp,
   ChevronDown,
+  Smartphone,
 } from 'lucide-react';
 import {
   GameState,
@@ -72,6 +73,24 @@ import { DailyChallengesModal } from './DailyChallengesModal';
 import { soundManager, engineAudio } from '../utils/audio';
 import { AchievementToast } from './AchievementToast';
 import { dispatchGameToast, checkAndUnlockAchievements } from '../utils/achievements';
+import { Speedometer } from './Speedometer';
+import {
+  Minimap,
+  MinimapTrafficItem,
+  MinimapCollectibleItem,
+  MinimapObstacleItem,
+} from './Minimap';
+import {
+  isHapticsSupported,
+  isHapticEnabled,
+  setHapticEnabled,
+  hapticNitroBoost,
+  hapticObstacleCollision,
+  hapticTrafficCollision,
+  hapticGameOver,
+  hapticNearMiss,
+  hapticTap,
+} from '../utils/haptics';
 
 export interface RacingGameHandle {
   startGame: () => void;
@@ -239,6 +258,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const [speedPitchEnabled, setSpeedPitchEnabled] = useState<boolean>(true);
   const [showAudioModal, setShowAudioModal] = useState<boolean>(false);
   const [showDailyModal, setShowDailyModal] = useState<boolean>(false);
+  const [isUnpausing, setIsUnpausing] = useState<boolean>(false);
+  const isUnpausingRef = useRef<boolean>(false);
+  const [hapticsSupported] = useState<boolean>(() => isHapticsSupported());
+  const [hapticsEnabled, setHapticsEnabledState] = useState<boolean>(() => isHapticEnabled());
   const [dailySummary, setDailySummary] = useState(() => getDailyChallengesSummary());
   const [liveMusicBpm, setLiveMusicBpm] = useState<number>(126);
   const [livePitchShift, setLivePitchShift] = useState<number>(0);
@@ -257,6 +280,22 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   const [highScore, setHighScore] = useState<number>(0);
   const [selectedCarId, setSelectedCarId] = useState<string>('red_rocket');
   const [carHealth, setCarHealth] = useState<number>(100);
+
+  // Circular Minimap Telemetry State
+  const [minimapPlayerX, setMinimapPlayerX] = useState<number>(0);
+  const [minimapCurve, setMinimapCurve] = useState<number>(0);
+  const [minimapTraffic, setMinimapTraffic] = useState<MinimapTrafficItem[]>([]);
+  const [minimapCollectibles, setMinimapCollectibles] = useState<MinimapCollectibleItem[]>([]);
+  const [minimapObstacles, setMinimapObstacles] = useState<MinimapObstacleItem[]>([]);
+  const [minimapGhostZ, setMinimapGhostZ] = useState<number | null>(null);
+  const [minimapGhostX, setMinimapGhostX] = useState<number | null>(null);
+  const [minimapCorner, setMinimapCorner] = useState<'top-right' | 'top-left'>(() => {
+    try {
+      const saved = localStorage.getItem('fast_racing_minimap_corner');
+      if (saved === 'top-left' || saved === 'top-right') return saved;
+    } catch {}
+    return 'top-right';
+  });
 
   // Dynamic Achievements, Overtakes & Record Breaking Tracking
   const [raceOvertakes, setRaceOvertakes] = useState<number>(0);
@@ -452,6 +491,23 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     width: number;
   }>>([]);
 
+  // Player Car Visual Damage State (scratches, dents, smoke bursts)
+  const playerDamageRef = useRef<{
+    scratches: Array<{ x: number; y: number; len: number; angle: number; width: number; side: 'left' | 'right' | 'center' }>;
+    dentLeft: number;
+    dentRight: number;
+    dentCenter: number;
+    smokeTimer: number;
+    hitFlash: number;
+  }>({
+    scratches: [],
+    dentLeft: 0,
+    dentRight: 0,
+    dentCenter: 0,
+    smokeTimer: 0,
+    hitFlash: 0,
+  });
+
   // Sync initial player stats from storage
   useEffect(() => {
     const stats = loadPlayerStats();
@@ -563,6 +619,15 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
       return next;
     });
   };
+
+  const toggleHaptics = useCallback(() => {
+    const next = !hapticsEnabled;
+    setHapticsEnabledState(next);
+    setHapticEnabled(next);
+    if (next) {
+      hapticTap();
+    }
+  }, [hapticsEnabled]);
 
   // Switch Track Environment
   const handleTrackChange = (track: TrackEnvironment) => {
@@ -677,6 +742,48 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     touchSteerRef.current = 0;
   };
 
+  // Helper to apply realistic visual scratches, panel dents, and impact smoke to the player car
+  const applyPlayerCollisionDamage = useCallback((side: 'left' | 'right' | 'center', intensity: number = 1.0) => {
+    const dmg = playerDamageRef.current;
+    dmg.hitFlash = 1.0;
+    dmg.smokeTimer = Math.max(dmg.smokeTimer, 3.5 * intensity);
+
+    if (side === 'left') {
+      dmg.dentLeft = Math.min(14, dmg.dentLeft + 4.0 * intensity);
+    } else if (side === 'right') {
+      dmg.dentRight = Math.min(14, dmg.dentRight + 4.0 * intensity);
+    } else {
+      dmg.dentCenter = Math.min(12, dmg.dentCenter + 3.5 * intensity);
+      dmg.dentLeft = Math.min(14, dmg.dentLeft + 2.5 * intensity);
+      dmg.dentRight = Math.min(14, dmg.dentRight + 2.5 * intensity);
+    }
+
+    // Add multi-layered metallic scratches along the damaged chassis/bumper
+    const scratchCount = Math.floor(4 + Math.random() * 4);
+    for (let k = 0; k < scratchCount; k++) {
+      if (dmg.scratches.length >= 26) {
+        dmg.scratches.shift();
+      }
+      let baseX = 0;
+      const baseY = -14 - Math.random() * 34;
+      if (side === 'left') {
+        baseX = -36 + (Math.random() - 0.3) * 12;
+      } else if (side === 'right') {
+        baseX = 36 - (Math.random() - 0.3) * 12;
+      } else {
+        baseX = (Math.random() - 0.5) * 48;
+      }
+      dmg.scratches.push({
+        x: baseX,
+        y: baseY,
+        len: 12 + Math.random() * 24,
+        angle: (Math.random() - 0.5) * 0.9 + (side === 'left' ? -0.35 : side === 'right' ? 0.35 : 0),
+        width: 1.2 + Math.random() * 2.2,
+        side,
+      });
+    }
+  }, []);
+
   // Setup / Reset Game Run
   const startGame = useCallback(() => {
     const activeData = refreshActiveCarStats();
@@ -702,6 +809,15 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
       comboTimer: 0,
     };
 
+    playerDamageRef.current = {
+      scratches: [],
+      dentLeft: 0,
+      dentRight: 0,
+      dentCenter: 0,
+      smokeTimer: 0,
+      hitFlash: 0,
+    };
+
     trafficRef.current = [];
     collectiblesRef.current = [];
     obstaclesRef.current = [];
@@ -717,6 +833,15 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     setRaceOvertakes(0);
     highScoreBreakTriggeredRef.current = false;
     overtakeMilestonesTriggeredRef.current.clear();
+
+    // Reset Circular Minimap state
+    setMinimapPlayerX(0);
+    setMinimapCurve(0);
+    setMinimapTraffic([]);
+    setMinimapCollectibles([]);
+    setMinimapObstacles([]);
+    setMinimapGhostZ(null);
+    setMinimapGhostX(null);
 
     // Initial traffic population ahead
     for (let i = 1; i <= 6; i++) {
@@ -748,6 +873,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
       });
     }
 
+    setIsUnpausing(false);
+    isUnpausingRef.current = false;
     setGameState('PLAYING');
     setCurrentScore(0);
     setRunCoins(0);
@@ -787,17 +914,28 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   }, [musicEnabled, selectedTrack]);
 
   const pauseGame = () => {
+    setIsUnpausing(false);
+    isUnpausingRef.current = false;
     setGameState('PAUSED');
     soundManager.stopEngine();
     soundManager.pauseMusic();
   };
 
   const resumeGame = () => {
-    setGameState('PLAYING');
-    soundManager.startEngine();
-    if (musicEnabled) {
-      soundManager.resumeMusic();
-    }
+    if (isUnpausingRef.current) return;
+    isUnpausingRef.current = true;
+    setIsUnpausing(true);
+
+    // Smooth 220ms fade-out transition before resuming engine & physics
+    setTimeout(() => {
+      isUnpausingRef.current = false;
+      setIsUnpausing(false);
+      setGameState('PLAYING');
+      soundManager.startEngine();
+      if (musicEnabled) {
+        soundManager.resumeMusic();
+      }
+    }, 220);
   };
 
   useImperativeHandle(ref, () => ({
@@ -812,6 +950,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     soundManager.stopEngine();
     soundManager.stopMusic();
     soundManager.playCrash();
+    hapticGameOver();
 
     // Persist scores, coins, and car dirt accumulation
     const stats = loadPlayerStats();
@@ -977,6 +1116,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             isNitroActiveRef.current = true;
             setIsNitroActive(true);
             p.nitroBoostCount = (p.nitroBoostCount || 0) + 1;
+            hapticNitroBoost();
           }
         } else {
           // Slow passive nitro recharge
@@ -1137,14 +1277,44 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           const relativeSpeed = p.speed - car.speed;
           car.z -= relativeSpeed * dt * 2.5;
 
-          // Gentle lane changing
-          car.laneChangeTimer -= dt;
-          if (car.laneChangeTimer <= 0) {
-            const newLane = Math.floor(Math.random() * 3);
-            car.targetX = [-0.65, 0, 0.65][newLane];
-            car.laneChangeTimer = 4 + Math.random() * 5;
+          // If vehicle was collided with and damaged: spin out, veer off and emit dark smoke
+          if (car.damaged) {
+            car.x += (car.spinVx || 0) * dt;
+            car.spinAngle = (car.spinAngle || 0) + (car.spinVx && car.spinVx > 0 ? 1 : -1) * 7.5 * dt;
+
+            if (car.smokeTimer && car.smokeTimer > 0) {
+              car.smokeTimer -= dt;
+              if (Math.random() < 0.6 && car.z > 0 && car.z < 900) {
+                const zFactor = Math.max(0.01, Math.min(1, 1 - car.z / 900));
+                const carScreenY = height * 0.42 + Math.pow(zFactor, 2.2) * (height * 0.58);
+                const roadWAtY = width * 0.12 + (width * 0.73) * Math.pow(zFactor, 2.2);
+                const carScreenX = width / 2 + (car.x * roadWAtY * 0.42);
+                const carScale = Math.pow(zFactor, 1.6);
+
+                particlesRef.current.push({
+                  x: carScreenX + (Math.random() - 0.5) * 16 * carScale,
+                  y: carScreenY + (Math.random() - 0.5) * 12 * carScale,
+                  vx: (Math.random() - 0.5) * 35,
+                  vy: 35 + Math.random() * 50,
+                  life: 0.5 + Math.random() * 0.3,
+                  maxLife: 0.8,
+                  color: Math.random() > 0.3 ? '#1e293b' : '#475569',
+                  size: Math.max(3.5, 15 * carScale),
+                  shape: 'smoke',
+                  growth: 20 * carScale,
+                });
+              }
+            }
+          } else {
+            // Gentle lane changing for normal traffic
+            car.laneChangeTimer -= dt;
+            if (car.laneChangeTimer <= 0) {
+              const newLane = Math.floor(Math.random() * 3);
+              car.targetX = [-0.65, 0, 0.65][newLane];
+              car.laneChangeTimer = 4 + Math.random() * 5;
+            }
+            car.x += (car.targetX - car.x) * dt * 0.8;
           }
-          car.x += (car.targetX - car.x) * dt * 0.8;
 
           // Close pass / Near miss detection
           if (Math.abs(car.z) < 18 && Math.abs(car.x - p.x) < 0.48 && Math.abs(car.x - p.x) > 0.22 && !((car as unknown as { scoredCloseCall?: boolean }).scoredCloseCall)) {
@@ -1156,10 +1326,18 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             setComboMultiplier(p.combo);
             setComboMessage(`Near Miss! +${75 * p.combo}`);
             soundManager.playNearMiss();
+            hapticNearMiss();
           }
 
-          // Collision detection
+          // Collision detection with other traffic vehicle
           if (Math.abs(car.z) < 22 && Math.abs(car.x - p.x) < 0.24) {
+            // Calculate collision side relative to player
+            const impactSide: 'left' | 'right' | 'center' =
+              car.x < p.x - 0.05 ? 'left' : car.x > p.x + 0.05 ? 'right' : 'center';
+
+            // Apply realistic body scratches, dents, and contact scorch to player car
+            applyPlayerCollisionDamage(impactSide, 1.0);
+
             // Crash impact: Intense camera shake, speed loss, health drop, and screen flash!
             p.shake = 28;
             p.speed *= 0.35;
@@ -1167,6 +1345,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             crashFlashRef.current = 1.0; // Trigger brilliant collision screen flash
             setCarHealth(Math.max(0, p.health));
             soundManager.playCrash();
+            hapticTrafficCollision();
 
             // Spawn explosive crash debris & scattering spark particles (optimized on mobile)
             const crashDebrisCount = (isMobileDevice || performanceMode) ? 22 : 42;
@@ -1186,10 +1365,47 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
               });
             }
 
-            // Remove car
-            trafficRef.current.splice(i, 1);
+            // Spawn immediate thick collision friction smoke bursts
+            const impactSmokeCount = (isMobileDevice || performanceMode) ? 8 : 16;
+            for (let s = 0; s < impactSmokeCount; s++) {
+              const smokeAngle = Math.random() * Math.PI * 2;
+              const smokeSpeed = 35 + Math.random() * 80;
+              particlesRef.current.push({
+                x: width / 2 + p.x * (width * 0.3) + (impactSide === 'left' ? -25 : impactSide === 'right' ? 25 : 0),
+                y: height * 0.82 + (Math.random() - 0.5) * 15,
+                vx: Math.cos(smokeAngle) * smokeSpeed,
+                vy: Math.sin(smokeAngle) * smokeSpeed + 45,
+                life: 0.65 + Math.random() * 0.5,
+                maxLife: 1.15,
+                color: Math.random() > 0.4 ? '#0f172a' : '#334155',
+                size: 10 + Math.random() * 12,
+                shape: 'smoke',
+                growth: 35 + Math.random() * 25,
+                spin: (Math.random() - 0.5) * 3,
+              });
+            }
+
+            // Mark traffic vehicle as visually damaged and cause it to spin out with scratches and smoke
+            if (!car.damaged) {
+              car.damaged = true;
+              car.damageSide = impactSide === 'left' ? 'right' : 'left';
+              car.spinVx = (car.x >= p.x ? 1 : -1) * (2.8 + Math.random() * 2.4);
+              car.spinAngle = 0;
+              car.smokeTimer = 2.5;
+              car.scratches = [];
+              for (let sc = 0; sc < 6; sc++) {
+                car.scratches.push({
+                  x: (Math.random() - 0.5) * 28,
+                  y: -8 - Math.random() * 28,
+                  len: 8 + Math.random() * 18,
+                  angle: (Math.random() - 0.5) * 0.9,
+                  width: 1.2 + Math.random() * 1.6,
+                });
+              }
+            }
 
             if (p.health <= 0) {
+              trafficRef.current.splice(i, 1);
               gameOver();
               break;
             }
@@ -1238,8 +1454,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             checkAndUnlockAchievements(currentStats);
           }
 
-          // Remove vehicles far behind or far ahead
-          if (car.z < -60 || car.z > 1200) {
+          // Remove vehicles far behind, far ahead, or spun far off-road
+          if (car.z < -60 || car.z > 1200 || Math.abs(car.x) > 2.2) {
             trafficRef.current.splice(i, 1);
           }
         }
@@ -1260,6 +1476,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             } else if (item.type === 'nitro') {
               p.nitro = effective.nitro;
               soundManager.playNitroBoost();
+              hapticNitroBoost();
             }
 
             // Spawn sparkly pickup particles (optimized count on mobile)
@@ -1290,11 +1507,13 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
 
           if (Math.abs(obs.z) < 18 && Math.abs(obs.x - p.x) < 0.22 && !obs.hit) {
             obs.hit = true;
+            applyPlayerCollisionDamage('center', 0.6);
             p.speed *= 0.65;
             p.shake = 10;
             p.health -= 15;
             setCarHealth(Math.max(0, p.health));
             soundManager.playCrash();
+            hapticObstacleCollision();
 
             if (p.health <= 0) {
               gameOver();
@@ -1393,6 +1612,104 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 }
               }
             });
+          }
+        }
+
+        // =========================================================================
+        // DAMAGE SMOKE & ENGINE FIRE SYSTEM (Collision Damage, Radiator Steam & Wreck Smoke)
+        // =========================================================================
+        const dmgState = playerDamageRef.current;
+        dmgState.hitFlash = Math.max(0, dmgState.hitFlash - dt * 3.5);
+        dmgState.smokeTimer = Math.max(0, dmgState.smokeTimer - dt);
+
+        const damageSeverity = Math.max(0, (100 - p.health) / 100);
+
+        if ((damageSeverity > 0.08 || dmgState.smokeTimer > 0) && particlesRef.current.length < 240) {
+          // Source position on the car body based on impacted side
+          let smokeOffsetX = 0;
+          if (dmgState.dentLeft > dmgState.dentRight + 2) {
+            smokeOffsetX = -pW * 0.28;
+          } else if (dmgState.dentRight > dmgState.dentLeft + 2) {
+            smokeOffsetX = pW * 0.28;
+          } else {
+            smokeOffsetX = (Math.random() - 0.5) * (pW * 0.35);
+          }
+
+          const smokeOriginX = curPlayerX + smokeOffsetX;
+          const smokeOriginY = curPlayerY - pH * 0.35;
+
+          // Severity tiers:
+          // 1. Critical Damage (< 35% health): Heavy billowing pitch black smoke plumes + glowing orange sparks
+          if (damageSeverity > 0.65) {
+            // Dense black billowing smoke
+            particlesRef.current.push({
+              x: smokeOriginX + (Math.random() - 0.5) * 12,
+              y: smokeOriginY + (Math.random() - 0.5) * 8,
+              vx: (Math.random() - 0.5) * 45 - p.vx * 70,
+              vy: 75 + (p.speed / 3.6) * 1.8 + Math.random() * 55,
+              life: 0.65 + Math.random() * 0.45,
+              maxLife: 1.1,
+              color: Math.random() > 0.3 ? 'rgba(15, 23, 42, 0.95)' : 'rgba(30, 41, 59, 0.9)',
+              size: 11 + Math.random() * 12,
+              growth: 55 + Math.random() * 40,
+              spin: (Math.random() - 0.5) * 4,
+              angle: Math.random() * Math.PI * 2,
+              shape: 'smoke',
+            });
+
+            // Burning engine embers / sparks
+            if (Math.random() < 0.32) {
+              particlesRef.current.push({
+                x: smokeOriginX + (Math.random() - 0.5) * 14,
+                y: smokeOriginY + (Math.random() - 0.5) * 10,
+                vx: (Math.random() - 0.5) * 90 - p.vx * 60,
+                vy: 90 + Math.random() * 100,
+                life: 0.22 + Math.random() * 0.18,
+                maxLife: 0.4,
+                color: Math.random() > 0.4 ? '#f97316' : '#ef4444',
+                size: 2.2,
+                length: 10 + Math.random() * 12,
+                shape: 'spark',
+              });
+            }
+          }
+          // 2. Moderate Damage (35% - 65% health): Billowing dark charcoal gray smoke
+          else if (damageSeverity > 0.35) {
+            if (Math.random() < 0.75) {
+              particlesRef.current.push({
+                x: smokeOriginX + (Math.random() - 0.5) * 10,
+                y: smokeOriginY + (Math.random() - 0.5) * 6,
+                vx: (Math.random() - 0.5) * 35 - p.vx * 50,
+                vy: 65 + (p.speed / 3.6) * 1.5 + Math.random() * 45,
+                life: 0.55 + Math.random() * 0.35,
+                maxLife: 0.9,
+                color: Math.random() > 0.4 ? 'rgba(51, 65, 85, 0.85)' : 'rgba(71, 85, 105, 0.8)',
+                size: 9 + Math.random() * 9,
+                growth: 42 + Math.random() * 30,
+                spin: (Math.random() - 0.5) * 3,
+                angle: Math.random() * Math.PI * 2,
+                shape: 'smoke',
+              });
+            }
+          }
+          // 3. Light Damage or Recent Impact Smoke (< 35% health loss or active smokeTimer): White/light-gray radiator steam
+          else {
+            if (Math.random() < 0.45) {
+              particlesRef.current.push({
+                x: smokeOriginX + (Math.random() - 0.5) * 8,
+                y: smokeOriginY + (Math.random() - 0.5) * 5,
+                vx: (Math.random() - 0.5) * 25 - p.vx * 30,
+                vy: 55 + (p.speed / 3.6) * 1.2 + Math.random() * 35,
+                life: 0.45 + Math.random() * 0.3,
+                maxLife: 0.75,
+                color: 'rgba(148, 163, 184, 0.65)',
+                size: 7 + Math.random() * 7,
+                growth: 28 + Math.random() * 20,
+                spin: (Math.random() - 0.5) * 2,
+                angle: Math.random() * Math.PI * 2,
+                shape: 'smoke',
+              });
+            }
           }
         }
 
@@ -1674,8 +1991,8 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           setGhostDelta(null);
         }
 
-        // Update state hooks (throttled to 10-12 FPS to eliminate mobile React tree re-render overhead)
-        if (nowUi - lastUiSyncRef.current > (isMobileDevice ? 90 : 60)) {
+        // Update state hooks (throttled to 30 FPS desktop / 20 FPS mobile for responsive real-time speedometer & minimap)
+        if (nowUi - lastUiSyncRef.current > (isMobileDevice ? 50 : 33)) {
           lastUiSyncRef.current = nowUi;
           setCurrentSpeed(Math.round(p.speed));
           setNitroAmount(Math.round((p.nitro / effective.nitro) * 100));
@@ -1683,6 +2000,44 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           setCurrentScore(currentFloorScore);
           setRunCoins(p.coinsCollected);
           setRunDistance(Math.floor(p.distance));
+
+          // Circular Minimap live telemetry synchronization
+          setMinimapPlayerX(p.x);
+          setMinimapCurve(roadCurveRef.current.current);
+          setMinimapTraffic(
+            trafficRef.current.map((t) => ({
+              id: t.id,
+              x: t.x,
+              z: t.z,
+              type: t.type,
+              color: t.color,
+              damaged: t.damaged,
+            }))
+          );
+          setMinimapCollectibles(
+            collectiblesRef.current
+              .filter((c) => !c.collected)
+              .map((c) => ({ id: c.id, x: c.x, z: c.z, type: c.type }))
+          );
+          setMinimapObstacles(
+            obstaclesRef.current
+              .filter((o) => !o.hit)
+              .map((o) => ({ id: o.id, x: o.x, z: o.z, type: o.type }))
+          );
+
+          if (ghostEnabled && activeGhostRef.current) {
+            const gNow = interpolateGhost(activeGhostRef.current, raceTimeRef.current);
+            if (gNow) {
+              setMinimapGhostZ(gNow.d - p.distance);
+              setMinimapGhostX(gNow.x);
+            } else {
+              setMinimapGhostZ(null);
+              setMinimapGhostX(null);
+            }
+          } else {
+            setMinimapGhostZ(null);
+            setMinimapGhostX(null);
+          }
 
           // Real-time Dynamic High Score Break Detection & Toast
           if (
@@ -2050,6 +2405,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         ctx.translate(proj.px, proj.py);
         ctx.scale(proj.scale, proj.scale);
 
+        if (v.damaged && v.spinAngle) {
+          ctx.rotate(v.spinAngle);
+        }
+
         const carW = v.type === 'truck' ? 76 : 56;
         const carH = v.type === 'truck' ? 68 : 46;
 
@@ -2071,19 +2430,64 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         ctx.roundRect(-carW * 0.4, -carH * 0.85, carW * 0.8, carH * 0.5, [6, 6, 2, 2]);
         ctx.fill();
 
-        // Rear window
+        // Rear window (intact or cracked if damaged)
         ctx.fillStyle = '#38bdf8';
         ctx.fillRect(-carW * 0.32, -carH * 0.5, carW * 0.64, carH * 0.22);
+        if (v.damaged) {
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(-carW * 0.2, -carH * 0.48);
+          ctx.lineTo(-carW * 0.05, -carH * 0.38);
+          ctx.lineTo(carW * 0.15, -carH * 0.45);
+          ctx.moveTo(-carW * 0.05, -carH * 0.38);
+          ctx.lineTo(0, -carH * 0.30);
+          ctx.stroke();
+        }
 
-        // Taillights
-        ctx.fillStyle = '#ef4444';
+        // Taillights (one light smashed/flickering if damaged)
+        ctx.fillStyle = (v.damaged && v.damageSide === 'left') ? '#450a0a' : '#ef4444';
         ctx.fillRect(-carW * 0.44, -carH * 0.2, 12, 6);
+        ctx.fillStyle = (v.damaged && v.damageSide === 'right') ? '#450a0a' : '#ef4444';
         ctx.fillRect(carW * 0.44 - 12, -carH * 0.2, 12, 6);
 
         // Tires
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(-carW * 0.52, -14, 8, 14);
         ctx.fillRect(carW * 0.52 - 8, -14, 8, 14);
+
+        // Visual Damage: Body Scratches, Scorch & Crumpled Bumper on Traffic
+        if (v.damaged) {
+          // Crumple impact dent
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+          ctx.beginPath();
+          const dentX = v.damageSide === 'left' ? -carW * 0.4 : carW * 0.4;
+          ctx.ellipse(dentX, -carH * 0.3, 10, 7, v.damageSide === 'left' ? -0.4 : 0.4, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Render metallic scratch marks across traffic body
+          if (v.scratches) {
+            v.scratches.forEach((sc) => {
+              const endX = sc.x + Math.cos(sc.angle) * sc.len;
+              const endY = sc.y + Math.sin(sc.angle) * sc.len;
+              // Dark outer scrape
+              ctx.strokeStyle = 'rgba(15, 23, 42, 0.9)';
+              ctx.lineWidth = sc.width + 1.2;
+              ctx.beginPath();
+              ctx.moveTo(sc.x, sc.y);
+              ctx.lineTo(endX, endY);
+              ctx.stroke();
+
+              // Silvery exposed bare metal line
+              ctx.strokeStyle = 'rgba(241, 245, 249, 0.92)';
+              ctx.lineWidth = sc.width;
+              ctx.beginPath();
+              ctx.moveTo(sc.x, sc.y);
+              ctx.lineTo(endX, endY);
+              ctx.stroke();
+            });
+          }
+        }
 
         // Police flashing siren
         if (v.type === 'police') {
@@ -2376,6 +2780,111 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         ctx.stroke();
       }
 
+      // =========================================================================
+      // VISUAL CAR DAMAGE (Dents, Metallic Scratches, Window Cracks & Hit Flash)
+      // =========================================================================
+      const dmg = playerDamageRef.current;
+      const damageRatio = Math.max(0, (100 - p.health) / 100);
+
+      // 1. Panel Dents & Crumpling Shading on impacted bumper corners
+      if (dmg.dentLeft > 0) {
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+        ctx.beginPath();
+        ctx.ellipse(-pW * 0.45, -pH * 0.28, Math.min(16, dmg.dentLeft * 1.5), Math.min(12, dmg.dentLeft * 1.2), -0.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (dmg.dentRight > 0) {
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+        ctx.beginPath();
+        ctx.ellipse(pW * 0.45, -pH * 0.28, Math.min(16, dmg.dentRight * 1.5), Math.min(12, dmg.dentRight * 1.2), 0.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (dmg.dentCenter > 0) {
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.65)';
+        ctx.beginPath();
+        ctx.ellipse(0, -pH * 0.15, Math.min(18, dmg.dentCenter * 1.8), Math.min(8, dmg.dentCenter * 1.0), 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 2. Realistic Multi-Layer Scratches (Dark gouge + exposed bare metal + highlight)
+      if (dmg.scratches.length > 0) {
+        dmg.scratches.forEach((sc) => {
+          const endX = sc.x + Math.cos(sc.angle) * sc.len;
+          const endY = sc.y + Math.sin(sc.angle) * sc.len;
+
+          // Outer dark scorch/undercoat groove
+          ctx.strokeStyle = 'rgba(15, 23, 42, 0.95)';
+          ctx.lineWidth = sc.width + 1.6;
+          ctx.beginPath();
+          ctx.moveTo(sc.x, sc.y);
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+
+          // Inner bright exposed bare metal scratch
+          ctx.strokeStyle = 'rgba(226, 232, 240, 0.95)';
+          ctx.lineWidth = sc.width;
+          ctx.beginPath();
+          ctx.moveTo(sc.x, sc.y);
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+
+          // Specular metallic glint
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+          ctx.lineWidth = Math.max(0.6, sc.width * 0.4);
+          ctx.beginPath();
+          ctx.moveTo(sc.x + 0.4, sc.y + 0.4);
+          ctx.lineTo(sc.x + Math.cos(sc.angle) * (sc.len * 0.75), sc.y + Math.sin(sc.angle) * (sc.len * 0.75));
+          ctx.stroke();
+
+          // Chipped paint specks near scratches
+          ctx.fillStyle = 'rgba(226, 232, 240, 0.7)';
+          ctx.fillRect(sc.x - 1, sc.y - 1, 2, 2);
+          ctx.fillRect(endX - 1, endY - 1, 1.8, 1.8);
+        });
+      }
+
+      // 3. Rear Glass Fracture Cracks (Appears when health drops < 65%)
+      if (damageRatio > 0.35) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.lineWidth = 1.0;
+        ctx.beginPath();
+        // Spiderweb fracture lines across sloped rear glass
+        ctx.moveTo(-pW * 0.18, -pH * 0.72);
+        ctx.lineTo(-pW * 0.05, -pH * 0.60);
+        ctx.lineTo(pW * 0.08, -pH * 0.65);
+        ctx.lineTo(pW * 0.16, -pH * 0.52);
+
+        ctx.moveTo(-pW * 0.05, -pH * 0.60);
+        ctx.lineTo(-pW * 0.12, -pH * 0.48);
+
+        ctx.moveTo(pW * 0.08, -pH * 0.65);
+        ctx.lineTo(pW * 0.18, -pH * 0.75);
+
+        if (damageRatio > 0.65) {
+          // Severe spiderweb web cracking
+          ctx.moveTo(-pW * 0.22, -pH * 0.58);
+          ctx.lineTo(-pW * 0.08, -pH * 0.54);
+          ctx.lineTo(0, -pH * 0.45);
+          ctx.lineTo(pW * 0.12, -pH * 0.48);
+
+          ctx.moveTo(0, -pH * 0.68);
+          ctx.lineTo(0, -pH * 0.45);
+        }
+        ctx.stroke();
+      }
+
+      // 4. Kinetic Red/White Impact Flash
+      if (dmg.hitFlash > 0) {
+        ctx.fillStyle = `rgba(239, 68, 68, ${dmg.hitFlash * 0.42})`;
+        ctx.beginPath();
+        ctx.roundRect(-pW / 2, -pH, pW, pH, [14, 14, 8, 8]);
+        ctx.fill();
+
+        ctx.strokeStyle = `rgba(255, 255, 255, ${dmg.hitFlash * 0.6})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
       ctx.restore();
 
       // 10. 3D RADIAL WARP TUNNEL & OPTICAL SPEED MOTION BLUR STREAKS
@@ -2523,10 +3032,17 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     };
   }, [gameState, selectedTrack, gameOver, onCoinsChange, performanceMode]);
 
+  const isPaused = gameState === 'PAUSED' && !isUnpausing;
+
   return (
     <div
       ref={containerRef}
-      className="relative w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl select-none"
+      id="racing-game-container"
+      className={`relative w-full rounded-2xl overflow-hidden bg-slate-950 border select-none transition-all duration-300 ease-out ${
+        isPaused
+          ? 'border-amber-500/50 pause-glow-pulse ring-1 ring-amber-500/30'
+          : 'border-slate-800 shadow-2xl ring-0'
+      }`}
     >
       {/* Dynamic In-Game Achievement & Milestone Toasts */}
       <AchievementToast />
@@ -2658,14 +3174,18 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-red-400" />}
           </button>
 
-          {gameState === 'PLAYING' && (
+          {(gameState === 'PLAYING' || gameState === 'PAUSED') && (
             <button
-              onClick={pauseGame}
-              className="p-1.5 rounded-lg bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/60 transition-colors"
-              title="Pause"
-              aria-label="Pause Game"
+              onClick={gameState === 'PAUSED' ? resumeGame : pauseGame}
+              className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+                gameState === 'PAUSED'
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/30 animate-pulse'
+                  : 'bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/60'
+              }`}
+              title={gameState === 'PAUSED' ? 'Resume Race (P or Esc)' : 'Pause Race (P or Esc)'}
+              aria-label={gameState === 'PAUSED' ? 'Resume Race' : 'Pause Game'}
             >
-              <Pause className="w-4 h-4" />
+              {gameState === 'PAUSED' ? <Play className="w-4 h-4 fill-slate-950" /> : <Pause className="w-4 h-4" />}
             </button>
           )}
 
@@ -2755,8 +3275,12 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           ref={canvasRef}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
-          className={`w-full h-full block cursor-crosshair touch-none transition-transform duration-100 origin-[50%_42%] ${
+          className={`w-full h-full block cursor-crosshair touch-none transition-all duration-300 origin-[50%_42%] ${
             isNitroActive ? 'scale-[1.025] filter contrast-110 saturate-125' : 'scale-100'
+          } ${
+            isPaused
+              ? 'brightness-[0.72] saturate-[0.75] blur-[1.2px] scale-[0.996]'
+              : 'brightness-100 saturate-100 blur-none scale-100'
           }`}
         />
 
@@ -2851,10 +3375,59 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           </div>
         )}
 
+        {/* CIRCULAR RACETRACK MINIMAP & RADAR HUD */}
+        {gameState === 'PLAYING' && (
+          <div
+            className={`absolute z-20 pointer-events-auto select-none transition-all duration-300 ${
+              minimapCorner === 'top-left'
+                ? 'top-14 left-3 sm:top-4 sm:left-4'
+                : 'top-3 right-3 sm:top-4 sm:right-4'
+            }`}
+          >
+            <Minimap
+              playerX={minimapPlayerX}
+              playerSpeed={currentSpeed}
+              distance={runDistance}
+              roadCurve={minimapCurve}
+              carColor={
+                activeCarStatsRef.current?.currentCar.color ||
+                CARS_DATA.find((c) => c.id === selectedCarId)?.color ||
+                '#ef4444'
+              }
+              accentColor={
+                activeCarStatsRef.current?.currentCar.accentColor ||
+                CARS_DATA.find((c) => c.id === selectedCarId)?.accentColor ||
+                '#38bdf8'
+              }
+              trackEnvironment={selectedTrack}
+              traffic={minimapTraffic}
+              collectibles={minimapCollectibles}
+              obstacles={minimapObstacles}
+              ghostZ={minimapGhostZ}
+              ghostX={minimapGhostX}
+              isNitroActive={isNitroActive}
+              corner={minimapCorner}
+              onToggleCorner={() => {
+                const next = minimapCorner === 'top-right' ? 'top-left' : 'top-right';
+                setMinimapCorner(next);
+                try {
+                  localStorage.setItem('fast_racing_minimap_corner', next);
+                } catch {}
+              }}
+            />
+          </div>
+        )}
+
         {/* PERSISTENT CONTROLS OVERLAY DIRECTLY ON THE GAME SCREEN */}
         {gameState === 'PLAYING' && (
           <div
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 pointer-events-auto select-none"
+            className={`absolute z-20 pointer-events-auto select-none transition-all duration-200 ${
+              minimapCorner === 'top-left'
+                ? 'top-3 right-3 sm:top-4 sm:right-4'
+                : showControlsOverlay
+                ? 'top-36 right-3 sm:top-40 sm:right-4'
+                : 'top-3 right-28 sm:top-4 sm:right-34'
+            }`}
             aria-label="Current Key Bindings Controls Reference"
           >
             {showControlsOverlay ? (
@@ -2993,144 +3566,16 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           </div>
         )}
 
-        {/* SPEEDOMETER & DYNAMIC NITRO GAUGE CLUSTER (Side-by-side instrument panel) */}
+        {/* DYNAMIC CSS-BASED SPEEDOMETER & INSTRUMENT CLUSTER */}
         {gameState === 'PLAYING' && (
-          <div className="absolute top-12 left-3 sm:top-auto sm:bottom-5 sm:left-5 z-20 pointer-events-none flex flex-row items-center gap-2 sm:gap-2.5">
-            {/* 1. SPEED GAUGE & HEALTH */}
-            <div className="flex items-center gap-2 sm:gap-2.5 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-slate-950/85 backdrop-blur-md rounded-xl border border-slate-800/80 shadow-lg">
-              <div className="p-1 sm:p-1.5 rounded-lg bg-sky-500/15 border border-sky-500/30">
-                <Gauge className="w-4 h-4 sm:w-5 sm:h-5 text-sky-400" />
-              </div>
-              <div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-black font-game tabular-nums text-white leading-none">
-                    {currentSpeed}
-                  </span>
-                  <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">KM/H</span>
-                </div>
-                {/* Health Bar */}
-                <div className="flex items-center gap-1.5 mt-1">
-                  <div className="w-14 sm:w-18 h-1 sm:h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-200 ${
-                        carHealth > 50 ? 'bg-emerald-500' : carHealth > 25 ? 'bg-amber-500' : 'bg-red-500'
-                      }`}
-                      style={{ width: `${carHealth}%` }}
-                    />
-                  </div>
-                  <span className="text-[8px] sm:text-[9px] text-slate-400 font-mono font-bold">
-                    {carHealth}%
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* 2. DYNAMIC NITRO VISUAL GAUGE */}
-            <div
-              className={`flex items-center gap-2 sm:gap-2.5 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-slate-950/85 backdrop-blur-md rounded-xl border transition-all duration-200 shadow-lg ${
-                isNitroActive
-                  ? 'border-amber-500/60 shadow-amber-500/20'
-                  : nitroAmount >= 25
-                  ? 'border-cyan-500/50 shadow-cyan-500/15'
-                  : 'border-slate-800/80'
-              }`}
-            >
-              {/* Circular SVG Radial Gauge Meter */}
-              <div className="relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 48 48">
-                  {/* Background Track Circle */}
-                  <circle
-                    cx="24"
-                    cy="24"
-                    r="19"
-                    className="stroke-slate-800/90"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  {/* 25% Threshold Indicator Marker */}
-                  <circle
-                    cx="24"
-                    cy="24"
-                    r="19"
-                    className="stroke-slate-700"
-                    strokeWidth="4"
-                    strokeDasharray="2 117"
-                    strokeDashoffset={-(119.38 * 0.25)}
-                    fill="none"
-                  />
-                  {/* Active Animated Nitro Progress Arc */}
-                  <circle
-                    cx="24"
-                    cy="24"
-                    r="19"
-                    stroke={
-                      isNitroActive
-                        ? '#f59e0b'
-                        : nitroAmount >= 25
-                        ? '#06b6d4'
-                        : '#64748b'
-                    }
-                    strokeWidth="4"
-                    strokeDasharray={119.38}
-                    strokeDashoffset={119.38 - (119.38 * (nitroAmount / 100))}
-                    strokeLinecap="round"
-                    fill="none"
-                    className="transition-all duration-150 ease-out"
-                  />
-                </svg>
-
-                {/* Inner Icon */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Flame
-                    className={`w-4 h-4 transition-all ${
-                      isNitroActive
-                        ? 'text-amber-400 animate-pulse scale-110'
-                        : nitroAmount >= 25
-                        ? 'text-cyan-400'
-                        : 'text-slate-500'
-                    }`}
-                  />
-                </div>
-              </div>
-
-              {/* Nitro Level & Status Info */}
-              <div>
-                <div className="flex items-baseline gap-1">
-                  <span
-                    className={`text-base sm:text-lg font-black font-game tabular-nums leading-none ${
-                      isNitroActive
-                        ? 'text-amber-400'
-                        : nitroAmount >= 25
-                        ? 'text-cyan-300'
-                        : 'text-slate-400'
-                    }`}
-                  >
-                    {nitroAmount}
-                  </span>
-                  <span className="text-[9px] font-bold text-slate-400">%</span>
-                </div>
-
-                {/* Dynamic Status Pill */}
-                <div className="mt-0.5">
-                  {isNitroActive ? (
-                    <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded font-black bg-amber-500/25 text-amber-300 border border-amber-500/40 animate-pulse flex items-center gap-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping inline-block" />
-                      BOOSTING 🔥
-                    </span>
-                  ) : nitroAmount >= 25 ? (
-                    <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block" />
-                      READY ⚡
-                    </span>
-                  ) : (
-                    <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded font-bold bg-slate-800/90 text-slate-400 border border-slate-700/60 flex items-center gap-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse inline-block" />
-                      CHARGING ⏳
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
+          <div className="absolute top-14 left-3 sm:top-auto sm:bottom-5 sm:left-5 z-20 pointer-events-none">
+            <Speedometer
+              speed={currentSpeed}
+              topSpeed={activeCarStatsRef.current?.effective.topSpeed || 240}
+              nitroAmount={nitroAmount}
+              isNitroActive={isNitroActive}
+              carHealth={carHealth}
+            />
           </div>
         )}
 
@@ -3186,6 +3631,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   keysRef.current.nitro = true;
                   keysRef.current.space = true;
                   keysRef.current.drift = true;
+                  hapticNitroBoost();
                 }}
                 onPointerUp={(e) => {
                   try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
@@ -3209,6 +3655,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 onPointerDown={(e) => {
                   try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
                   keysRef.current.down = true;
+                  hapticTap();
                 }}
                 onPointerUp={(e) => {
                   try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
@@ -3425,15 +3872,39 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           </div>
         )}
 
-        {/* PAUSE OVERLAY */}
-        {gameState === 'PAUSED' && (
-          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-            <div className="max-w-xs w-full text-center space-y-4">
-              <h3 className="text-2xl font-bold font-game text-white">Race Paused</h3>
-              <div className="space-y-2">
+        {/* PAUSE OVERLAY WITH SMOOTH FADE-IN & FADE-OUT CSS ANIMATION */}
+        {(gameState === 'PAUSED' || isUnpausing) && (
+          <div
+            className={`absolute inset-0 z-30 flex flex-col items-center justify-center p-4 transition-all duration-200 ease-out ${
+              isUnpausing
+                ? 'opacity-0 backdrop-blur-none pointer-events-none'
+                : 'opacity-100 bg-slate-950/80 backdrop-blur-md animate-pause-fade-in'
+            }`}
+          >
+            <div
+              className={`max-w-xs w-full text-center space-y-4 transition-all duration-200 ease-out transform ${
+                isUnpausing
+                  ? 'scale-95 opacity-0 -translate-y-2'
+                  : 'scale-100 opacity-100 translate-y-0 animate-pause-modal-in'
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block" />
+                <h3 className="text-2xl font-bold font-game text-white tracking-wide">
+                  Race Paused
+                </h3>
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block" />
+              </div>
+
+              <p className="text-xs text-slate-400 leading-tight">
+                Press <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[11px] text-amber-300">P</kbd> or <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[11px] text-amber-300">Esc</kbd> to resume driving
+              </p>
+
+              <div className="space-y-2 pt-1">
                 <button
+                  type="button"
                   onClick={resumeGame}
-                  className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg transition-colors cursor-pointer"
+                  className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 active:scale-98 text-slate-950 font-bold rounded-lg transition-all cursor-pointer shadow-lg shadow-emerald-500/20"
                 >
                   Resume Driving
                 </button>
@@ -3481,13 +3952,17 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 </button>
 
                 <button
+                  type="button"
                   onClick={startGame}
                   className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg border border-slate-700 transition-colors cursor-pointer"
                 >
                   Restart Race
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
+                    setIsUnpausing(false);
+                    isUnpausingRef.current = false;
                     setGameState('MENU');
                     soundManager.stopEngine();
                     soundManager.stopMusic();
@@ -3853,6 +4328,46 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                   className="w-full accent-emerald-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
                 />
               </div>
+
+              {/* Mobile Haptic Vibration Feedback Section */}
+              {hapticsSupported && (
+                <div className="space-y-2 p-3 rounded-xl bg-slate-950/50 border border-slate-800/80">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                      <Smartphone className="w-4 h-4 text-cyan-400" />
+                      <span>Haptic Vibration Feedback</span>
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={toggleHaptics}
+                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          hapticsEnabled ? 'bg-cyan-500' : 'bg-slate-700'
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                            hapticsEnabled ? 'translate-x-4' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-800/60">
+                    <span className="text-[11px] text-slate-400">
+                      Tactile rumbles for nitro boosts & obstacle crashes
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => hapticNitroBoost()}
+                      disabled={!hapticsEnabled}
+                      className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 disabled:opacity-40 cursor-pointer"
+                    >
+                      Test Rumble 📳
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Quick Preset Buttons */}
               <div className="flex items-center justify-between gap-1.5 pt-1 text-[11px]">

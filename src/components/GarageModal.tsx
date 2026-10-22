@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Lock, Zap, Gauge, Wrench, Shield, Sparkles, Coins, Droplets } from 'lucide-react';
-import { CarConfig } from '../types/game';
+import { X, Check, Lock, Zap, Gauge, Wrench, Shield, Sparkles, Coins, Droplets, Wind } from 'lucide-react';
+import { CarConfig, DriftSmokeConfig } from '../types/game';
 import {
   CARS_DATA,
   loadPlayerStats,
@@ -10,6 +10,8 @@ import {
   CAR_WASH_COST,
 } from '../utils/storage';
 import { soundManager } from '../utils/audio';
+import { DriftSmokeSettingsPanel } from './DriftSmokeSettingsPanel';
+import { getCarDriftSmokeColors } from '../utils/driftSmoke';
 
 interface GarageModalProps {
   isOpen: boolean;
@@ -37,6 +39,7 @@ export const GarageModal: React.FC<GarageModalProps> = ({
   });
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isWashing, setIsWashing] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'upgrades' | 'smoke'>('upgrades');
 
   useEffect(() => {
     if (isOpen) {
@@ -66,6 +69,10 @@ export const GarageModal: React.FC<GarageModalProps> = ({
   const isCurrentActive = stats.selectedCarId === selectedCar.id;
   const carDirt = stats.carDirt?.[selectedCar.id] ?? 0;
   const cleanliness = Math.max(0, Math.min(100, 100 - carDirt));
+  const activeSmokeColor = getCarDriftSmokeColors(
+    selectedCar,
+    stats.driftSmokeSettings?.[selectedCar.id]
+  );
 
   const handleSelectCar = (car: CarConfig) => {
     setSelectedCar(car);
@@ -180,6 +187,20 @@ export const GarageModal: React.FC<GarageModalProps> = ({
     soundManager.playCoinCascade(3);
     setStatusMessage('Part upgraded successfully! Vehicle stats increased.');
     setTimeout(() => setStatusMessage(null), 2500);
+  };
+
+  const handleUpdateDriftSmoke = (carId: string, newConfig: DriftSmokeConfig) => {
+    const updated = {
+      ...stats,
+      driftSmokeSettings: {
+        ...(stats.driftSmokeSettings || {}),
+        [carId]: newConfig,
+      },
+    };
+    savePlayerStats(updated);
+    setStats(updated);
+    setStatusMessage(`Drift smoke styling updated for ${selectedCar.name}! ✨💨`);
+    setTimeout(() => setStatusMessage(null), 2200);
   };
 
   return (
@@ -476,6 +497,36 @@ export const GarageModal: React.FC<GarageModalProps> = ({
               </button>
             </div>
 
+            {/* Quick Drift Smoke Theme Status Card */}
+            <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-bold text-white">
+                <span className="flex items-center gap-1.5">
+                  <Wind className="w-4 h-4 text-amber-400" />
+                  <span>Drift Smoke Theme</span>
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 border border-amber-500/30 font-semibold flex items-center gap-1">
+                  <span
+                    className="w-2 h-2 rounded-full inline-block shadow-xs"
+                    style={{ backgroundColor: activeSmokeColor.activeHex }}
+                  />
+                  <span>{activeSmokeColor.badge}</span>
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-slate-400">
+                <span className="line-clamp-1">{activeSmokeColor.label}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('smoke');
+                    soundManager.playClick();
+                  }}
+                  className="text-amber-400 hover:text-amber-300 font-bold text-[11px] shrink-0 ml-2 cursor-pointer flex items-center gap-0.5"
+                >
+                  <span>Customize ❯</span>
+                </button>
+              </div>
+            </div>
+
             {/* Unlock or Activate Button */}
             <div>
               {isUnlocked ? (
@@ -503,145 +554,195 @@ export const GarageModal: React.FC<GarageModalProps> = ({
             </div>
           </div>
 
-          {/* Right / Performance Stats & Upgrades (7 cols) */}
+          {/* Right Column / Performance Specs & Drift Smoke Studio (7 cols) */}
           <div className="lg:col-span-7 space-y-4">
-            <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Performance Specs & Garage Upgrades</span>
-            </h3>
+            {/* Top Navigation Tab Bar */}
+            <div className="flex items-center gap-2 p-1 bg-slate-900/90 rounded-xl border border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('upgrades');
+                  soundManager.playClick();
+                }}
+                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  activeTab === 'upgrades'
+                    ? 'bg-slate-800 text-amber-400 shadow-sm border border-slate-700/80'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Performance Tuning</span>
+              </button>
 
-            {/* Upgrade 1: Top Speed */}
-            <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex-1">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-bold text-white flex items-center gap-1.5">
-                    <Gauge className="w-3.5 h-3.5 text-sky-400" />
-                    Top Speed
-                  </span>
-                  <span className="text-sky-400 font-game font-bold">{effectiveStats.topSpeed} km/h</span>
-                </div>
-                {/* 5-step Level pip indicators */}
-                <div className="flex gap-1.5">
-                  {[1, 2, 3, 4, 5].map((lvl) => (
-                    <div
-                      key={lvl}
-                      className={`h-2 flex-1 rounded-sm ${
-                        lvl <= currentUpgrades.speedLevel ? 'bg-sky-400' : 'bg-slate-800'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {isUnlocked && currentUpgrades.speedLevel < 5 && (
-                <button
-                  onClick={() => handleUpgrade('speedLevel')}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1 transition-colors whitespace-nowrap cursor-pointer"
-                >
-                  <Coins className="w-3 h-3" />
-                  Upgrade ({UPGRADE_COSTS[currentUpgrades.speedLevel]})
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('smoke');
+                  soundManager.playClick();
+                }}
+                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  activeTab === 'smoke'
+                    ? 'bg-slate-800 text-amber-400 shadow-sm border border-slate-700/80'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                }`}
+              >
+                <Wind className="w-3.5 h-3.5 text-amber-400" />
+                <span>Drift Smoke Studio</span>
+                <span
+                  className="w-2.5 h-2.5 rounded-full border border-white/20 shadow-xs ml-0.5"
+                  style={{ backgroundColor: activeSmokeColor.activeHex }}
+                  title={`Active Theme: ${activeSmokeColor.label}`}
+                />
+              </button>
             </div>
 
-            {/* Upgrade 2: Acceleration */}
-            <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex-1">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-bold text-white flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-amber-400" />
-                    Acceleration & Torque
-                  </span>
-                  <span className="text-amber-400 font-game font-bold">{effectiveStats.acceleration}%</span>
+            {activeTab === 'upgrades' ? (
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>Performance Specs & Garage Upgrades</span>
+                </h3>
+
+                {/* Upgrade 1: Top Speed */}
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="font-bold text-white flex items-center gap-1.5">
+                        <Gauge className="w-3.5 h-3.5 text-sky-400" />
+                        Top Speed
+                      </span>
+                      <span className="text-sky-400 font-game font-bold">{effectiveStats.topSpeed} km/h</span>
+                    </div>
+                    {/* 5-step Level pip indicators */}
+                    <div className="flex gap-1.5">
+                      {[1, 2, 3, 4, 5].map((lvl) => (
+                        <div
+                          key={lvl}
+                          className={`h-2 flex-1 rounded-sm ${
+                            lvl <= currentUpgrades.speedLevel ? 'bg-sky-400' : 'bg-slate-800'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {isUnlocked && currentUpgrades.speedLevel < 5 && (
+                    <button
+                      onClick={() => handleUpgrade('speedLevel')}
+                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1 transition-colors whitespace-nowrap cursor-pointer"
+                    >
+                      <Coins className="w-3 h-3" />
+                      Upgrade ({UPGRADE_COSTS[currentUpgrades.speedLevel]})
+                    </button>
+                  )}
                 </div>
-                <div className="flex gap-1.5">
-                  {[1, 2, 3, 4, 5].map((lvl) => (
-                    <div
-                      key={lvl}
-                      className={`h-2 flex-1 rounded-sm ${
-                        lvl <= currentUpgrades.accelLevel ? 'bg-amber-400' : 'bg-slate-800'
-                      }`}
-                    />
-                  ))}
+
+                {/* Upgrade 2: Acceleration */}
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="font-bold text-white flex items-center gap-1.5">
+                        <Zap className="w-3.5 h-3.5 text-amber-400" />
+                        Acceleration & Torque
+                      </span>
+                      <span className="text-amber-400 font-game font-bold">{effectiveStats.acceleration}%</span>
+                    </div>
+                    <div className="flex gap-1.5">
+                      {[1, 2, 3, 4, 5].map((lvl) => (
+                        <div
+                          key={lvl}
+                          className={`h-2 flex-1 rounded-sm ${
+                            lvl <= currentUpgrades.accelLevel ? 'bg-amber-400' : 'bg-slate-800'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {isUnlocked && currentUpgrades.accelLevel < 5 && (
+                    <button
+                      onClick={() => handleUpgrade('accelLevel')}
+                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1 transition-colors whitespace-nowrap cursor-pointer"
+                    >
+                      <Coins className="w-3 h-3" />
+                      Upgrade ({UPGRADE_COSTS[currentUpgrades.accelLevel]})
+                    </button>
+                  )}
+                </div>
+
+                {/* Upgrade 3: Handling & Drift */}
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="font-bold text-white flex items-center gap-1.5">
+                        <Shield className="w-3.5 h-3.5 text-emerald-400" />
+                        Handling & Drift Control
+                      </span>
+                      <span className="text-emerald-400 font-game font-bold">{effectiveStats.handling}%</span>
+                    </div>
+                    <div className="flex gap-1.5">
+                      {[1, 2, 3, 4, 5].map((lvl) => (
+                        <div
+                          key={lvl}
+                          className={`h-2 flex-1 rounded-sm ${
+                            lvl <= currentUpgrades.handlingLevel ? 'bg-emerald-400' : 'bg-slate-800'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {isUnlocked && currentUpgrades.handlingLevel < 5 && (
+                    <button
+                      onClick={() => handleUpgrade('handlingLevel')}
+                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1 transition-colors whitespace-nowrap cursor-pointer"
+                    >
+                      <Coins className="w-3 h-3" />
+                      Upgrade ({UPGRADE_COSTS[currentUpgrades.handlingLevel]})
+                    </button>
+                  )}
+                </div>
+
+                {/* Upgrade 4: Nitro Capacity */}
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="font-bold text-white flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                        Nitrous Oxide Capacity & Recharge
+                      </span>
+                      <span className="text-purple-400 font-game font-bold">{effectiveStats.nitro}%</span>
+                    </div>
+                    <div className="flex gap-1.5">
+                      {[1, 2, 3, 4, 5].map((lvl) => (
+                        <div
+                          key={lvl}
+                          className={`h-2 flex-1 rounded-sm ${
+                            lvl <= currentUpgrades.nitroLevel ? 'bg-purple-400' : 'bg-slate-800'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {isUnlocked && currentUpgrades.nitroLevel < 5 && (
+                    <button
+                      onClick={() => handleUpgrade('nitroLevel')}
+                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1 transition-colors whitespace-nowrap cursor-pointer"
+                    >
+                      <Coins className="w-3 h-3" />
+                      Upgrade ({UPGRADE_COSTS[currentUpgrades.nitroLevel]})
+                    </button>
+                  )}
                 </div>
               </div>
-
-              {isUnlocked && currentUpgrades.accelLevel < 5 && (
-                <button
-                  onClick={() => handleUpgrade('accelLevel')}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1 transition-colors whitespace-nowrap cursor-pointer"
-                >
-                  <Coins className="w-3 h-3" />
-                  Upgrade ({UPGRADE_COSTS[currentUpgrades.accelLevel]})
-                </button>
-              )}
-            </div>
-
-            {/* Upgrade 3: Handling & Drift */}
-            <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex-1">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-bold text-white flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                    Handling & Drift Control
-                  </span>
-                  <span className="text-emerald-400 font-game font-bold">{effectiveStats.handling}%</span>
-                </div>
-                <div className="flex gap-1.5">
-                  {[1, 2, 3, 4, 5].map((lvl) => (
-                    <div
-                      key={lvl}
-                      className={`h-2 flex-1 rounded-sm ${
-                        lvl <= currentUpgrades.handlingLevel ? 'bg-emerald-400' : 'bg-slate-800'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {isUnlocked && currentUpgrades.handlingLevel < 5 && (
-                <button
-                  onClick={() => handleUpgrade('handlingLevel')}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1 transition-colors whitespace-nowrap cursor-pointer"
-                >
-                  <Coins className="w-3 h-3" />
-                  Upgrade ({UPGRADE_COSTS[currentUpgrades.handlingLevel]})
-                </button>
-              )}
-            </div>
-
-            {/* Upgrade 4: Nitro Capacity */}
-            <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex-1">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-bold text-white flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                    Nitrous Oxide Capacity & Recharge
-                  </span>
-                  <span className="text-purple-400 font-game font-bold">{effectiveStats.nitro}%</span>
-                </div>
-                <div className="flex gap-1.5">
-                  {[1, 2, 3, 4, 5].map((lvl) => (
-                    <div
-                      key={lvl}
-                      className={`h-2 flex-1 rounded-sm ${
-                        lvl <= currentUpgrades.nitroLevel ? 'bg-purple-400' : 'bg-slate-800'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {isUnlocked && currentUpgrades.nitroLevel < 5 && (
-                <button
-                  onClick={() => handleUpgrade('nitroLevel')}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1 transition-colors whitespace-nowrap cursor-pointer"
-                >
-                  <Coins className="w-3 h-3" />
-                  Upgrade ({UPGRADE_COSTS[currentUpgrades.nitroLevel]})
-                </button>
-              )}
-            </div>
+            ) : (
+              <DriftSmokeSettingsPanel
+                car={selectedCar}
+                stats={stats}
+                onUpdateConfig={handleUpdateDriftSmoke}
+              />
+            )}
           </div>
         </div>
       </div>
