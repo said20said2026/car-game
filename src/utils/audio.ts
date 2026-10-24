@@ -54,6 +54,10 @@ class SoundEngine {
   private musicStep: number = 0;
   private musicVolume: number = 0.35;
   private sfxVolume: number = 0.8;
+  private engineVolume: number = 0.8;
+  private hornVolume: number = 0.75;
+  private engineEnabled: boolean = true;
+  private hornEnabled: boolean = true;
   private isNitroMusicActive: boolean = false;
 
   // Dynamic Speed & Pitch Modulation System
@@ -88,7 +92,7 @@ class SoundEngine {
   // ==========================================
   public setEnabled(enabled: boolean) {
     this.sfxEnabled = enabled;
-    engineAudio.setMuted(!enabled);
+    engineAudio.setMuted(!enabled || !this.engineEnabled);
     if (!enabled && this.engineGain) {
       this.engineGain.gain.setValueAtTime(0, this.ctx?.currentTime || 0);
     }
@@ -100,11 +104,146 @@ class SoundEngine {
 
   public setVolume(volume: number) {
     this.sfxVolume = Math.max(0, Math.min(1, volume));
-    engineAudio.setVolume(this.sfxVolume);
   }
 
   public getVolume(): number {
     return this.sfxVolume;
+  }
+
+  // ==========================================
+  // Independent Engine Roar Volume Controls
+  // ==========================================
+  public setEngineVolume(volume: number) {
+    this.engineVolume = Math.max(0, Math.min(1, volume));
+    engineAudio.setVolume(this.engineEnabled ? this.engineVolume : 0);
+  }
+
+  public getEngineVolume(): number {
+    return this.engineVolume;
+  }
+
+  public setEngineEnabled(enabled: boolean) {
+    this.engineEnabled = enabled;
+    engineAudio.setMuted(!enabled || this.engineVolume <= 0 || !this.sfxEnabled);
+    if (enabled && this.engineVolume <= 0) {
+      this.setEngineVolume(0.8);
+    }
+  }
+
+  public isEngineEnabled(): boolean {
+    return this.engineEnabled && this.engineVolume > 0;
+  }
+
+  public testEngineRev() {
+    this.initContext();
+    if (this.engineEnabled && this.engineVolume > 0) {
+      engineAudio.testRev();
+    }
+  }
+
+  // ==========================================
+  // Independent Traffic Horns Volume Controls
+  // ==========================================
+  public setHornVolume(volume: number) {
+    this.hornVolume = Math.max(0, Math.min(1, volume));
+  }
+
+  public getHornVolume(): number {
+    return this.hornVolume;
+  }
+
+  public setHornEnabled(enabled: boolean) {
+    this.hornEnabled = enabled;
+    if (enabled && this.hornVolume <= 0) {
+      this.setHornVolume(0.75);
+    }
+  }
+
+  public isHornEnabled(): boolean {
+    return this.hornEnabled && this.hornVolume > 0;
+  }
+
+  /**
+   * Realistic automotive dual-tone traffic horn synthesizer
+   */
+  public playTrafficHorn(type: 'car' | 'truck' | 'sport' = 'car', duration: number = 0.28) {
+    if (!this.hornEnabled || this.hornVolume <= 0 || !this.sfxEnabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const ctx = this.ctx;
+      const vol = 0.18 * this.hornVolume;
+
+      // Frequency harmonic pairs for automotive horns
+      let f1 = 440; // Low tone (A4)
+      let f2 = 523.25; // High tone (C5)
+      let filterFreq = 1800;
+      let filterQ = 3.5;
+
+      if (type === 'truck') {
+        f1 = 240; // Heavy air horn tone
+        f2 = 310;
+        filterFreq = 950;
+        duration = Math.max(duration, 0.45);
+      } else if (type === 'sport') {
+        f1 = 493.88; // B4
+        f2 = 587.33; // D5
+        filterFreq = 2200;
+      }
+
+      // Master horn gain with snappy pneumatic attack & decay
+      const hornGain = ctx.createGain();
+      hornGain.gain.setValueAtTime(0.001, now);
+      hornGain.gain.linearRampToValueAtTime(vol, now + 0.02);
+      hornGain.gain.setValueAtTime(vol, now + duration - 0.04);
+      hornGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      // Resonant horn cavity bandpass filter
+      const hornFilter = ctx.createBiquadFilter();
+      hornFilter.type = 'bandpass';
+      hornFilter.frequency.setValueAtTime(filterFreq, now);
+      hornFilter.Q.setValueAtTime(filterQ, now);
+
+      hornGain.connect(hornFilter);
+      hornFilter.connect(ctx.destination);
+
+      // Tone 1: Sawtooth combustion blast
+      const osc1 = ctx.createOscillator();
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(f1, now);
+      osc1.frequency.linearRampToValueAtTime(f1 * 0.985, now + duration);
+      osc1.connect(hornGain);
+
+      // Tone 2: Harmonized companion tone
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'sawtooth';
+      osc2.frequency.setValueAtTime(f2, now);
+      osc2.frequency.linearRampToValueAtTime(f2 * 0.985, now + duration);
+      osc2.connect(hornGain);
+
+      // Tone 3: High harmonic chime overtone
+      const osc3 = ctx.createOscillator();
+      osc3.type = 'sine';
+      osc3.frequency.setValueAtTime(f1 * 2.2, now);
+      const subGain = ctx.createGain();
+      subGain.gain.setValueAtTime(vol * 0.35, now);
+      osc3.connect(subGain);
+      subGain.connect(hornFilter);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc3.start(now);
+
+      osc1.stop(now + duration + 0.05);
+      osc2.stop(now + duration + 0.05);
+      osc3.stop(now + duration + 0.05);
+    } catch {}
+  }
+
+  public testHorn(type: 'car' | 'truck' | 'sport' = 'car') {
+    this.playTrafficHorn(type, 0.25);
   }
 
   // ==========================================

@@ -120,7 +120,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
               <section className="space-y-3">
                 <h3 className="text-base font-bold text-white">1. Our Commitment to Your Privacy</h3>
                 <p>
-                  At <strong>games-children.com</strong>, the privacy of our visitors is of paramount importance to us. This Privacy Policy document outlines the types of personal and non-personal information received and collected when you play City Speed Heroes, and how that information is safeguarded.
+                  At <strong>games-children.com</strong>, the privacy of our visitors is of paramount importance to us. This Privacy Policy document outlines the types of personal and non-personal information received and collected when you play <strong>Apex Pulse: Neon Horizon</strong> (formerly known as Metro Racers &amp; City Speed Heroes), and how that information is safeguarded.
                 </p>
               </section>
 
@@ -145,7 +145,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
               <section className="space-y-3">
                 <h3 className="text-base font-bold text-white">3. Local Browser Storage (HTML5 LocalStorage)</h3>
                 <p>
-                  City Speed Heroes uses your browser’s local storage (LocalStorage) exclusively to store your personal offline game progress, such as collected gold coins, unlocked supercars, engine upgrade levels, and your highest record score. This data is stored strictly on your local device and is never uploaded, tracked, or sold to external servers.
+                  Apex Pulse: Neon Horizon uses your browser’s local storage (LocalStorage) exclusively to store your personal offline game progress, such as collected gold coins, unlocked supercars, engine upgrade levels, audio preferences, and your highest record score. This data is stored strictly on your local device and is never uploaded, tracked, or sold to external servers.
                 </p>
               </section>
 
@@ -404,7 +404,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
               <section className="space-y-3">
                 <h3 className="text-base font-bold text-white">Who We Are</h3>
                 <p>
-                  At <strong>games-children.com</strong>, we are an independent game studio passionate about building lightweight, high-performance web games. City Speed Heroes combines the thrill of classic arcade racing with modern HTML5 pseudo-3D graphics, delivering instantaneous gameplay directly in any modern browser without heavy downloads or device memory bloat.
+                  At <strong>games-children.com</strong>, we are an independent game studio passionate about building lightweight, high-performance web games. <strong>Apex Pulse: Neon Horizon</strong> (formerly known as Metro Racers &amp; City Speed Heroes) combines the thrill of classic arcade racing with modern HTML5 pseudo-3D graphics, delivering instantaneous gameplay directly in any modern browser without heavy downloads or device memory bloat.
                 </p>
               </section>
 

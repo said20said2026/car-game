@@ -1,4 +1,5 @@
 import { loadPlayerStats, savePlayerStats, getTodayDateString } from './storage';
+import { loadDailyStreak } from './dailyStreak';
 
 export type DailyMissionType =
   | 'distance'
@@ -311,22 +312,28 @@ export function getDailyChallengesSummary(state = loadDailyChallenges()): {
   allDone: boolean;
   grandReady: boolean;
   grandClaimed: boolean;
+  streakClaimable: boolean;
+  currentStreak: number;
 } {
+  const streakInfo = loadDailyStreak();
   const total = state.missions.length;
   const completed = state.missions.filter((m) => m.current >= m.target).length;
   const claimed = state.missions.filter((m) => m.claimed).length;
   const unclaimedMissions = state.missions.filter((m) => m.current >= m.target && !m.claimed).length;
   const grandReady = completed === total && !state.grandChestClaimed;
-  const unclaimedCount = unclaimedMissions + (grandReady ? 1 : 0);
+  const streakClaimable = streakInfo.isClaimableToday;
+  const unclaimedCount = unclaimedMissions + (grandReady ? 1 : 0) + (streakClaimable ? 1 : 0);
 
   return {
     total,
     completed,
     claimed,
     unclaimedCount,
-    allDone: completed === total && state.grandChestClaimed,
+    allDone: completed === total && state.grandChestClaimed && !streakClaimable,
     grandReady,
     grandClaimed: state.grandChestClaimed,
+    streakClaimable,
+    currentStreak: streakInfo.streak.currentStreak,
   };
 }
 

@@ -386,6 +386,66 @@ export class EngineAudio {
   }
 
   /**
+   * Gets current volume multiplier (0.0 to 1.0)
+   */
+  public getVolume(): number {
+    return this.volumeMultiplier;
+  }
+
+  /**
+   * Gets whether engine is muted
+   */
+  public isMute(): boolean {
+    return this.isMuted;
+  }
+
+  /**
+   * Auditory rev burst for settings preview
+   */
+  public testRev(): void {
+    if (this.isMuted || this.volumeMultiplier <= 0) return;
+    const ctx = this.initContext();
+    if (!ctx) return;
+
+    if (this.isRunning) {
+      this.update(0.7, true, false);
+      setTimeout(() => {
+        if (this.isRunning) this.update(0.0, false, false);
+      }, 350);
+      return;
+    }
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(45, now);
+      osc.frequency.exponentialRampToValueAtTime(140, now + 0.22);
+      osc.frequency.exponentialRampToValueAtTime(50, now + 0.6);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(350, now);
+      filter.frequency.exponentialRampToValueAtTime(1200, now + 0.22);
+      filter.frequency.exponentialRampToValueAtTime(320, now + 0.6);
+
+      const targetGain = 0.12 * this.volumeMultiplier;
+      gain.gain.setValueAtTime(0.01, now);
+      gain.gain.linearRampToValueAtTime(targetGain, now + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.68);
+    } catch {}
+  }
+
+  /**
    * Returns whether engine audio is running
    */
   public getIsRunning(): boolean {

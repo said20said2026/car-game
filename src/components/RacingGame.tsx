@@ -34,6 +34,10 @@ import {
   ChevronUp,
   ChevronDown,
   Smartphone,
+  Compass,
+  Lock,
+  Unlock,
+  Check,
 } from 'lucide-react';
 import {
   GameState,
@@ -70,6 +74,9 @@ import {
   clearGhostRuns,
 } from '../utils/ghostCar';
 import { DailyChallengesModal } from './DailyChallengesModal';
+import { TrackSelectionModal } from './TrackSelectionModal';
+import { AudioSettingsModal } from './AudioSettingsModal';
+import { getTrackData, isTrackUnlocked, unlockTrack, TRACKS_DATA } from '../utils/tracks';
 import { soundManager, engineAudio } from '../utils/audio';
 import { AchievementToast } from './AchievementToast';
 import { dispatchGameToast, checkAndUnlockAchievements } from '../utils/achievements';
@@ -251,6 +258,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
   // High-level React Game State
   const [gameState, setGameState] = useState<GameState>('MENU');
   const [selectedTrack, setSelectedTrack] = useState<TrackEnvironment>('day');
+  const [showTrackModal, setShowTrackModal] = useState<boolean>(false);
+  const [unlockedTracks, setUnlockedTracks] = useState<TrackEnvironment[]>(() => {
+    return loadPlayerStats().unlockedTracks || ['day'];
+  });
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [musicEnabled, setMusicEnabled] = useState<boolean>(true);
   const [musicVolume, setMusicVolume] = useState<number>(0.35);
@@ -370,6 +381,19 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     window.addEventListener('daily_challenges_changed', handleDailyUpdate);
     return () => {
       window.removeEventListener('daily_challenges_changed', handleDailyUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleTrackUnlocked = (e: Event) => {
+      const customEvent = e as CustomEvent<{ trackId: TrackEnvironment }>;
+      if (customEvent.detail?.trackId) {
+        setUnlockedTracks((prev) => (prev.includes(customEvent.detail.trackId) ? prev : [...prev, customEvent.detail.trackId]));
+      }
+    };
+    window.addEventListener('track_unlocked', handleTrackUnlocked);
+    return () => {
+      window.removeEventListener('track_unlocked', handleTrackUnlocked);
     };
   }, []);
 
@@ -529,6 +553,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
     soundManager.setEnabled(stats.soundEnabled);
     soundManager.setMusicEnabled(musicOn);
     soundManager.setMusicVolume(musVol);
+    soundManager.setEngineVolume(stats.engineVolume ?? 0.8);
+    soundManager.setEngineEnabled(stats.engineEnabled ?? true);
+    soundManager.setHornVolume(stats.hornVolume ?? 0.75);
+    soundManager.setHornEnabled(stats.hornEnabled ?? true);
     soundManager.setVolume(sndVol);
     soundManager.setInteractivePitchEnabled(spdPitch);
 
@@ -631,8 +659,12 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
 
   // Switch Track Environment
   const handleTrackChange = (track: TrackEnvironment) => {
-    setSelectedTrack(track);
     const stats = loadPlayerStats();
+    if (!isTrackUnlocked(track, stats)) {
+      setShowTrackModal(true);
+      return;
+    }
+    setSelectedTrack(track);
     stats.selectedTrack = track;
     savePlayerStats(stats);
     soundManager.playClick();
@@ -679,6 +711,9 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
         keysRef.current.space = true;
         keysRef.current.drift = true;
         setActivePressedKeys((prev) => (prev.space ? prev : { ...prev, space: true, nitro: true }));
+      }
+      if (e.key === 'h' || e.key === 'H') {
+        soundManager.playTrafficHorn('sport', 0.25);
       }
       if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
         if (gameState === 'PLAYING') {
@@ -1119,8 +1154,9 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             hapticNitroBoost();
           }
         } else {
-          // Slow passive nitro recharge
-          p.nitro = Math.min(effective.nitro, p.nitro + dt * 4);
+          // Slow passive nitro recharge (modulated by track environment, e.g. Neon Night +35%)
+          const trackData = getTrackData(selectedTrack);
+          p.nitro = Math.min(effective.nitro, p.nitro + dt * 4 * trackData.nitroRechargeRate);
           if (isNitroActiveRef.current) {
             isNitroActiveRef.current = false;
             setIsNitroActive(false);
@@ -1138,13 +1174,14 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           p.speed = Math.max(40, p.speed - dt * 25);
         }
 
-        // Steering input
+        // Steering input with Track Environmental Grip Factor (e.g. Rain slick roads drift more!)
         let steerInput = 0;
         if (keysRef.current.left) steerInput -= 1;
         if (keysRef.current.right) steerInput += 1;
         if (touchSteerRef.current !== 0) steerInput += touchSteerRef.current;
 
-        const handlingFactor = (effective.handling / 100) * 2.8;
+        const trackData = getTrackData(selectedTrack);
+        const handlingFactor = (effective.handling / 100) * 2.8 * trackData.gripFactor;
         const steerSpeed = steerInput * handlingFactor * (p.speed / 160);
         p.vx += (steerSpeed - p.vx) * dt * 10;
         p.x += p.vx * dt;
@@ -1166,10 +1203,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           crashFlashRef.current = Math.max(0, crashFlashRef.current - dt * 2.8);
         }
 
-        // Distance & score
+        // Distance & score (multiplied by track bonus multiplier)
         const distanceStep = (p.speed / 3.6) * dt;
         p.distance += distanceStep;
-        p.score += (distanceStep * (p.speed / 100) * p.combo);
+        p.score += (distanceStep * (p.speed / 100) * p.combo * trackData.scoreBonusMultiplier);
 
         // Realistic Dirt & Mud Accumulation during Race
         const speedNorm = p.speed / 100;
@@ -1326,6 +1363,7 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             setComboMultiplier(p.combo);
             setComboMessage(`Near Miss! +${75 * p.combo}`);
             soundManager.playNearMiss();
+            soundManager.playTrafficHorn(car.type === 'truck' ? 'truck' : 'car', 0.24);
             hapticNearMiss();
           }
 
@@ -1470,8 +1508,10 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           if (Math.abs(item.z) < 20 && Math.abs(item.x - p.x) < 0.28 && !item.collected) {
             item.collected = true;
             if (item.type === 'coin') {
-              p.coinsCollected += 1;
-              p.score += 25 * p.combo;
+              const trackData = getTrackData(selectedTrack);
+              const coinGain = Math.max(1, Math.round(1 * trackData.coinBonusMultiplier));
+              p.coinsCollected += coinGain;
+              p.score += Math.round(25 * p.combo * trackData.scoreBonusMultiplier);
               soundManager.playCoin(p.combo);
             } else if (item.type === 'nitro') {
               p.nitro = effective.nitro;
@@ -3209,6 +3249,20 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
             )}
           </button>
 
+          {/* Track Selection Button */}
+          <button
+            type="button"
+            onClick={() => setShowTrackModal(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700/60 text-xs font-medium transition-colors cursor-pointer"
+            title="Track & Environment Selection"
+          >
+            <Compass className="w-3.5 h-3.5 text-sky-400" />
+            <span className="hidden sm:inline font-bold">Tracks</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-950/80 text-sky-300 border border-sky-800/60 font-mono hidden md:inline">
+              {getTrackData(selectedTrack).name.split(' ')[0]}
+            </span>
+          </button>
+
           {/* Daily Challenges Button */}
           <button
             type="button"
@@ -3678,72 +3732,125 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 sm:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto">
             <div className="max-w-md w-full text-center space-y-4 sm:space-y-5 my-auto">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-semibold">
-                <span>Formerly known as City Speed Heroes</span>
+                <span>Formerly Metro Racers &amp; City Speed Heroes</span>
               </div>
 
               <h2 className="text-3xl sm:text-5xl font-black font-game text-[#ffcc00] tracking-wider leading-tight">
-                METRO RACERS
+                APEX PULSE
               </h2>
+              <div className="text-sm sm:text-base font-extrabold tracking-widest text-amber-400 -mt-2">
+                NEON HORIZON
+              </div>
 
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Accelerate through bustling city streets at maximum velocity, dodge dense traffic, collect gold coins, and ignite nitro boosts to smash high scores!
+                Feel the midnight rush on wet asphalt! Swerve past highway traffic at supersonic velocity, unleash nitrous turbo bursts, and carve through rain, sunset, and neon horizons!
               </p>
 
-              {/* Track environment selector */}
-              <div className="space-y-1.5">
-                <span className="text-xs font-medium text-slate-400">Select Track & Weather:</span>
-                <div className="flex items-center justify-center gap-2 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={() => handleTrackChange('day')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                      selectedTrack === 'day'
-                        ? 'bg-sky-500 text-white border-sky-400 shadow-sm'
-                        : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
-                    }`}
-                  >
-                    <Sun className="w-3.5 h-3.5" />
-                    Sunny Day
-                  </button>
+              {/* Dedicated Pre-Race Track Selection & Environment Hub */}
+              <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-2.5 text-left">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400">
+                      <Compass className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-white block">Selected Track & Weather</span>
+                      <span className="text-[11px] text-slate-400">Choose or unlock environment</span>
+                    </div>
+                  </div>
 
                   <button
                     type="button"
-                    onClick={() => handleTrackChange('sunset')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                      selectedTrack === 'sunset'
-                        ? 'bg-amber-600 text-white border-amber-500 shadow-sm'
-                        : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
-                    }`}
+                    onClick={() => setShowTrackModal(true)}
+                    className="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                   >
-                    <Sunset className="w-3.5 h-3.5" />
-                    Sunset Horizon
+                    <span>Track Menu</span>
+                    <Compass className="w-3.5 h-3.5" />
                   </button>
+                </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleTrackChange('night')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                      selectedTrack === 'night'
-                        ? 'bg-purple-600 text-white border-purple-500 shadow-sm'
-                        : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
-                    }`}
-                  >
-                    <Moon className="w-3.5 h-3.5" />
-                    Neon Night
-                  </button>
+                {/* Active Track Highlight Card */}
+                {(() => {
+                  const currentTrack = getTrackData(selectedTrack);
+                  return (
+                    <div
+                      onClick={() => setShowTrackModal(true)}
+                      className="p-2.5 rounded-xl border border-slate-700/80 hover:border-amber-500/50 bg-slate-950/70 transition-all cursor-pointer flex items-center justify-between gap-3 group"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
+                          {selectedTrack === 'day' && <Sun className="w-4 h-4 text-sky-400" />}
+                          {selectedTrack === 'sunset' && <Sunset className="w-4 h-4 text-amber-400" />}
+                          {selectedTrack === 'night' && <Moon className="w-4 h-4 text-purple-400" />}
+                          {selectedTrack === 'rain' && <CloudRain className="w-4 h-4 text-cyan-400" />}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                            <span className="truncate">{currentTrack.name}</span>
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+                              Active
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-400 truncate">
+                            {currentTrack.weatherHazard}
+                          </div>
+                        </div>
+                      </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleTrackChange('rain')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                      selectedTrack === 'rain'
-                        ? 'bg-slate-600 text-white border-slate-400 shadow-sm'
-                        : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
-                    }`}
-                  >
-                    <CloudRain className="w-3.5 h-3.5" />
-                    Rainstorm
-                  </button>
+                      <div className="text-end shrink-0">
+                        <div className="text-[10px] text-slate-400">Traction / Multiplier</div>
+                        <div className="text-xs font-bold font-mono text-amber-400">
+                          {Math.round(currentTrack.gripFactor * 100)}% Grip · {currentTrack.coinBonusMultiplier > 1 ? `+${Math.round((currentTrack.coinBonusMultiplier - 1) * 100)}%` : '1.0x'}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Quick Track Switcher Tabs with Lock Indicators */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-0.5">
+                  {TRACKS_DATA.map((t) => {
+                    const isUnlocked = isTrackUnlocked(t.id, {
+                      ...loadPlayerStats(),
+                      unlockedTracks,
+                    });
+                    const isSelected = selectedTrack === t.id;
+
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => {
+                          if (isUnlocked) {
+                            handleTrackChange(t.id);
+                          } else {
+                            setShowTrackModal(true);
+                          }
+                        }}
+                        className={`flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold shadow-sm'
+                            : isUnlocked
+                            ? 'bg-slate-950/70 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+                            : 'bg-slate-950/40 text-slate-500 border-slate-800/80 hover:text-amber-400 hover:border-amber-500/40'
+                        }`}
+                        title={isUnlocked ? `Select ${t.name}` : `Unlock ${t.name} (${t.unlockCost} Coins)`}
+                      >
+                        <span className="flex items-center gap-1 truncate">
+                          {t.id === 'day' && <Sun className="w-3 h-3 shrink-0" />}
+                          {t.id === 'sunset' && <Sunset className="w-3 h-3 shrink-0" />}
+                          {t.id === 'night' && <Moon className="w-3 h-3 shrink-0" />}
+                          {t.id === 'rain' && <CloudRain className="w-3 h-3 shrink-0" />}
+                          <span className="truncate">{t.name.split(' ')[0]}</span>
+                        </span>
+                        {!isUnlocked && (
+                          <span className="flex items-center gap-0.5 text-[10px] text-amber-400 font-mono ml-1">
+                            <Lock className="w-2.5 h-2.5" />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -3817,6 +3924,16 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 >
                   <Zap className={`w-3.5 h-3.5 ${performanceMode ? 'text-emerald-400 fill-emerald-400' : 'text-slate-400'}`} />
                   <span>Turbo 60 FPS: {performanceMode ? 'ON ⚡' : 'OFF'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={toggleAudioModal}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-900 hover:bg-slate-800 hover:text-amber-300 text-slate-300 text-xs font-semibold transition-all cursor-pointer shadow-sm"
+                  title="Configure Engine Roar, Horns & Music Audio"
+                >
+                  <Sliders className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Audio & Horns 🎚️</span>
                 </button>
               </div>
 
@@ -4164,6 +4281,15 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
                 </button>
 
                 <button
+                  onClick={() => setShowTrackModal(true)}
+                  className="w-full sm:w-auto py-3 px-3 bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold rounded-xl border border-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-xs"
+                  title="Choose Different Track Circuit"
+                >
+                  <Compass className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Tracks 🏁</span>
+                </button>
+
+                <button
                   onClick={() => {
                     document.getElementById('leaderboard')?.scrollIntoView({ behavior: 'smooth' });
                   }}
@@ -4177,253 +4303,15 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           </div>
         )}
 
-        {/* INTERACTIVE AUDIO & MUSIC CONTROL MODAL */}
-        {showAudioModal && (
-          <div className="absolute inset-0 z-40 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="bg-slate-900/95 border border-amber-500/40 rounded-2xl p-4 sm:p-5 max-w-md w-full shadow-2xl shadow-amber-500/10 space-y-4 text-left">
-              {/* Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40">
-                    <Sliders className="w-4 h-4" />
-                  </div>
-                  <h3 className="text-base sm:text-lg font-bold font-game text-white flex items-center gap-2">
-                    Audio & Music Controls 🎚️
-                  </h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={toggleAudioModal}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  title="Close Audio Settings"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Live Interactive Pitch & Speed Telemetry */}
-              <div className="p-3 rounded-xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-500/30">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
-                    <Activity className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                    <span>Dynamic Speed Pitch Reaction</span>
-                  </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    {speedPitchEnabled ? 'Engine Linked ⚡' : 'Locked 🔒'}
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <div className="text-[10px] text-slate-400 font-medium">Music Tempo</div>
-                    <div className="text-sm font-bold font-mono text-amber-400">
-                      {musicEnabled ? `${liveMusicBpm} BPM` : 'Stopped'}
-                    </div>
-                  </div>
-                  <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <div className="text-[10px] text-slate-400 font-medium">Pitch Shift</div>
-                    <div className="text-sm font-bold font-mono text-amber-400">
-                      {livePitchShift >= 0 ? `+${livePitchShift}` : livePitchShift} st
-                    </div>
-                  </div>
-                  <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <div className="text-[10px] text-slate-400 font-medium">Car Speed</div>
-                    <div className="text-sm font-bold font-mono text-emerald-400">
-                      {Math.round(currentSpeed)} KM/H
-                    </div>
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
-                  🎶 The musical rhythm and pitch dynamically elevate as you accelerate or use nitro, softening dynamically during braking!
-                </p>
-              </div>
-
-              {/* Music Volume Section */}
-              <div className="space-y-2 p-3 rounded-xl bg-slate-950/50 border border-slate-800/80">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <Music className="w-4 h-4 text-amber-400" />
-                    <span>Energetic Race Music</span>
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={toggleMusic}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors flex items-center gap-1.5 cursor-pointer ${
-                        musicEnabled
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
-                          : 'bg-slate-800 text-slate-400 border-slate-700'
-                      }`}
-                    >
-                      {musicEnabled ? <Music className="w-3.5 h-3.5 text-amber-400" /> : <Music2 className="w-3.5 h-3.5 text-slate-400" />}
-                      <span>{musicEnabled ? 'Playing' : 'Muted'}</span>
-                    </button>
-                    <span className="font-mono text-xs font-bold text-amber-400">
-                      {Math.round(musicVolume * 100)}%
-                    </span>
-                  </div>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={musicVolume}
-                  onChange={(e) => handleMusicVolumeChange(parseFloat(e.target.value))}
-                  className="w-full accent-amber-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
-                />
-
-                {/* Speed Pitch Feature Toggle */}
-                <div className="flex items-center justify-between pt-2 border-t border-slate-800/60">
-                  <span className="text-xs text-slate-300">
-                    Dynamic Pitch Reaction to Car Speed
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleSpeedPitchToggle}
-                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      speedPitchEnabled ? 'bg-amber-500' : 'bg-slate-700'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        speedPitchEnabled ? 'translate-x-4' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-              </div>
-
-              {/* Sound Effects Volume Section */}
-              <div className="space-y-2 p-3 rounded-xl bg-slate-950/50 border border-slate-800/80">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <Volume2 className="w-4 h-4 text-emerald-400" />
-                    <span>Engine & Sound Effects (SFX)</span>
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={toggleSound}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors flex items-center gap-1.5 cursor-pointer ${
-                        soundEnabled
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
-                          : 'bg-slate-800 text-slate-400 border-slate-700'
-                      }`}
-                    >
-                      {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-emerald-400" /> : <VolumeX className="w-3.5 h-3.5 text-slate-400" />}
-                      <span>{soundEnabled ? 'Active' : 'Muted'}</span>
-                    </button>
-                    <span className="font-mono text-xs font-bold text-emerald-400">
-                      {Math.round(soundVolume * 100)}%
-                    </span>
-                  </div>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={soundVolume}
-                  onChange={(e) => handleSoundVolumeChange(parseFloat(e.target.value))}
-                  className="w-full accent-emerald-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
-                />
-              </div>
-
-              {/* Mobile Haptic Vibration Feedback Section */}
-              {hapticsSupported && (
-                <div className="space-y-2 p-3 rounded-xl bg-slate-950/50 border border-slate-800/80">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                      <Smartphone className="w-4 h-4 text-cyan-400" />
-                      <span>Haptic Vibration Feedback</span>
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={toggleHaptics}
-                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                          hapticsEnabled ? 'bg-cyan-500' : 'bg-slate-700'
-                        }`}
-                      >
-                        <span
-                          className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                            hapticsEnabled ? 'translate-x-4' : 'translate-x-0'
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-800/60">
-                    <span className="text-[11px] text-slate-400">
-                      Tactile rumbles for nitro boosts & obstacle crashes
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => hapticNitroBoost()}
-                      disabled={!hapticsEnabled}
-                      className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 disabled:opacity-40 cursor-pointer"
-                    >
-                      Test Rumble 📳
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Quick Preset Buttons */}
-              <div className="flex items-center justify-between gap-1.5 pt-1 text-[11px]">
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleMusicVolumeChange(0);
-                    handleSoundVolumeChange(0);
-                  }}
-                  className="flex-1 py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-center cursor-pointer"
-                >
-                  Mute All 🔇
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleMusicVolumeChange(0.3);
-                    handleSoundVolumeChange(0.4);
-                  }}
-                  className="flex-1 py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-center cursor-pointer"
-                >
-                  Quiet 🔉
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleMusicVolumeChange(0.5);
-                    handleSoundVolumeChange(0.8);
-                  }}
-                  className="flex-1 py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-center cursor-pointer"
-                >
-                  Balanced 🔊
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleMusicVolumeChange(1.0);
-                    handleSoundVolumeChange(1.0);
-                  }}
-                  className="flex-1 py-1 px-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors text-center cursor-pointer font-bold"
-                >
-                  Max Hype ⚡
-                </button>
-              </div>
-
-              {/* Close Button */}
-              <button
-                type="button"
-                onClick={toggleAudioModal}
-                className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-500/20"
-              >
-                Save & Close
-              </button>
-            </div>
-          </div>
-        )}
+        {/* DEDICATED INDEPENDENT AUDIO MANAGEMENT SYSTEM MODAL */}
+        <AudioSettingsModal
+          isOpen={showAudioModal}
+          onClose={toggleAudioModal}
+          currentSpeed={currentSpeed}
+          hapticsSupported={hapticsSupported}
+          hapticsEnabled={hapticsEnabled}
+          onToggleHaptics={toggleHaptics}
+        />
 
         {/* DAILY CHALLENGES & SPECIAL REWARDS MODAL */}
         <DailyChallengesModal
@@ -4431,6 +4319,25 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           onClose={() => setShowDailyModal(false)}
           onCoinsChange={(reward) => {
             onCoinsChange(loadPlayerStats().coins);
+          }}
+        />
+
+        {/* TRACK & ENVIRONMENT SELECTION MODAL */}
+        <TrackSelectionModal
+          isOpen={showTrackModal}
+          onClose={() => setShowTrackModal(false)}
+          selectedTrack={selectedTrack}
+          onSelectTrack={(newTrack) => {
+            handleTrackChange(newTrack);
+          }}
+          onStartRace={() => {
+            if (gameState === 'MENU' || gameState === 'GAMEOVER') {
+              startGame();
+            }
+          }}
+          playerCoins={coins}
+          onCoinsChange={(newCoins) => {
+            onCoinsChange(newCoins);
           }}
         />
       </div>

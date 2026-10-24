@@ -17,9 +17,12 @@ import { DailyChallengesSection } from './components/DailyChallengesSection';
 import { DailyChallengesModal } from './components/DailyChallengesModal';
 import { Footer } from './components/Footer';
 import { loadPlayerStats } from './utils/storage';
+import { getSavedLanguage, getTranslation, applyGlobalTranslation, LANGUAGES } from './utils/i18n';
+import { getArticleTranslation } from './utils/articleTranslations';
 
 export default function App() {
   const racingRef = useRef<RacingGameHandle | null>(null);
+  const [currentLang, setCurrentLang] = useState<string>(() => getSavedLanguage());
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     try {
       const saved = localStorage.getItem('fast_city_racing_theme');
@@ -69,8 +72,8 @@ export default function App() {
 
   // Support direct path and hash navigation for pages (e.g. /privacy, /terms, /contact, /about, /cars, /instructions)
   useEffect(() => {
-    const defaultTitle = 'City Speed Heroes - Free 3D Car Racing Game Online | games-children.com';
-    const defaultDescription = 'Play City Speed Heroes, the ultimate free 3D car racing game online on games-children.com. Drive supercar speeds, dodge traffic, unlock nitro boosts & upgrades with zero downloads on PC, Mac, Android & iOS across USA, Canada, Netherlands & worldwide.';
+    const defaultTitle = 'Apex Pulse: Neon Horizon – High-Speed 3D Highway Racer';
+    const defaultDescription = 'Feel the rush in Apex Pulse: Neon Horizon! Dodge highway traffic, unleash nitrous, and master rain-slick streets in this free 3D arcade browser racing game.';
     const siteUrl = 'https://www.games-children.com';
 
     const updateMetaDescription = (desc: string) => {
@@ -102,17 +105,17 @@ export default function App() {
         setPolicyTab(target as PolicyTab);
         setIsPolicyOpen(true);
         const titles: Record<string, string> = {
-          privacy: 'Privacy Policy - City Speed Heroes | games-children.com',
-          terms: 'Terms of Service - City Speed Heroes | games-children.com',
-          disclaimer: 'Disclaimer - City Speed Heroes | games-children.com',
-          contact: 'Contact Us & Support - City Speed Heroes | games-children.com',
-          about: 'About Us - City Speed Heroes | games-children.com',
+          privacy: 'Privacy Policy - Apex Pulse: Neon Horizon | games-children.com',
+          terms: 'Terms of Service - Apex Pulse: Neon Horizon | games-children.com',
+          disclaimer: 'Disclaimer - Apex Pulse: Neon Horizon | games-children.com',
+          contact: 'Contact Us & Support - Apex Pulse: Neon Horizon | games-children.com',
+          about: 'About Us - Apex Pulse: Neon Horizon | games-children.com',
         };
         const descriptions: Record<string, string> = {
-          privacy: 'Read our Privacy Policy, COPPA compliance, cookie disclosures, and data protection guidelines for City Speed Heroes.',
-          terms: 'Review the Terms of Service and fair play guidelines for City Speed Heroes on games-children.com.',
-          disclaimer: 'Legal disclaimer and safety advisory for City Speed Heroes browser car racing game.',
-          contact: 'Get in touch with our team for feedback, bug reports, and customer support.',
+          privacy: 'Read our Privacy Policy, COPPA compliance, cookie disclosures, and data protection guidelines for Apex Pulse: Neon Horizon.',
+          terms: 'Review the Terms of Service and fair play guidelines for Apex Pulse: Neon Horizon on games-children.com.',
+          disclaimer: 'Legal disclaimer and safety advisory for Apex Pulse: Neon Horizon browser car racing game.',
+          contact: 'Get in touch with our team for feedback, bug reports, and customer support for Apex Pulse.',
           about: 'Learn about our mission to bring fast, safe, high-performance browser games to families and players worldwide.',
         };
         document.title = titles[target] || defaultTitle;
@@ -120,16 +123,16 @@ export default function App() {
         updateCanonical(`/${target}`);
       } else if (target === 'cars') {
         setIsPolicyOpen(false);
-        document.title = 'Supercars Fleet & Upgrades - City Speed Heroes | games-children.com';
-        updateMetaDescription('Explore the 6 high-octane racing supercars, performance stats, turbo specs, and garage upgrades.');
+        document.title = 'Supercars Fleet & Upgrades - Apex Pulse: Neon Horizon';
+        updateMetaDescription('Explore the 6 high-octane racing supercars, performance stats, turbo specs, and garage upgrades in Apex Pulse.');
         updateCanonical('/cars');
         setTimeout(() => {
           document.getElementById('cars')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
       } else if (target === 'instructions') {
         setIsPolicyOpen(false);
-        document.title = 'How to Play & Controls Guide - City Speed Heroes | games-children.com';
-        updateMetaDescription('Master keyboard and touch controls, nitro boosts, drafting, and near-miss multipliers in City Speed Heroes.');
+        document.title = 'How to Play & Controls Guide - Apex Pulse: Neon Horizon';
+        updateMetaDescription('Master keyboard and touch controls, nitro boosts, drafting, and near-miss multipliers in Apex Pulse.');
         updateCanonical('/instructions');
         setTimeout(() => {
           document.getElementById('instructions')?.scrollIntoView({ behavior: 'smooth' });
@@ -157,13 +160,13 @@ export default function App() {
       window.history.pushState({ tab }, '', `/${tab}`);
     } catch {}
     const titles: Record<string, string> = {
-      privacy: 'Privacy Policy - City Speed Heroes | games-children.com',
-      terms: 'Terms of Service - City Speed Heroes | games-children.com',
-      disclaimer: 'Disclaimer - City Speed Heroes | games-children.com',
-      contact: 'Contact Us & Support - City Speed Heroes | games-children.com',
-      about: 'About Us - City Speed Heroes | games-children.com',
+      privacy: 'Privacy Policy - Apex Pulse: Neon Horizon | games-children.com',
+      terms: 'Terms of Service - Apex Pulse: Neon Horizon | games-children.com',
+      disclaimer: 'Disclaimer - Apex Pulse: Neon Horizon | games-children.com',
+      contact: 'Contact Us & Support - Apex Pulse: Neon Horizon | games-children.com',
+      about: 'About Us - Apex Pulse: Neon Horizon | games-children.com',
     };
-    document.title = titles[tab] || 'City Speed Heroes - Free 3D Car Racing Game Online';
+    document.title = titles[tab] || 'Apex Pulse: Neon Horizon – High-Speed 3D Highway Racer';
     const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (canonical) canonical.href = `https://www.games-children.com/${tab}`;
   };
@@ -173,10 +176,10 @@ export default function App() {
     try {
       window.history.pushState({}, '', '/');
     } catch {}
-    document.title = 'City Speed Heroes - Free 3D Car Racing Game Online | games-children.com';
+    document.title = 'Apex Pulse: Neon Horizon – High-Speed 3D Highway Racer';
     const metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
     if (metaDesc) {
-      metaDesc.content = 'Play City Speed Heroes, the ultimate free 3D car racing game online on games-children.com. Drive supercar speeds, dodge traffic, unlock nitro boosts & upgrades with zero downloads on PC, Mac, Android & iOS across USA, Canada, Netherlands & worldwide.';
+      metaDesc.content = 'Feel the rush in Apex Pulse: Neon Horizon! Dodge highway traffic, unleash nitrous, and master rain-slick streets in this free 3D arcade browser racing game.';
     }
     const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (canonical) canonical.href = 'https://www.games-children.com';
@@ -191,6 +194,18 @@ export default function App() {
     racingRef.current?.startGame();
   };
 
+  useEffect(() => {
+    const langObj = LANGUAGES.find((l) => l.code === currentLang);
+    if (langObj) {
+      document.documentElement.lang = langObj.code;
+      document.documentElement.dir = langObj.dir;
+    }
+    applyGlobalTranslation(currentLang);
+  }, [currentLang]);
+
+  const t = getTranslation(currentLang);
+  const article = getArticleTranslation(currentLang);
+
   return (
     <div
       className={`min-h-screen flex flex-col justify-between transition-colors duration-200 selection:bg-amber-500 selection:text-slate-950 ${
@@ -203,6 +218,8 @@ export default function App() {
         onOpenDailyChallenges={() => setIsDailyChallengesOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
+        currentLang={currentLang}
+        onLanguageChange={setCurrentLang}
       />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
@@ -210,20 +227,20 @@ export default function App() {
         <div className="text-center sm:text-start space-y-3">
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-amber-500 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 font-bold uppercase tracking-wider text-[10px]">
-              Formerly known as City Speed Heroes
+              {t.formerlyKnownAs}
             </span>
             <span className="hidden sm:inline">·</span>
-            <span>#1 Free Online 3D Car Racing Game</span>
+            <span>{t.heroBadge}</span>
             <span className="hidden sm:inline">·</span>
-            <span>No Download Required</span>
+            <span>{t.freeNoDownload}</span>
           </div>
 
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black font-game tracking-tight leading-tight">
-            Metro Racers - Free 3D Car Racing Game Online
+            {t.heroTitle}
           </h1>
 
           <p className="text-sm sm:text-base opacity-85 max-w-2xl leading-relaxed">
-            Play Metro Racers online for free! Experience high-speed 3D car racing, dodge city traffic, unlock supercars, and break records directly in your browser with no download required.
+            {t.heroDesc}
           </p>
 
           <div className="pt-1 flex items-center gap-3 flex-wrap">
@@ -232,7 +249,7 @@ export default function App() {
               className="btn-play-pulse px-6 sm:px-8 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 active:scale-95 text-slate-950 font-black text-sm sm:text-base rounded-xl shadow-lg shadow-amber-400/25 flex items-center justify-center gap-2 transition-all cursor-pointer inline-flex"
             >
               <Play className="w-5 h-5 fill-slate-950" />
-              <span>Play Now - Start Race</span>
+              <span>{t.playNow}</span>
             </button>
 
             <a
@@ -247,7 +264,7 @@ export default function App() {
                   : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300 shadow-xs'
               }`}
             >
-              <span>Explore Supercars Fleet</span>
+              <span>{t.supercarsFleet}</span>
             </a>
 
             <a
@@ -263,7 +280,7 @@ export default function App() {
               }`}
             >
               <Trophy className="w-4 h-4 text-amber-400" />
-              <span>Leaderboard 🏆</span>
+              <span>{t.leaderboard} 🏆</span>
             </a>
 
             <button
@@ -275,7 +292,7 @@ export default function App() {
               }`}
             >
               <Target className="w-4 h-4 text-amber-400" />
-              <span>Daily Quests 🎯</span>
+              <span>{t.dailyRewards} 🎯</span>
             </button>
           </div>
         </div>
@@ -294,7 +311,7 @@ export default function App() {
           />
         </section>
 
-        {/* SEO Optimized Text Sections (About Metro Racers & Controls Guide) */}
+        {/* SEO Optimized Text Sections (About & Controls Guide) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <section
             id="about-game"
@@ -305,10 +322,10 @@ export default function App() {
             }`}
           >
             <h2 className="text-xl sm:text-2xl font-black font-game text-[#ffcc00] mb-2.5">
-              About Metro Racers
+              {t.about}: {article.heroHeading}
             </h2>
             <p className="text-xs sm:text-sm leading-relaxed opacity-90">
-              Welcome to <strong>Metro Racers</strong>, the ultimate online entertainment portal combining the instant thrill of classic arcade mechanics with high-fidelity 3D modern car driving simulation. Engineered specifically for speed enthusiasts, this game offers an exceptional racing adventure directly inside your web browser. No installation or downloads required—enjoy seamless deployment on PC or mobile platforms instantly via <a href="https://www.games-children.com/" className="text-[#ffcc00] underline font-semibold">games-children.com</a>.
+              {article.welcomeP1}
             </p>
           </section>
 
@@ -321,10 +338,10 @@ export default function App() {
             }`}
           >
             <h2 className="text-xl sm:text-2xl font-black font-game text-[#ffcc00] mb-2.5">
-              How to Play & Controls
+              {t.howToPlay}
             </h2>
             <p className="text-xs sm:text-sm leading-relaxed opacity-90">
-              Master your lane swerving techniques, dodge heavy metropolitan traffic, trigger your nitro boosts, and execute drifting maneuvers to dominate the scoreboard. Check our integrated control layouts for keyboard inputs and mobile responsive touch controls within the main dashboard panels.
+              {article.howToPlayIntro} {article.heritageP2}
             </p>
           </section>
         </div>
@@ -334,10 +351,11 @@ export default function App() {
           theme={theme}
           onPlayNow={handlePlayNow}
           onCoinsChange={setCoins}
+          currentLang={currentLang}
         />
 
         {/* Top 5 Leaderboard with LocalStorage Persistence */}
-        <Leaderboard theme={theme} onPlayNow={handlePlayNow} />
+        <Leaderboard theme={theme} onPlayNow={handlePlayNow} currentLang={currentLang} />
 
         {/* Achievements and Milestones Section */}
         <Achievements stats={loadPlayerStats()} />
@@ -347,7 +365,7 @@ export default function App() {
 
         {/* Comprehensive SEO Game Article & Car Showroom */}
         <div>
-          <GameArticle onOpenGarage={handleOpenGarage} />
+          <GameArticle onOpenGarage={handleOpenGarage} currentLang={currentLang} />
         </div>
 
         {/* Bottom AdSense Placement */}
@@ -381,7 +399,7 @@ export default function App() {
         }}
       />
 
-      <Footer onOpenPolicy={handleOpenPolicy} theme={theme} />
+      <Footer onOpenPolicy={handleOpenPolicy} theme={theme} currentLang={currentLang} />
     </div>
   );
 }

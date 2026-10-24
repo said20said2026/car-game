@@ -23,9 +23,12 @@ import {
   loadPlayerStats
 } from '../utils/storage';
 
+import { getTranslation } from '../utils/i18n';
+
 interface LeaderboardProps {
   theme?: 'dark' | 'light';
   onPlayNow?: () => void;
+  currentLang?: string;
 }
 
 const NAME_SUGGESTIONS = [
@@ -36,7 +39,8 @@ const NAME_SUGGESTIONS = [
   'Shadow Racer 🌙',
 ];
 
-export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlayNow }) => {
+export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlayNow, currentLang = 'en' }) => {
+  const t = getTranslation(currentLang);
   const [entries, setEntries] = useState<LeaderboardEntry[]>(() => loadLeaderboard());
   const [playerName, setPlayerName] = useState<string>(() => loadPlayerName());
   const [nameInput, setNameInput] = useState<string>(() => loadPlayerName());
@@ -122,7 +126,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ theme = 'dark', onPlay
         <div className="flex flex-col items-center">
           <div className="flex items-center justify-center gap-2 flex-wrap mb-1.5">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-black font-game tracking-tight">
-              Champions Leaderboard 🏆
+              {t.leaderboard} 🏆
             </h2>
             <span className="text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1 shadow-sm">
               <Crown className="w-3.5 h-3.5 text-amber-400" />

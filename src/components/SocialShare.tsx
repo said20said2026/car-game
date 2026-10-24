@@ -38,7 +38,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({ theme = 'dark', classN
   };
 
   const getShareTitle = () => {
-    return 'City Speed Heroes 🏎️ - Play free 3D car racing game online on games-children.com!';
+    return 'Apex Pulse: Neon Horizon 🏎️ - Free high-speed 3D highway racer online on games-children.com!';
   };
 
   const openSharePopup = (url: string) => {

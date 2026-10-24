@@ -10,108 +10,51 @@ import {
   Gauge,
   Zap,
   Shield,
-  Coins,
   Flame,
-  CloudRain,
-  Sun,
-  Moon,
-  HelpCircle,
-  Award,
   Sparkles,
   BookOpen,
-  Gamepad2,
   History,
-  Compass,
   Tag,
-  Car,
+  Award,
 } from 'lucide-react';
 import { CARS_DATA } from '../utils/storage';
+import { getArticleTranslation } from '../utils/articleTranslations';
 
 interface GameArticleProps {
   onOpenGarage?: (carId?: string) => void;
+  currentLang?: string;
 }
 
-export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
+export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage, currentLang = 'en' }) => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const article = getArticleTranslation(currentLang);
+  const isRTL = ['ar', 'fa', 'ur', 'he'].includes(currentLang);
 
   const toggleFaq = (idx: number) => {
     setOpenFaq(openFaq === idx ? null : idx);
   };
 
-  const faqs = [
-    {
-      q: 'Is City Speed Heroes 100% free to play with no downloads required?',
-      a: 'Yes, City Speed Heroes is completely 100% free with zero downloads or subscriptions. You can play directly inside any modern web browser on PC, Mac, Chromebook, iPhone, iPad, and Android devices across the USA, Canada, Netherlands, and worldwide.',
-    },
-    {
-      q: 'How do I earn gold coins quickly to upgrade supercars in the garage?',
-      a: 'You can multiply your earnings in three ways: grabbing gold coins on the road, performing near-miss passes by swerving inches away from traffic at speeds over 100 km/h, and chaining combos with nitrous boost to survive longer race distances.',
-    },
-    {
-      q: 'Does the game support touch controls on smartphones and tablets?',
-      a: 'Yes! City Speed Heroes features responsive on-screen mobile touch controls. Left/right thumb buttons provide precise steering, a dedicated brake pedal allows quick deceleration, and an animated nitrous boost button delivers instant supersonic acceleration.',
-    },
-    {
-      q: 'What are the system requirements to run the game smoothly at 60 FPS?',
-      a: 'The game is built with lightweight HTML5 Canvas 2.5D technology and runs at a fluid 60 frames per second on almost any desktop, laptop, or mobile device. All you need is an up-to-date web browser such as Google Chrome, Safari, Edge, or Firefox.',
-    },
-    {
-      q: 'Will my high scores and unlocked supercars be saved if I close my browser?',
-      a: 'Yes, absolutely. The game uses secure HTML5 LocalStorage in your browser to save your collected coins, unlocked vehicles, garage upgrade levels, and your highest record score automatically without requiring account registration or personal data.',
-    },
-    {
-      q: 'What is the tactical difference between drifting and a near miss?',
-      a: 'Drifting is triggered by tapping brake while steering hard through highway curves, preserving vehicle momentum and sliding gracefully. A near miss is an adrenaline stunt executed by passing civil traffic vehicles at high speed within inches, rewarding you with multiplier points and bonus coins.',
-    },
-    {
-      q: 'Is City Speed Heroes safe for children and COPPA compliant?',
-      a: 'Yes, the game is designed as a family-safe arcade racing environment fully compliant with COPPA and Google AdSense family safety guidelines. It contains no realistic violence, no chat rooms, and no personal data collection.',
-    },
-    {
-      q: 'Can I install City Speed Heroes as a Progressive Web App (PWA) on mobile?',
-      a: 'Yes! City Speed Heroes supports modern PWA capabilities. You can add it directly to your home screen on iOS and Android with a single tap, enjoying full-screen gameplay without downloading heavy APK files from third-party app stores.',
-    },
-    {
-      q: 'What racing classics inspired City Speed Heroes?',
-      a: 'City Speed Heroes draws inspiration from legendary retro arcade racing games and highway swerving simulators, combining precise lane-swerving tactics, high-speed drafting, and garage engine tuning into a modern, 60 FPS browser experience.',
-    },
-    {
-      q: 'Why focus on 6 master-crafted supercars instead of generic 500 car games?',
-      a: 'Rather than offering hundreds of repetitive, low-detail models found on generic 500-car gaming portals, our curated fleet of 6 supercars offers bespoke physics, unique acceleration curves, custom engine audio profiles, and 5-stage mechanical garage tuning.',
-    },
-    {
-      q: 'Does City Speed Heroes feature desert and weather tracks?',
-      a: 'Yes! Experience dynamic tracks including the Sunny Downtown Highway, Rainstorm Slicks with realistic surface hydroplaning, Cyberpunk Neon City, and the vast Desert Dunes track with shifting sand gusts.',
-    },
-    {
-      q: 'What are the best services offered by games-children.com?',
-      a: 'The best services of games-children.com include providing instant-play 3D browser games with zero downloads, COPPA-compliant child-safe family environments, seamless 60 FPS performance, and responsive cross-platform support across desktop and mobile devices.',
-    },
-    {
-      q: 'Where can I find comprehensive supercar guides and detailed reviews?',
-      a: 'Our comprehensive guide and detailed reviews section breaks down the speed thresholds, acceleration ratings, drift stability, and upgrade pathways for all 6 supercars in the fleet to help you claim #1 on the Champions Leaderboard.',
-    },
-    {
-      q: 'How does games-children.com optimize SEO and user experience?',
-      a: 'We implement industry-leading search engine optimization (SEO) and user experience (UX) practices: lightning-fast Core Web Vitals, semantic HTML5 structure, schema.org structured data, touch-friendly UI design, and strict zero-intrusive ad placement.',
-    },
-  ];
-
   return (
-    <article className="game-description mt-10 space-y-12 leading-relaxed max-w-4xl mx-auto text-left" dir="ltr">
+    <article
+      className={`game-description mt-10 space-y-12 leading-relaxed max-w-4xl mx-auto ${
+        isRTL ? 'text-right' : 'text-left'
+      }`}
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       {/* Main Hero Overview */}
       <section className="space-y-4">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          Metro Racers - Free 3D Car Racing Game Online
+          {article.heroHeading}
         </h2>
         <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider">
-          Formerly known as City Speed Heroes
+          {article.formerlyKnownAs}
         </p>
         <p className="text-base sm:text-lg opacity-90 leading-relaxed">
-          Welcome to <strong>Metro Racers</strong> (formerly known as City Speed Heroes), the premier free 3D browser car racing and highway driving simulation on <strong>games-children.com</strong>! If you love high-octane speed, dodging intense rush-hour traffic, and tuning exotic supercars, this game delivers pure arcade adrenaline directly in your web browser with zero downloads.
+          {article.welcomeP1}
         </p>
         <p className="text-sm sm:text-base opacity-85 leading-relaxed">
-          Engineered for players across the United States, Canada, the Netherlands, and around the globe, Metro Racers combines silky-smooth 60 FPS pseudo-3D graphics, procedural engine acoustics, dynamic weather tracks, and deep garage upgrades. Race anytime on PC, Mac, Chromebook, iPhone, iPad, or Android!
+          {article.welcomeP2}
         </p>
 
         {/* High-res gameplay preview image */}
@@ -120,7 +63,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             <source srcSet="/assets/gameplay-preview.webp" type="image/webp" />
             <img
               src="/assets/gameplay-preview.jpg"
-              alt="City Speed Heroes 3D highway racing gameplay preview with nitrous boost and traffic dodge"
+              alt="Apex Pulse: Neon Horizon 3D highway racing gameplay preview with nitrous boost and traffic dodge"
               width={800}
               height={450}
               loading="lazy"
@@ -128,7 +71,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             />
           </picture>
           <figcaption className="text-center text-xs opacity-70 py-2.5 px-4 bg-slate-900/60 border-t border-slate-800/80">
-            Interactive City Highway Track - Advanced 3D canvas visuals and realistic arcade driving
+            {article.gameplayCaption}
           </figcaption>
         </figure>
       </section>
@@ -136,35 +79,32 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
       {/* Controls & How to Play */}
       <section id="instructions" className="scroll-mt-24 space-y-4 p-5 sm:p-7 rounded-2xl bg-slate-900/40 border border-slate-800/80">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          How to Play & Master Highway Lane Swerving
+          {article.howToPlayTitle}
         </h2>
         <p className="opacity-90 text-sm sm:text-base leading-relaxed">
-          The control scheme is designed to be instantly accessible for casual players while offering the precision and responsiveness required by competitive speedrunners:
+          {article.howToPlayIntro}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
           <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800/80 space-y-2">
             <div className="flex items-center gap-2 text-sky-400">
               <Monitor className="w-5 h-5 shrink-0" />
-              <h3 className="text-base font-bold text-inherit font-game">PC & Mac Keyboard Controls</h3>
+              <h3 className="text-base font-bold text-inherit font-game">{article.pcControlsTitle}</h3>
             </div>
-            <ul className="text-xs sm:text-sm opacity-85 leading-relaxed space-y-1.5 list-disc pl-5">
-              <li><strong>Left & Right Arrows or (A / D):</strong> Steer smoothly between highway lanes to dodge slower trucks and sedans.</li>
-              <li><strong>Up Arrow or (W):</strong> Full throttle acceleration to reach maximum horsepower and highway velocity.</li>
-              <li><strong>Down Arrow or (S):</strong> Apply hydraulic brakes to slow down safely behind dense traffic congestion.</li>
-              <li><strong>Spacebar:</strong> Engage the handbrake to execute high-speed tactical drifts around sweeping road curves.</li>
-              <li><strong>Shift Key:</strong> Ignite supersonic Nitrous Oxide (Nitro) boost when your nitrous tank is charged.</li>
+            <ul className={`text-xs sm:text-sm opacity-85 leading-relaxed space-y-1.5 list-disc ${isRTL ? 'pr-5' : 'pl-5'}`}>
+              {article.pcControls.map((ctrl, i) => (
+                <li key={i}>{ctrl}</li>
+              ))}
             </ul>
           </div>
           <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800/80 space-y-2">
             <div className="flex items-center gap-2 text-emerald-400">
               <Smartphone className="w-5 h-5 shrink-0" />
-              <h3 className="text-base font-bold text-inherit font-game">Mobile & Tablet Touch Controls</h3>
+              <h3 className="text-base font-bold text-inherit font-game">{article.mobileControlsTitle}</h3>
             </div>
-            <ul className="text-xs sm:text-sm opacity-85 leading-relaxed space-y-1.5 list-disc pl-5">
-              <li><strong>On-Screen Steering Buttons:</strong> Ergonomic transparent left/right touch buttons positioned for natural thumb control.</li>
-              <li><strong>Smart Auto-Acceleration:</strong> Keeps your supercar accelerating smoothly so you can focus on quick maneuvers.</li>
-              <li><strong>Touch Brake Pedal:</strong> Instant emergency braking to prevent collisions with the rear bumpers of trucks.</li>
-              <li><strong>Pulsing Nitro Button:</strong> Glows when nitrous is primed—tap once to blast through traffic in a straight line.</li>
+            <ul className={`text-xs sm:text-sm opacity-85 leading-relaxed space-y-1.5 list-disc ${isRTL ? 'pr-5' : 'pl-5'}`}>
+              {article.mobileControls.map((ctrl, i) => (
+                <li key={i}>{ctrl}</li>
+              ))}
             </ul>
           </div>
         </div>
@@ -175,30 +115,30 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
         <div className="flex items-center gap-2.5 text-amber-400">
           <History className="w-6 h-6 shrink-0" />
           <h2 className="text-xl sm:text-2xl font-black font-game text-white tracking-tight">
-            Arcade Heritage & High-Speed Highway Swerving
+            {article.heritageTitle}
           </h2>
         </div>
         <p className="opacity-90 text-sm sm:text-base leading-relaxed text-slate-300">
-          City Speed Heroes pays homage to beloved arcade racing classics while introducing modern pseudo-3D mechanics. Known globally as a high-octane <strong>lane swerving game</strong>, every millisecond counts as you read traffic patterns, spot openings between 18-wheelers, and thread the needle at over 200 km/h.
+          {article.heritageP1}
         </p>
         <p className="opacity-90 text-sm sm:text-base leading-relaxed text-slate-300">
-          Unlike static driving titles, dynamic road curvature and intelligent AI traffic vehicles challenge your reflexes. Chaining clean passes and building momentum tests the same sharp hand-eye coordination found in competitive esports.
+          {article.heritageP2}
         </p>
       </section>
 
       {/* Key Features Breakdown */}
       <section className="space-y-4">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          What Makes City Speed Heroes Exceptional
+          {article.exceptionalTitle}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
           <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2">
             <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold">
               <Cpu className="w-4 h-4" />
             </div>
-            <h3 className="font-bold text-inherit text-sm font-game">Web Audio Procedural Engine</h3>
+            <h3 className="font-bold text-inherit text-sm font-game">{article.audioFeatureTitle}</h3>
             <p className="text-xs opacity-80 leading-relaxed">
-              Dynamic synthesized V8 and turbo acoustics that shift pitch realistically with engine RPM, turbo blow-off hiss, and tire screeching.
+              {article.audioFeatureDesc}
             </p>
           </div>
 
@@ -206,9 +146,9 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
               <Trophy className="w-4 h-4" />
             </div>
-            <h3 className="font-bold text-inherit text-sm font-game">Comprehensive Garage Tuning</h3>
+            <h3 className="font-bold text-inherit text-sm font-game">{article.tuningFeatureTitle}</h3>
             <p className="text-xs opacity-80 leading-relaxed">
-              Upgrade Top Speed, Acceleration, Handling, and Nitro Capacity across 5 distinct stages for each vehicle using collected gold coins.
+              {article.tuningFeatureDesc}
             </p>
           </div>
 
@@ -216,9 +156,9 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
               <ShieldCheck className="w-4 h-4" />
             </div>
-            <h3 className="font-bold text-inherit text-sm font-game">Dynamic Weather & Tracks</h3>
+            <h3 className="font-bold text-inherit text-sm font-game">{article.weatherFeatureTitle}</h3>
             <p className="text-xs opacity-80 leading-relaxed">
-              Race through Sunny Downtown, Rainstorm Slicks with hydroplane physics, Cyberpunk Neon skylines, and the golden Desert Dunes.
+              {article.weatherFeatureDesc}
             </p>
           </div>
         </div>
@@ -227,48 +167,23 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
       {/* Pro Racing Tips & High Score Strategy */}
       <section id="tips" className="scroll-mt-24 space-y-4">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          Pro Racing Tips & High Score Tactics
+          {article.proTipsTitle}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-          <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/60 space-y-1.5">
-            <h3 className="text-sm font-bold text-amber-400 font-game flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              <span>Near Miss Multiplier (Combo Chains)</span>
-            </h3>
-            <p className="text-xs opacity-80 leading-relaxed">
-              Pass civilian vehicles within inches at speeds above 100 km/h without making contact. Linking consecutive near-misses builds a combo multiplier (up to 5x) that sky-rockets your score and coin accumulation.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/60 space-y-1.5">
-            <h3 className="text-sm font-bold text-sky-400 font-game flex items-center gap-2">
-              <Flame className="w-4 h-4" />
-              <span>Strategic Nitrous Timing</span>
-            </h3>
-            <p className="text-xs opacity-80 leading-relaxed">
-              Avoid burning nitrous in the middle of tight blind curves or bumper-to-bumper traffic jams. Wait for an open straightaway to fire your nitro boost for maximum speed and safe highway clearance.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/60 space-y-1.5">
-            <h3 className="text-sm font-bold text-emerald-400 font-game flex items-center gap-2">
-              <Award className="w-4 h-4" />
-              <span>Horizon Scanning & Truck Anticipation</span>
-            </h3>
-            <p className="text-xs opacity-80 leading-relaxed">
-              Keep your gaze fixed on the vanishing horizon. Spotting the silhouettes of slow moving trucks early allows you to switch lanes smoothly without braking and losing speed momentum.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/60 space-y-1.5">
-            <h3 className="text-sm font-bold text-purple-400 font-game flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              <span>Survival Over Coin Greed</span>
-            </h3>
-            <p className="text-xs opacity-80 leading-relaxed">
-              While collecting coins is essential for garage upgrades, never risk a terminal collision for a single coin in a congested lane. Surviving longer distances yields far greater score records.
-            </p>
-          </div>
+          {article.tips.map((tip, idx) => (
+            <div key={idx} className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/60 space-y-1.5">
+              <h3 className="text-sm font-bold text-amber-400 font-game flex items-center gap-2">
+                {idx === 0 && <Sparkles className="w-4 h-4" />}
+                {idx === 1 && <Flame className="w-4 h-4" />}
+                {idx === 2 && <Award className="w-4 h-4" />}
+                {idx >= 3 && <BookOpen className="w-4 h-4" />}
+                <span>{tip.title}</span>
+              </h3>
+              <p className="text-xs opacity-80 leading-relaxed">
+                {tip.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -277,10 +192,10 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-              Fleet of 6 Supercars: Performance Specs & Tuning
+              {article.fleetTitle}
             </h2>
             <p className="text-xs sm:text-sm opacity-80 mt-1">
-              Explore the 6 high-octane racing supercars in the fleet—from American V8 muscle to futuristic aero hypercars.
+              {article.fleetSubtitle}
             </p>
           </div>
 
@@ -290,7 +205,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
               className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md shadow-amber-400/20 flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
             >
               <Wrench className="w-4 h-4" />
-              <span>Open Garage to Upgrade Fleet</span>
+              <span>{article.openGarageBtn}</span>
             </button>
           )}
         </div>
@@ -301,7 +216,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             <source srcSet="/assets/social-cover.webp" type="image/webp" />
             <img
               src="/assets/social-cover.jpg"
-              alt="City Speed Heroes fleet of exotic supercars in garage"
+              alt="Apex Pulse fleet of exotic supercars in garage"
               width={1200}
               height={630}
               loading="lazy"
@@ -309,7 +224,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
             />
           </picture>
           <figcaption className="text-center text-xs opacity-70 py-2.5 px-4 bg-slate-900/60 border-t border-slate-800/80">
-            The 6 High-Performance Racing Supercars available in your garage
+            {article.fleetCaption}
           </figcaption>
         </figure>
 
@@ -342,7 +257,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1 text-sky-400">
                     <Gauge className="w-3.5 h-3.5" />
-                    Top Speed:
+                    {article.topSpeed}
                   </span>
                   <span className="font-game font-bold tabular-nums text-sky-400">{car.baseSpeed} km/h</span>
                 </div>
@@ -350,7 +265,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1 text-amber-400">
                     <Zap className="w-3.5 h-3.5" />
-                    Acceleration:
+                    {article.acceleration}
                   </span>
                   <span className="font-bold tabular-nums">{car.baseAcceleration}%</span>
                 </div>
@@ -358,7 +273,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1 text-emerald-400">
                     <Shield className="w-3.5 h-3.5" />
-                    Handling:
+                    {article.handling}
                   </span>
                   <span className="font-bold tabular-nums">{car.baseHandling}%</span>
                 </div>
@@ -369,7 +284,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
                 className="w-full mt-2 py-2 px-3 bg-slate-800 hover:bg-amber-400 hover:text-slate-950 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Wrench className="w-3.5 h-3.5" />
-                <span>Tune This Supercar in Garage</span>
+                <span>{article.tuneThisCarBtn}</span>
               </button>
             </div>
           ))}
@@ -377,15 +292,15 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
 
         {/* Specs Comparison Table */}
         <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/40 mt-4">
-          <table className="w-full text-left text-xs sm:text-sm">
+          <table className={`w-full text-xs sm:text-sm ${isRTL ? 'text-right' : 'text-left'}`}>
             <thead className="bg-slate-900 border-b border-slate-800 font-bold opacity-90">
               <tr>
-                <th className="py-3 px-4">Supercar</th>
-                <th className="py-3 px-4">Class</th>
-                <th className="py-3 px-4">Top Speed</th>
-                <th className="py-3 px-4">Acceleration</th>
-                <th className="py-3 px-4">Handling</th>
-                <th className="py-3 px-4">Price</th>
+                <th className="py-3 px-4">{article.supercarCol}</th>
+                <th className="py-3 px-4">{article.classCol}</th>
+                <th className="py-3 px-4">{article.topSpeed}</th>
+                <th className="py-3 px-4">{article.acceleration}</th>
+                <th className="py-3 px-4">{article.handling}</th>
+                <th className="py-3 px-4">{article.price}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-sans">
@@ -400,7 +315,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
                   <td className="py-3 px-4 tabular-nums">{c.baseAcceleration}%</td>
                   <td className="py-3 px-4 tabular-nums">{c.baseHandling}%</td>
                   <td className="py-3 px-4 font-game text-amber-400 font-bold tabular-nums">
-                    {c.price === 0 ? 'Free Starter' : `${c.price} Coins`}
+                    {c.price === 0 ? article.freeStarter : `${c.price} ${article.coinsSuffix}`}
                   </td>
                 </tr>
               ))}
@@ -409,58 +324,55 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
         </div>
       </section>
 
-      {/* Quality Standards & Platform Services: Strategic Keywords Section */}
+      {/* Quality Standards & Platform Services */}
       <section className="space-y-6 p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-950 to-slate-900/70 border border-amber-500/30 shadow-xl">
         <div className="border-b border-slate-800 pb-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 text-amber-400 text-xs font-bold border border-amber-400/20 mb-2">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Platform Excellence & SEO Standards</span>
+            <span>{article.platformBadge}</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black font-game text-white tracking-tight">
-            Best Services of games-children.com: Comprehensive Guide & User Experience
+            {article.platformTitle}
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Our commitment to delivering the premier free web gaming experience for players in the USA, Netherlands, Canada, and worldwide
+            {article.platformSubtitle}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Card 1: Best Services of games-children.com */}
           <div className="p-5 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-3 hover:border-amber-400/40 transition-colors">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <h3 className="text-base font-bold font-game text-white">
-              Best Services of games-children.com
+              {article.service1Title}
             </h3>
             <p className="text-xs text-slate-300 leading-relaxed">
-              <strong>games-children.com</strong> provides instant-play 3D browser games with zero downloads, 100% family-safe COPPA compliance, silky-smooth 60 FPS performance, and automatic progress saving in your browser across all devices.
+              {article.service1Desc}
             </p>
           </div>
 
-          {/* Card 2: Comprehensive Guide & Detailed Reviews */}
           <div className="p-5 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-3 hover:border-sky-400/40 transition-colors">
             <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
               <BookOpen className="w-5 h-5" />
             </div>
             <h3 className="text-base font-bold font-game text-white">
-              Comprehensive Guide & Detailed Reviews
+              {article.service2Title}
             </h3>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Our <strong>comprehensive guide and detailed reviews</strong> evaluate the performance curves, top speed limits, and handling dynamics of each supercar in our fleet to help players master high-speed highway racing and top the leaderboard.
+              {article.service2Desc}
             </p>
           </div>
 
-          {/* Card 3: SEO Tips & User Experience Optimization */}
           <div className="p-5 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-3 hover:border-emerald-400/40 transition-colors">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
               <Zap className="w-5 h-5" />
             </div>
             <h3 className="text-base font-bold font-game text-white">
-              SEO Tips & User Experience (UX)
+              {article.service3Title}
             </h3>
             <p className="text-xs text-slate-300 leading-relaxed">
-              We apply the latest <strong>SEO and user experience optimization tips</strong>—ensuring lightning Core Web Vitals loading speeds, fully responsive mobile touch steering, clear semantic structure, and non-intrusive ad layouts.
+              {article.service3Desc}
             </p>
           </div>
         </div>
@@ -469,17 +381,19 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
       {/* FAQ Accordion Section */}
       <section id="faq" className="scroll-mt-24 space-y-4 pt-2">
         <h2 className="text-2xl sm:text-3xl font-black font-game text-inherit tracking-tight">
-          Frequently Asked Questions (FAQ)
+          {article.faqsTitle}
         </h2>
         <div className="space-y-2.5">
-          {faqs.map((faq, idx) => (
+          {article.faqs.map((faq, idx) => (
             <div
               key={idx}
               className="rounded-xl border border-slate-800/80 bg-slate-900/50 overflow-hidden transition-colors"
             >
               <button
                 onClick={() => toggleFaq(idx)}
-                className="w-full py-3.5 px-4 text-left font-semibold flex items-center justify-between gap-3 hover:bg-slate-800/40 transition-colors cursor-pointer"
+                className={`w-full py-3.5 px-4 font-semibold flex items-center justify-between gap-3 hover:bg-slate-800/40 transition-colors cursor-pointer ${
+                  isRTL ? 'text-right' : 'text-left'
+                }`}
               >
                 <h3 className="text-sm sm:text-base font-bold text-inherit">{faq.q}</h3>
                 <ChevronDown
@@ -503,23 +417,24 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
         <div className="flex items-center gap-2 text-amber-400">
           <Tag className="w-5 h-5 shrink-0" />
           <h2 className="text-xl sm:text-2xl font-black font-game text-white tracking-tight">
-            City Speed Heroes Global Search Hub
+            {article.searchHubTitle}
           </h2>
         </div>
         <p className="text-xs sm:text-sm opacity-85 leading-relaxed text-slate-300">
-          Explore the popular game topics and search terms integrated into City Speed Heroes for global discovery:
+          {article.searchHubDesc}
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2.5">
             <h3 className="font-bold text-amber-400 font-game flex items-center gap-1.5">
               <Trophy className="w-4 h-4" />
-              <span>Racing Modes & Highlights</span>
+              <span>{article.racingModesTagTitle}</span>
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {[
+                'Apex Pulse 3D',
+                'Neon Horizon',
                 'Metro Racers',
-                'Metro Racers 3D',
                 'City Speed Heroes',
                 'Free online car games',
                 'Browser racing simulator',
@@ -541,7 +456,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
           <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2.5">
             <h3 className="font-bold text-sky-400 font-game flex items-center gap-1.5">
               <Smartphone className="w-4 h-4" />
-              <span>Cross-Platform Web Gaming</span>
+              <span>{article.crossPlatformTagTitle}</span>
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {[
@@ -551,6 +466,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
                 '60 FPS HTML5 canvas engine',
                 'US & Canada online car games',
                 'Netherlands browser games',
+                'COPPA child-safe compliant',
               ].map((term, i) => (
                 <span
                   key={i}
@@ -565,7 +481,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage }) => {
           <div className="p-4 rounded-xl bg-slate-900/40 border border-amber-500/30 space-y-2.5 sm:col-span-2">
             <h3 className="font-bold text-amber-400 font-game flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" />
-              <span>games-children.com Best Services & Reviews</span>
+              <span>{article.servicesTagTitle}</span>
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {[

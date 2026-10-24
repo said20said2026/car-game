@@ -39,6 +39,24 @@ export interface DriftSmokeConfig {
   sparkEnabled?: boolean;
 }
 
+export interface TrackData {
+  id: TrackEnvironment;
+  name: string;
+  subtitle: string;
+  description: string;
+  unlockCost: number; // 0 for 'day', 500 for 'sunset', 1200 for 'night', 2000 for 'rain'
+  gripFactor: number; // 1.0 standard, 1.05 sunset, 0.98 night, 0.82 rain wet slick
+  nitroRechargeRate: number; // passive nitro multiplier
+  coinBonusMultiplier: number; // coin reward multiplier
+  scoreBonusMultiplier: number; // score reward multiplier
+  visibility: string;
+  weatherHazard: string;
+  difficulty: 'Beginner Friendly' | 'Intermediate' | 'Advanced' | 'Pro Driver';
+  themeColor: string;
+  accentColor: string;
+  iconName: 'sun' | 'sunset' | 'moon' | 'cloud-rain';
+}
+
 export interface PlayerStats {
   coins: number;
   highScore: number;
@@ -49,10 +67,15 @@ export interface PlayerStats {
   soundEnabled: boolean;
   musicEnabled?: boolean;
   musicVolume?: number;
+  engineVolume?: number;
+  hornVolume?: number;
+  engineEnabled?: boolean;
+  hornEnabled?: boolean;
   soundVolume?: number;
   speedPitchEnabled?: boolean;
   upgrades: Record<string, CarUpgrades>;
   unlockedCars: string[];
+  unlockedTracks?: TrackEnvironment[];
   carDirt?: Record<string, number>;
   driftSmokeSettings?: Record<string, DriftSmokeConfig>; // Per-car customized drift smoke colors
   ghostCarEnabled?: boolean;

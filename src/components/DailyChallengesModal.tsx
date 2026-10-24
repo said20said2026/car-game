@@ -22,6 +22,7 @@ import {
   getDailyChallengesSummary,
 } from '../utils/dailyChallenges';
 import { soundManager } from '../utils/audio';
+import { DailyStreakBonusCard } from './DailyStreakBonusCard';
 
 interface DailyChallengesModalProps {
   isOpen: boolean;
@@ -170,6 +171,9 @@ export const DailyChallengesModal: React.FC<DailyChallengesModalProps> = ({
             {timeLeft}
           </span>
         </div>
+
+        {/* Daily Login Streak Bonus Widget */}
+        <DailyStreakBonusCard onCoinsChange={onCoinsChange} />
 
         {/* Missions List */}
         <div className="space-y-3">

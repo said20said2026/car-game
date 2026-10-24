@@ -2,14 +2,20 @@ import React from 'react';
 import { ShieldCheck, FileText, Shield, HelpCircle, Mail, Info, AlertTriangle, Lightbulb, Trophy, Target } from 'lucide-react';
 import { PolicyTab } from './PolicyModal';
 import { SocialShare } from './SocialShare';
+import { getTranslation } from '../utils/i18n';
+import { getArticleTranslation } from '../utils/articleTranslations';
 
 interface FooterProps {
   onOpenPolicy: (tab: PolicyTab) => void;
   theme?: 'dark' | 'light';
+  currentLang?: string;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark', currentLang = 'en' }) => {
   const isDark = theme === 'dark';
+  const t = getTranslation(currentLang);
+  const article = getArticleTranslation(currentLang);
+  const isRTL = ['ar', 'fa', 'ur', 'he'].includes(currentLang);
 
   return (
     <footer className={`w-full border-t mt-16 py-10 text-xs transition-colors ${
@@ -21,12 +27,12 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
         {/* Top Row: Brand & AdSense Status */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="space-y-1 text-center sm:text-left">
-            <div className={`font-bold font-game text-base sm:text-lg flex items-center justify-center sm:justify-start gap-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              <span className="text-[#ffcc00]">METRO RACERS</span>
-              <span className="text-xs font-normal text-slate-400">(Formerly known as City Speed Heroes)</span>
+            <div className={`font-bold font-game text-base sm:text-lg flex items-center justify-center sm:justify-start gap-2 flex-wrap ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <span className="text-[#ffcc00]">APEX PULSE: NEON HORIZON</span>
+              <span className="text-xs font-normal text-slate-400">(Formerly known as Metro Racers &amp; City Speed Heroes)</span>
             </div>
             <p className={isDark ? 'text-slate-400 text-xs' : 'text-slate-500 text-xs'}>
-              &copy; 2026 <strong>Metro Racers</strong>. Powered by <a href="https://www.games-children.com/" className="text-[#ffcc00] hover:underline font-semibold">games-children.com</a>. All Rights Reserved.
+              &copy; 2026 <strong>Apex Pulse: Neon Horizon</strong>. Powered by <a href="https://www.games-children.com/" className="text-[#ffcc00] hover:underline font-semibold">games-children.com</a>. All Rights Reserved.
             </p>
           </div>
 
@@ -104,7 +110,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
               className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer text-amber-400 font-semibold"
             >
               <Trophy className="w-3.5 h-3.5 text-amber-400" />
-              <span>Leaderboard</span>
+              <span>{t.leaderboard}</span>
             </a>
             <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
 
@@ -122,7 +128,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
               className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer text-amber-400 font-semibold"
             >
               <Target className="w-3.5 h-3.5 text-amber-400" />
-              <span>Daily Quests</span>
+              <span>{t.dailyRewards}</span>
             </a>
             <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
 
@@ -140,7 +146,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
               className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer"
             >
               <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-              <span>Pro Racing Tips</span>
+              <span>{article.proTipsTitle}</span>
             </a>
             <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
 
@@ -158,7 +164,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark' }) 
               className="flex items-center gap-1 hover:text-amber-500 transition-colors cursor-pointer"
             >
               <HelpCircle className="w-3.5 h-3.5 text-sky-400" />
-              <span>FAQ</span>
+              <span>{article.faqsTitle}</span>
             </a>
             <span className={isDark ? 'text-slate-700 hidden sm:inline' : 'text-slate-300 hidden sm:inline'}>|</span>
 

@@ -22,19 +22,24 @@ import {
   getDailyChallengesSummary,
 } from '../utils/dailyChallenges';
 import { soundManager } from '../utils/audio';
+import { DailyStreakBonusCard } from './DailyStreakBonusCard';
+import { getTranslation } from '../utils/i18n';
 
 interface DailyChallengesSectionProps {
   theme?: 'dark' | 'light';
   onPlayNow?: () => void;
   onCoinsChange?: (newCoins: number) => void;
+  currentLang?: string;
 }
 
 export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
   theme = 'dark',
   onPlayNow,
   onCoinsChange,
+  currentLang = 'en',
 }) => {
   const isDark = theme === 'dark';
+  const t = getTranslation(currentLang);
   const [challenges, setChallenges] = useState<DailyChallengesState>(() => loadDailyChallenges());
   const [timeLeft, setTimeLeft] = useState(() => getTimeUntilDailyReset().formatted);
   const [celebrationToast, setCelebrationToast] = useState<string | null>(null);
@@ -125,7 +130,7 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl sm:text-2xl font-bold font-game tracking-tight">
-                Daily Challenges & Quests
+                {t.dailyRewards} 🎯
               </h2>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-sans font-bold border border-amber-500/30">
                 {summary.completed} of {summary.total} Completed
@@ -163,6 +168,11 @@ export const DailyChallengesSection: React.FC<DailyChallengesSectionProps> = ({
           {celebrationToast}
         </div>
       )}
+
+      {/* Consecutive Daily Login Streak Bonus Widget */}
+      <div className="mb-5">
+        <DailyStreakBonusCard onCoinsChange={onCoinsChange} />
+      </div>
 
       {/* 3 Mission Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 mb-5">
