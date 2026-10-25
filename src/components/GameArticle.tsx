@@ -31,6 +31,14 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage, currentL
   const article = getArticleTranslation(currentLang);
   const isRTL = ['ar', 'fa', 'ur', 'he'].includes(currentLang);
 
+  const gameplayAltText = isRTL
+    ? 'لقطة شاشة تفاعلية لأسلوب لعب سباق السيارات ثلاثية الأبعاد Apex Pulse: Neon Horizon - مضمار الطريق السريع المليء بالإثارة، ومناورة تفادي الشاحنات، والانطلاق بالنيترو التوربيني السريع'
+    : 'Apex Pulse: Neon Horizon 3D highway racing gameplay action - interactive city speedway with supersonic nitrous boost, highway lane swerving, and traffic dodge mechanics';
+
+  const fleetAltText = isRTL
+    ? 'أسطول السيارات الخارقة الست في مرآب لعبة سباق السيارات Apex Pulse: Neon Horizon - سيارات سباق خارقة ذات سرعات قصوى ومحركات V8 وترقيات ميكانيكية شاملة'
+    : 'Apex Pulse: Neon Horizon exotic supercars fleet in garage showroom - 6 high-performance racing vehicles with V8 muscle, aerodynamic hypercars, and garage tuning';
+
   const toggleFaq = (idx: number) => {
     setOpenFaq(openFaq === idx ? null : idx);
   };
@@ -63,7 +71,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage, currentL
             <source srcSet="/assets/gameplay-preview.webp" type="image/webp" />
             <img
               src="/assets/gameplay-preview.jpg"
-              alt="Apex Pulse: Neon Horizon 3D highway racing gameplay preview with nitrous boost and traffic dodge"
+              alt={gameplayAltText}
               width={800}
               height={450}
               loading="lazy"
@@ -216,7 +224,7 @@ export const GameArticle: React.FC<GameArticleProps> = ({ onOpenGarage, currentL
             <source srcSet="/assets/social-cover.webp" type="image/webp" />
             <img
               src="/assets/social-cover.jpg"
-              alt="Apex Pulse fleet of exotic supercars in garage"
+              alt={fleetAltText}
               width={1200}
               height={630}
               loading="lazy"

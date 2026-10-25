@@ -34,6 +34,11 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
+  const isRTL = ['ar', 'fa', 'ur', 'he'].includes(currentLang);
+  const logoAlt = isRTL
+    ? 'شعار لعبة سباق السيارات ثلاثية الأبعاد Apex Pulse: Neon Horizon - لعبة قيادة وتفحيط وتجاوز حركة المرور مجاناً على المتصفح'
+    : 'Apex Pulse: Neon Horizon Official Logo - High-Speed 3D Highway Car Racing Simulation Game | Metro Racers & City Speed Heroes';
+
   return (
     <header className={`w-full border-b sticky top-0 z-40 backdrop-blur-md transition-colors ${
       isDark
@@ -47,7 +52,7 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <img
             src="/assets/logo.webp"
-            alt="Apex Pulse: Neon Horizon Logo - Free 3D Car Racing Game Online"
+            alt={logoAlt}
             width={38}
             height={38}
             className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-contain shadow-xs border border-amber-500/30 group-hover:scale-105 transition-transform"
