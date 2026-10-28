@@ -30,7 +30,7 @@ export default defineConfig(() => {
             }
             const cleanUrl = req.url?.split('?')[0];
             if (cleanUrl === '/ads.txt') {
-              const adsPath = path.resolve(__dirname, 'public/ads.txt');
+              const adsPath = path.resolve(import.meta.dirname || '.', 'public/ads.txt');
               if (fs.existsSync(adsPath)) {
                 res.setHeader('Content-Type', 'text/plain; charset=utf-8');
                 res.setHeader('Cache-Control', 'public, max-age=3600');
@@ -42,7 +42,7 @@ export default defineConfig(() => {
             if (cleanUrl && cleanUrl !== '/') {
               const staticPages = ['/privacy', '/terms', '/about', '/contact', '/cars', '/instructions', '/disclaimer'];
               if (staticPages.includes(cleanUrl)) {
-                const filePath = path.resolve(__dirname, `public${cleanUrl}.html`);
+                const filePath = path.resolve(import.meta.dirname || '.', `public${cleanUrl}.html`);
                 if (fs.existsSync(filePath)) {
                   res.setHeader('Content-Type', 'text/html; charset=utf-8');
                   res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
@@ -50,7 +50,7 @@ export default defineConfig(() => {
                   return;
                 }
               }
-              const publicFilePath = path.resolve(__dirname, `public${cleanUrl}`);
+              const publicFilePath = path.resolve(import.meta.dirname || '.', `public${cleanUrl}`);
               if (fs.existsSync(publicFilePath) && fs.statSync(publicFilePath).isFile()) {
                 const ext = path.extname(publicFilePath).toLowerCase();
                 const mimes: Record<string, string> = {
@@ -83,9 +83,32 @@ export default defineConfig(() => {
         },
       },
     ],
+    build: {
+      target: 'esnext',
+      cssCodeSplit: true,
+      chunkSizeWarningLimit: 600,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules/lucide-react')) {
+              return 'icons';
+            }
+            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('src/utils/articleTranslations')) {
+              return 'article-translations';
+            }
+            if (id.includes('src/utils/audio') || id.includes('src/utils/engineAudio')) {
+              return 'game-audio';
+            }
+          },
+        },
+      },
+    },
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(import.meta.dirname || '.', '.'),
       },
     },
     server: {

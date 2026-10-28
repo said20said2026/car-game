@@ -73,9 +73,16 @@ import {
   calculateGhostDelta,
   clearGhostRuns,
 } from '../utils/ghostCar';
-import { DailyChallengesModal } from './DailyChallengesModal';
-import { TrackSelectionModal } from './TrackSelectionModal';
-import { AudioSettingsModal } from './AudioSettingsModal';
+// Lazy loaded secondary modals to speed up game initialization and response time
+const DailyChallengesModal = React.lazy(() =>
+  import('./DailyChallengesModal').then((m) => ({ default: m.DailyChallengesModal }))
+);
+const TrackSelectionModal = React.lazy(() =>
+  import('./TrackSelectionModal').then((m) => ({ default: m.TrackSelectionModal }))
+);
+const AudioSettingsModal = React.lazy(() =>
+  import('./AudioSettingsModal').then((m) => ({ default: m.AudioSettingsModal }))
+);
 import { getTrackData, isTrackUnlocked, unlockTrack, TRACKS_DATA } from '../utils/tracks';
 import { soundManager, engineAudio } from '../utils/audio';
 import { AchievementToast } from './AchievementToast';
@@ -4303,43 +4310,49 @@ export const RacingGame = forwardRef<RacingGameHandle, RacingGameProps>((props, 
           </div>
         )}
 
-        {/* DEDICATED INDEPENDENT AUDIO MANAGEMENT SYSTEM MODAL */}
-        <AudioSettingsModal
-          isOpen={showAudioModal}
-          onClose={toggleAudioModal}
-          currentSpeed={currentSpeed}
-          hapticsSupported={hapticsSupported}
-          hapticsEnabled={hapticsEnabled}
-          onToggleHaptics={toggleHaptics}
-        />
+        {/* DEFERRED LAZY MODALS WRAPPED IN SUSPENSE */}
+        <React.Suspense fallback={null}>
+          {showAudioModal && (
+            <AudioSettingsModal
+              isOpen={showAudioModal}
+              onClose={toggleAudioModal}
+              currentSpeed={currentSpeed}
+              hapticsSupported={hapticsSupported}
+              hapticsEnabled={hapticsEnabled}
+              onToggleHaptics={toggleHaptics}
+            />
+          )}
 
-        {/* DAILY CHALLENGES & SPECIAL REWARDS MODAL */}
-        <DailyChallengesModal
-          isOpen={showDailyModal}
-          onClose={() => setShowDailyModal(false)}
-          onCoinsChange={(reward) => {
-            onCoinsChange(loadPlayerStats().coins);
-          }}
-        />
+          {showDailyModal && (
+            <DailyChallengesModal
+              isOpen={showDailyModal}
+              onClose={() => setShowDailyModal(false)}
+              onCoinsChange={() => {
+                onCoinsChange(loadPlayerStats().coins);
+              }}
+            />
+          )}
 
-        {/* TRACK & ENVIRONMENT SELECTION MODAL */}
-        <TrackSelectionModal
-          isOpen={showTrackModal}
-          onClose={() => setShowTrackModal(false)}
-          selectedTrack={selectedTrack}
-          onSelectTrack={(newTrack) => {
-            handleTrackChange(newTrack);
-          }}
-          onStartRace={() => {
-            if (gameState === 'MENU' || gameState === 'GAMEOVER') {
-              startGame();
-            }
-          }}
-          playerCoins={coins}
-          onCoinsChange={(newCoins) => {
-            onCoinsChange(newCoins);
-          }}
-        />
+          {showTrackModal && (
+            <TrackSelectionModal
+              isOpen={showTrackModal}
+              onClose={() => setShowTrackModal(false)}
+              selectedTrack={selectedTrack}
+              onSelectTrack={(newTrack) => {
+                handleTrackChange(newTrack);
+              }}
+              onStartRace={() => {
+                if (gameState === 'MENU' || gameState === 'GAMEOVER') {
+                  startGame();
+                }
+              }}
+              playerCoins={coins}
+              onCoinsChange={(newCoins) => {
+                onCoinsChange(newCoins);
+              }}
+            />
+          )}
+        </React.Suspense>
       </div>
     </div>
   );

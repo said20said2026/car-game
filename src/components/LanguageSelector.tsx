@@ -72,7 +72,17 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       {/* Trigger Button */}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          try {
+            (window as unknown as { loadGoogleTranslateImmediately?: () => void }).loadGoogleTranslateImmediately?.();
+          } catch {}
+          setIsOpen(!isOpen);
+        }}
+        onMouseEnter={() => {
+          try {
+            (window as unknown as { loadGoogleTranslateImmediately?: () => void }).loadGoogleTranslateImmediately?.();
+          } catch {}
+        }}
         className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
           isDark
             ? 'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border-slate-700/80 hover:border-amber-500/50'

@@ -7,15 +7,24 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Play, Trophy, Target } from 'lucide-react';
 import { Header } from './components/Header';
 import { RacingGame, RacingGameHandle } from './components/RacingGame';
-import { GarageModal } from './components/GarageModal';
-import { PolicyModal, PolicyTab } from './components/PolicyModal';
+import type { PolicyTab } from './components/PolicyModal';
 import { AdSlot } from './components/AdSlot';
 import { GameArticle } from './components/GameArticle';
 import { Achievements } from './components/Achievements';
 import { Leaderboard } from './components/Leaderboard';
 import { DailyChallengesSection } from './components/DailyChallengesSection';
-import { DailyChallengesModal } from './components/DailyChallengesModal';
 import { Footer } from './components/Footer';
+
+// Defer non-critical modals via React.lazy for faster initial render and response time
+const GarageModal = React.lazy(() =>
+  import('./components/GarageModal').then((m) => ({ default: m.GarageModal }))
+);
+const PolicyModal = React.lazy(() =>
+  import('./components/PolicyModal').then((m) => ({ default: m.PolicyModal }))
+);
+const DailyChallengesModal = React.lazy(() =>
+  import('./components/DailyChallengesModal').then((m) => ({ default: m.DailyChallengesModal }))
+);
 import { loadPlayerStats } from './utils/storage';
 import { getSavedLanguage, getTranslation, applyGlobalTranslation, LANGUAGES } from './utils/i18n';
 import { getArticleTranslation } from './utils/articleTranslations';
@@ -372,32 +381,38 @@ export default function App() {
         <AdSlot slotId="bottom-banner" format="horizontal" />
       </main>
 
-      {/* Daily Challenges & Rewards Modal */}
-      <DailyChallengesModal
-        isOpen={isDailyChallengesOpen}
-        onClose={() => setIsDailyChallengesOpen(false)}
-        onCoinsChange={setCoins}
-      />
+      {/* Lazy-loaded Modals wrapped in Suspense for zero impact on initial page load */}
+      <React.Suspense fallback={null}>
+        {isDailyChallengesOpen && (
+          <DailyChallengesModal
+            isOpen={isDailyChallengesOpen}
+            onClose={() => setIsDailyChallengesOpen(false)}
+            onCoinsChange={setCoins}
+          />
+        )}
 
-      {/* Garage & Car Wash Modal */}
-      <GarageModal
-        isOpen={isGarageOpen}
-        onClose={() => setIsGarageOpen(false)}
-        coins={coins}
-        onCoinsChange={setCoins}
-        selectedCarIdProp={selectedGarageCarId}
-      />
+        {isGarageOpen && (
+          <GarageModal
+            isOpen={isGarageOpen}
+            onClose={() => setIsGarageOpen(false)}
+            coins={coins}
+            onCoinsChange={setCoins}
+            selectedCarIdProp={selectedGarageCarId}
+          />
+        )}
 
-      {/* Legal & Policy Modal (Privacy Policy, Terms of Service, Contact, About, Disclaimer, Instructions) */}
-      <PolicyModal
-        isOpen={isPolicyOpen}
-        activeTab={policyTab}
-        onClose={handleClosePolicy}
-        onSelectTab={(tab) => {
-          setPolicyTab(tab);
-          window.location.hash = tab;
-        }}
-      />
+        {isPolicyOpen && (
+          <PolicyModal
+            isOpen={isPolicyOpen}
+            activeTab={policyTab}
+            onClose={handleClosePolicy}
+            onSelectTab={(tab) => {
+              setPolicyTab(tab);
+              window.location.hash = tab;
+            }}
+          />
+        )}
+      </React.Suspense>
 
       <Footer onOpenPolicy={handleOpenPolicy} theme={theme} currentLang={currentLang} />
     </div>
