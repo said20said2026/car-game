@@ -27,7 +27,15 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, theme = 'dark', cu
         {/* Top Row: Brand & AdSense Status */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="space-y-1 text-center sm:text-left">
-            <div className={`font-bold font-game text-base sm:text-lg flex items-center justify-center sm:justify-start gap-2 flex-wrap ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            <div className={`font-bold font-game text-base sm:text-lg flex items-center justify-center sm:justify-start gap-2.5 flex-wrap ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <img
+                src="/assets/logo.webp"
+                alt={isRTL ? "شعار لعبة سباق السيارات ثلاثية الأبعاد Apex Pulse: Neon Horizon" : "Apex Pulse: Neon Horizon Official Racing Game Logo"}
+                width={32}
+                height={32}
+                className="w-8 h-8 rounded-lg border border-amber-500/30 object-contain shadow-xs inline-block"
+                loading="lazy"
+              />
               <span className="text-[#ffcc00]">APEX PULSE: NEON HORIZON</span>
               <span className="text-xs font-normal text-slate-400">(Formerly known as Metro Racers &amp; City Speed Heroes)</span>
             </div>
