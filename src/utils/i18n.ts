@@ -64,6 +64,7 @@ export interface TranslationDictionary {
   heroBadge: string;
   freeNoDownload: string;
   garageUpgrades: string;
+  featuredGames?: string;
 }
 
 export const TRANSLATIONS: Record<string, TranslationDictionary> = {
@@ -77,6 +78,7 @@ export const TRANSLATIONS: Record<string, TranslationDictionary> = {
     audioSettings: 'إعدادات الصوت',
     leaderboard: 'لوحة الصدارة',
     dailyRewards: 'المكافآت اليومية',
+    featuredGames: 'ألعاب ممتازة',
     selectLanguage: 'اختر اللغة',
     searchLanguage: 'ابحث عن لغة...',
     formerlyKnownAs: 'المعروفة سابقاً باسم Metro Racers & City Speed Heroes',
@@ -97,6 +99,7 @@ export const TRANSLATIONS: Record<string, TranslationDictionary> = {
     audioSettings: 'Audio Settings',
     leaderboard: 'Leaderboard',
     dailyRewards: 'Daily Rewards',
+    featuredGames: 'Featured Games',
     selectLanguage: 'Select Language',
     searchLanguage: 'Search language...',
     formerlyKnownAs: 'Formerly Metro Racers & City Speed Heroes',

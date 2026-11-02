@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Trophy, Target } from 'lucide-react';
+import { Play, Trophy, Target, Sparkles } from 'lucide-react';
 import { Header } from './components/Header';
 import { RacingGame, RacingGameHandle } from './components/RacingGame';
 import type { PolicyTab } from './components/PolicyModal';
@@ -25,7 +25,13 @@ const PolicyModal = React.lazy(() =>
 const DailyChallengesModal = React.lazy(() =>
   import('./components/DailyChallengesModal').then((m) => ({ default: m.DailyChallengesModal }))
 );
-import { loadPlayerStats } from './utils/storage';
+const ArcadeGamePlayer = React.lazy(() =>
+  import('./components/ArcadeGames/ArcadeGamePlayer').then((m) => ({ default: m.ArcadeGamePlayer }))
+);
+const FeaturedGamesSection = React.lazy(() =>
+  import('./components/FeaturedGamesSection').then((m) => ({ default: m.FeaturedGamesSection }))
+);
+import { loadPlayerStats, savePlayerStats } from './utils/storage';
 import { getSavedLanguage, getTranslation, applyGlobalTranslation, LANGUAGES } from './utils/i18n';
 import { getArticleTranslation } from './utils/articleTranslations';
 
@@ -44,9 +50,23 @@ export default function App() {
   const [selectedGarageCarId, setSelectedGarageCarId] = useState<string | undefined>(undefined);
   const [isPolicyOpen, setIsPolicyOpen] = useState(false);
   const [policyTab, setPolicyTab] = useState<PolicyTab>('privacy');
+  const [activeGameId, setActiveGameId] = useState<string>('apex-pulse');
   const [coins, setCoins] = useState(() => {
     return loadPlayerStats().coins;
   });
+
+  const handleAddCoins = (amount: number) => {
+    setCoins((prev) => {
+      const next = prev + amount;
+      try {
+        const stats = loadPlayerStats();
+        stats.coins = next;
+        savePlayerStats(stats);
+        window.dispatchEvent(new CustomEvent('coins_updated', { detail: { coins: next } }));
+      } catch {}
+      return next;
+    });
+  };
 
   // Listen for coins updates from daily challenges or garage
   useEffect(() => {
@@ -146,6 +166,21 @@ export default function App() {
         setTimeout(() => {
           document.getElementById('instructions')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
+      } else if (['featured-games', 'cyber-drift', 'neon-rider', 'hyper-drag', 'retro-grand-prix', 'highway-pursuit'].includes(target)) {
+        setIsPolicyOpen(false);
+        if (target !== 'featured-games') {
+          setActiveGameId(target);
+          setTimeout(() => {
+            document.getElementById('game-arena')?.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        } else {
+          setTimeout(() => {
+            document.getElementById('featured-games')?.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }
+        document.title = defaultTitle;
+        updateMetaDescription(defaultDescription);
+        updateCanonical('/');
       } else {
         document.title = defaultTitle;
         updateMetaDescription(defaultDescription);
@@ -229,6 +264,14 @@ export default function App() {
         onToggleTheme={toggleTheme}
         currentLang={currentLang}
         onLanguageChange={setCurrentLang}
+        activeGameId={activeGameId}
+        onSelectGame={(id) => {
+          setActiveGameId(id);
+          const arena = document.getElementById('game-arena');
+          if (arena) {
+            arena.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
       />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
@@ -309,15 +352,74 @@ export default function App() {
         {/* Top AdSense slot */}
         <AdSlot slotId="header-leaderboard" format="horizontal" />
 
-        {/* Main 3D Racing Game Canvas Section */}
-        <section id="game-arena" className="scroll-mt-20">
+        {/* Main 3D Racing Game & Multi-Game Arcade Arena */}
+        <section id="game-arena" className="scroll-mt-20 space-y-3">
+          {/* Arcade Multi-Game Switcher Tabs */}
+          <div className="flex items-center justify-between gap-2 flex-wrap bg-slate-900/40 p-2 sm:p-2.5 rounded-2xl border border-slate-800/80">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full scrollbar-none">
+              <span className="text-xs font-bold text-slate-400 shrink-0 mr-1 flex items-center gap-1">
+                <span>🎮</span>
+                <span className="hidden sm:inline">{['ar', 'fa', 'ur', 'he'].includes(currentLang) ? 'اختر اللعبة:' : 'Select Game:'}</span>
+              </span>
+              {[
+                { id: 'apex-pulse', label: '🏎️ Apex Pulse 3D', badge: 'Flagship' },
+                { id: 'cyber-drift', label: '🔥 Cyber Drift', badge: 'Tokyo' },
+                { id: 'neon-rider', label: '⚡ Neon Rider', badge: 'Synthwave' },
+                { id: 'hyper-drag', label: '⏱️ Hyper Drag', badge: '1/4 Mile' },
+                { id: 'retro-grand-prix', label: '🏁 Grand Prix', badge: 'Formula' },
+                { id: 'highway-pursuit', label: '🚨 Highway Pursuit', badge: 'Police' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveGameId(tab.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
+                    activeGameId === tab.id
+                      ? 'bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-400/20 scale-102'
+                      : theme === 'dark'
+                      ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/60'
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span className={`text-[10px] font-mono px-1 py-0.2 rounded ${activeGameId === tab.id ? 'bg-amber-600/30 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>
+                    {tab.badge}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <a
+              href="#featured-games"
+              className="text-[11px] text-amber-400 hover:underline font-bold shrink-0 ml-auto flex items-center gap-1"
+            >
+              <span>{['ar', 'fa', 'ur', 'he'].includes(currentLang) ? 'عرض تفاصيل الألعاب ⬇' : 'View Game Guides ⬇'}</span>
+            </a>
+          </div>
+
           <div id="game-container" />
-          <RacingGame
-            ref={racingRef}
-            onOpenGarage={() => handleOpenGarage()}
-            coins={coins}
-            onCoinsChange={setCoins}
-          />
+          {activeGameId === 'apex-pulse' ? (
+            <RacingGame
+              ref={racingRef}
+              onOpenGarage={() => handleOpenGarage()}
+              coins={coins}
+              onCoinsChange={setCoins}
+            />
+          ) : (
+            <React.Suspense fallback={
+              <div className="h-[480px] rounded-2xl flex flex-col items-center justify-center bg-slate-950 text-amber-400 font-game font-bold gap-2 border border-slate-800">
+                <Sparkles className="w-8 h-8 animate-spin" />
+                <span>Launching Arcade Game Engine...</span>
+              </div>
+            }>
+              <ArcadeGamePlayer
+                gameId={activeGameId}
+                onBackToMain={() => setActiveGameId('apex-pulse')}
+                onEarnCoins={handleAddCoins}
+                currentLang={currentLang}
+                theme={theme}
+              />
+            </React.Suspense>
+          )}
         </section>
 
         {/* SEO Optimized Text Sections (About & Controls Guide) */}
@@ -371,6 +473,19 @@ export default function App() {
 
         {/* Mid-page AdSense Placement */}
         <AdSlot slotId="mid-game-banner" format="horizontal" />
+
+        {/* 5 Featured High-Quality Arcade Racing Games Showcase & Deep SEO Knowledge Base */}
+        <React.Suspense fallback={<div className="h-64 rounded-3xl bg-slate-900/30 animate-pulse border border-slate-800" />}>
+          <FeaturedGamesSection
+            onSelectGame={(id) => {
+              setActiveGameId(id);
+              document.getElementById('game-arena')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            activeGameId={activeGameId}
+            theme={theme}
+            currentLang={currentLang}
+          />
+        </React.Suspense>
 
         {/* Comprehensive SEO Game Article & Car Showroom */}
         <div>
