@@ -21,19 +21,29 @@ export const FeaturedGamesSection: React.FC<FeaturedGamesSectionProps> = ({
   const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
 
   const filterOptions = [
-    { id: 'all', labelEn: 'All Games (5)', labelAr: 'جميع الألعاب (5)' },
-    { id: 'drift', labelEn: 'Drift & Precision', labelAr: 'دريفت وتفحيط' },
-    { id: 'speed', labelEn: 'Speed & Reflex', labelAr: 'سرعة ورد فعل' },
+    { id: 'all', labelEn: 'All Games (12)', labelAr: 'جميع الألعاب (12)' },
+    { id: 'drift', labelEn: 'Drift & Touge', labelAr: 'دريفت وتوجي' },
+    { id: 'rally', labelEn: 'Off-Road & Rally', labelAr: 'رالي وطرق وعرة' },
+    { id: 'stunts', labelEn: 'Monster & Stunts', labelAr: 'شاحنات واستعراض' },
+    { id: 'flight', labelEn: 'Jets & Flight', labelAr: 'طيران ونفاثات' },
+    { id: 'hover', labelEn: 'Hover & Extreme', labelAr: 'هوفربورد وتزلج' },
+    { id: 'kart', labelEn: 'Kart & Battle', labelAr: 'كارت ومعارك' },
+    { id: 'speed', labelEn: 'Circuit & Speed', labelAr: 'سرعة وحلبات' },
     { id: 'timing', labelEn: 'Drag & Timing', labelAr: 'تسارع وتوقيت' },
-    { id: 'action', labelEn: 'Action Pursuit', labelAr: 'مطاردة وأكشن' },
+    { id: 'action', labelEn: 'Pursuit & Marine', labelAr: 'مطاردة وبحار' },
   ];
 
   const filteredGames = ARCADE_GAMES.filter((game) => {
     if (selectedFilter === 'all') return true;
-    if (selectedFilter === 'drift') return game.id === 'cyber-drift';
+    if (selectedFilter === 'drift') return game.id === 'cyber-drift' || game.id === 'midnight-touge';
+    if (selectedFilter === 'rally') return game.id === 'desert-rally';
+    if (selectedFilter === 'stunts') return game.id === 'monster-truck';
+    if (selectedFilter === 'flight') return game.id === 'canyon-infiltrator';
+    if (selectedFilter === 'hover') return game.id === 'skyline-blitz';
+    if (selectedFilter === 'kart') return game.id === 'neon-kart';
     if (selectedFilter === 'speed') return game.id === 'neon-rider' || game.id === 'retro-grand-prix';
     if (selectedFilter === 'timing') return game.id === 'hyper-drag';
-    if (selectedFilter === 'action') return game.id === 'highway-pursuit';
+    if (selectedFilter === 'action') return game.id === 'highway-pursuit' || game.id === 'speedboat-rush';
     return true;
   });
 
@@ -59,7 +69,7 @@ export const FeaturedGamesSection: React.FC<FeaturedGamesSectionProps> = ({
               <Sparkles className="w-3.5 h-3.5" />
               {isRTL ? 'مكتبة الألعاب الممتازة المجانية' : 'Featured High-Quality Arcade Collection'}
             </span>
-            <span className="text-xs text-slate-400 font-bold">5 {isRTL ? 'ألعاب حصرية جديدة' : 'New Exclusive Games'}</span>
+            <span className="text-xs text-slate-400 font-bold">12 {isRTL ? 'لعبة سريعة متنوعة' : 'Diverse Fast Racers'}</span>
           </div>
 
           <h2 className="text-2xl sm:text-4xl font-black font-game text-[#ffcc00] tracking-tight">

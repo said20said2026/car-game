@@ -95,6 +95,97 @@ export const ALL_GAMES_LIST: GameOption[] = [
     altTextEn: 'Highway Pursuit Police Interceptor - Night highway police chase game | لعبة مطاردة الشرطة والهروب التكتيكي',
     altTextAr: 'لعبة هايواي برسوت - مطاردة ليلية سريعة لسيارة خارقة تهرب من دوريات الشرطة',
   },
+  {
+    id: 'desert-rally',
+    titleEn: 'Desert Rally: Dakar Storm',
+    titleAr: 'ديزرت رالي: عاصفة داكار',
+    subtitleEn: 'Off-Road Dune Raid, Giant Jump Airtime & Endurance Checkpoints',
+    subtitleAr: 'رالي داكار الصحراوي والقفز الهوائي الخارق وبوابات التفتيش',
+    badgeEn: 'Dakar Rally 🏜️',
+    badgeAr: 'رالي داكار 🏜️',
+    icon: '🏜️',
+    poster: '/assets/games/desert-rally.jpg',
+    altTextEn: 'Desert Rally Dakar Storm - Off-road buggy desert jumping racer | لعبة ديزرت رالي عاصفة داكار',
+    altTextAr: 'لعبة ديزرت رالي: عاصفة داكار - سباق سيارات باجي ورالي دفع رباعي في الكثبان الرملية',
+  },
+  {
+    id: 'neon-kart',
+    titleEn: 'Neon Kart: Turbo Battle',
+    titleAr: 'نيون كارت: معركة التوربو',
+    subtitleEn: 'Floating Skyway Kart Combat, Missiles, Shields & 4 AI Rivals',
+    subtitleAr: 'سباق سيارات كارت نيون مستقبلية مع صواريخ ودروع و4 منافسين',
+    badgeEn: 'Grand Prix 🍄',
+    badgeAr: 'جائزة كبرى 🍄',
+    icon: '🍄',
+    poster: '/assets/games/neon-kart.jpg',
+    altTextEn: 'Neon Kart Turbo Battle - Cyberpunk kart combat racing game | لعبة نيون كارت معركة التوربو',
+    altTextAr: 'لعبة نيون كارت: معركة التوربو - سباق سيارات كارت نيون ومعارك أسلحة',
+  },
+  {
+    id: 'midnight-touge',
+    titleEn: 'Midnight Touge: Mountain King',
+    titleAr: 'ميدنايت توجي: ملك الجبل',
+    subtitleEn: 'Downhill Mountain Hairpin Drift Duel, Gutter Hooks & Sakura Mist',
+    subtitleAr: 'سباق ومبارزة التوجي على المنحدرات الجبلية اليابانية وتقنية مجرى المياه',
+    badgeEn: 'Touge King ⛰️',
+    badgeAr: 'ملك الجبل ⛰️',
+    icon: '⛰️',
+    poster: '/assets/games/midnight-touge.jpg',
+    altTextEn: 'Midnight Touge Mountain King - Japanese downhill touge drift battle | لعبة ميدنايت توجي ملك الجبل',
+    altTextAr: 'لعبة ميدنايت توجي: ملك الجبل - مبارزة دريفت يابانية ليلية في منحدرات الجبال',
+  },
+  {
+    id: 'speedboat-rush',
+    titleEn: 'Speedboat Rush: Hydro Thunder',
+    titleAr: 'سبيد بوت رش: هايدرو ثندر',
+    subtitleEn: 'Offshore Powerboat Racing, Swell Wave Jumps & 360 Stunts',
+    subtitleAr: 'سباق القوارب السريعة في المحيط والقفز فوق الأمواج وشقلبات 360',
+    badgeEn: 'Hydro Power 🚤',
+    badgeAr: 'قوة الأمواج 🚤',
+    icon: '🚤',
+    poster: '/assets/games/speedboat-rush.jpg',
+    altTextEn: 'Speedboat Rush Hydro Thunder - Extreme offshore boat wave racer | لعبة سبيد بوت رش سباق القوارب السريعة',
+    altTextAr: 'لعبة سبيد بوت رش: هايدرو ثندر - سباق قوارب وزوارق سريعة خارقة فوق أمواج المحيط',
+  },
+  {
+    id: 'monster-truck',
+    titleEn: 'Monster Truck: Gravity Mayhem',
+    titleAr: 'مونستر تراك: فوضى الجاذبية',
+    subtitleEn: 'Mega-Tire Stadium Destruction, Scrap Car Crushing & Air Flips',
+    subtitleAr: 'تدمير وسحق سيارات الخردة بالإطارات العملاقة والقفزات البهلوانية',
+    badgeEn: 'Monster Crush 💥',
+    badgeAr: 'سحق وتدمير 💥',
+    icon: '💥',
+    poster: '/assets/games/monster-truck.jpg',
+    altTextEn: 'Monster Truck Gravity Mayhem - Stadium scrap car crushing derby | لعبة مونستر تراك فوضى الجاذبية',
+    altTextAr: 'لعبة مونستر تراك: فوضى الجاذبية - شاحنة عملاقة بإطارات ضخمة تسحق سيارات الخردة في الاستاد',
+  },
+  {
+    id: 'canyon-infiltrator',
+    titleEn: 'Supersonic Jet: Canyon Infiltrator',
+    titleAr: 'سوبر سونيك جت: متسلل الوادي',
+    subtitleEn: 'Low-Altitude Canyon Flight, Laser Defense & Mach 2.5 Sonic Booms',
+    subtitleAr: 'طيران نفاث منخفض الارتفاع في ممرات الوادي واختراق جدار الصوت',
+    badgeEn: 'Mach 2.5 ✈️',
+    badgeAr: 'ماخ 2.5 ✈️',
+    icon: '✈️',
+    poster: '/assets/games/canyon-infiltrator.jpg',
+    altTextEn: 'Supersonic Jet Canyon Infiltrator - Hypersonic jet fighter racing game | لعبة سوبر سونيك جت طيران المقاتلات النفاثة',
+    altTextAr: 'لعبة سوبر سونيك جت: متسلل الوادي - مقاتلة نفاثة شبحية فائقة السرعة تخترق جدار الصوت',
+  },
+  {
+    id: 'skyline-blitz',
+    titleEn: 'Cyber Hoverboard: Skyline Blitz',
+    titleAr: 'سايبر هوفربورد: سكايلين بليتز',
+    subtitleEn: 'Anti-Gravity Rooftop Rail Grinding, Aerial 540s & Hyper-Glide',
+    subtitleAr: 'ركوب ألواح الهوفربورد المعلقة على أسطح ناطحات السحاب والتزلج',
+    badgeEn: 'Hyper Glide 🛹',
+    badgeAr: 'تزلج فضائي 🛹',
+    icon: '🛹',
+    poster: '/assets/games/skyline-blitz.jpg',
+    altTextEn: 'Cyber Hoverboard Skyline Blitz - Anti-gravity rooftop hoverboard surfing | لعبة سايبر هوفربورد سكايلين بليتز',
+    altTextAr: 'لعبة سايبر هوفربورد: سكايلين بليتز - متزلج هوفربورد مضاد للجاذبية يتزلج على سكك النيون',
+  },
 ];
 
 interface GamesDropdownMenuProps {
@@ -183,7 +274,7 @@ export const GamesDropdownMenu: React.FC<GamesDropdownMenuProps> = ({
             <span className="text-base select-none">{currentGame.icon}</span>
             <div className="flex items-center gap-1.5">
               <span className="font-game font-black tracking-wide text-xs sm:text-sm">
-                {isRTL ? 'قائمة الألعاب:' : 'Games Menu:'}
+                {isRTL ? 'قائمة الألعاب (13):' : 'Games Menu (13):'}
               </span>
               <span className="text-[#ffcc00] font-black underline decoration-amber-400/50 underline-offset-2">
                 {isRTL ? currentGame.titleAr : currentGame.titleEn}
@@ -203,7 +294,7 @@ export const GamesDropdownMenu: React.FC<GamesDropdownMenuProps> = ({
           {/* Expanded Dropdown Menu Overlay */}
           {isOpen && (
             <div
-              className={`absolute top-full mt-2 w-[310px] xs:w-[360px] sm:w-[440px] md:w-[480px] ${
+              className={`absolute top-full mt-2 w-[310px] xs:w-[360px] sm:w-[440px] md:w-[500px] ${
                 isRTL ? 'right-0' : 'left-0'
               } rounded-2xl border shadow-2xl z-50 overflow-hidden backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 ${
                 isDark
@@ -217,14 +308,14 @@ export const GamesDropdownMenu: React.FC<GamesDropdownMenuProps> = ({
                 <div className="flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-amber-400" />
                   <span className="font-game font-black text-xs text-amber-400 uppercase tracking-wider">
-                    {isRTL ? 'اختر لعبتك المفضلة (6 ألعاب سريعة)' : 'Select Your Game (6 Fast Browser Racers)'}
+                    {isRTL ? 'اختر لعبتك المفضلة (13 لعبة سريعة وممتازة)' : 'Select Your Game (13 Fast Browser Racers)'}
                   </span>
                 </div>
                 <span className="text-[11px] text-slate-400 font-mono font-bold">100% FREE</span>
               </div>
 
               {/* Games List Items */}
-              <div className="max-h-[380px] overflow-y-auto p-2 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-700">
+              <div className="max-h-[440px] overflow-y-auto p-2 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-700">
                 {ALL_GAMES_LIST.map((game) => {
                   const isSelected = activeGameId === game.id;
 

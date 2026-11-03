@@ -7,6 +7,13 @@ import { NeonRiderCanvas } from './NeonRiderCanvas';
 import { HyperDragCanvas } from './HyperDragCanvas';
 import { RetroGrandPrixCanvas } from './RetroGrandPrixCanvas';
 import { HighwayPursuitCanvas } from './HighwayPursuitCanvas';
+import { DesertRallyCanvas } from './DesertRallyCanvas';
+import { NeonKartCanvas } from './NeonKartCanvas';
+import { MidnightTougeCanvas } from './MidnightTougeCanvas';
+import { SpeedboatRushCanvas } from './SpeedboatRushCanvas';
+import { MonsterTruckCanvas } from './MonsterTruckCanvas';
+import { CanyonInfiltratorCanvas } from './CanyonInfiltratorCanvas';
+import { SkylineBlitzCanvas } from './SkylineBlitzCanvas';
 
 interface ArcadeGamePlayerProps {
   gameId: string;
@@ -58,6 +65,20 @@ export const ArcadeGamePlayer: React.FC<ArcadeGamePlayerProps> = ({
         return <RetroGrandPrixCanvas onEarnCoins={onEarnCoins} />;
       case 'highway-pursuit':
         return <HighwayPursuitCanvas onEarnCoins={onEarnCoins} />;
+      case 'desert-rally':
+        return <DesertRallyCanvas onEarnCoins={onEarnCoins} />;
+      case 'neon-kart':
+        return <NeonKartCanvas onEarnCoins={onEarnCoins} />;
+      case 'midnight-touge':
+        return <MidnightTougeCanvas onEarnCoins={onEarnCoins} />;
+      case 'speedboat-rush':
+        return <SpeedboatRushCanvas onEarnCoins={onEarnCoins} />;
+      case 'monster-truck':
+        return <MonsterTruckCanvas onEarnCoins={onEarnCoins} />;
+      case 'canyon-infiltrator':
+        return <CanyonInfiltratorCanvas onEarnCoins={onEarnCoins} />;
+      case 'skyline-blitz':
+        return <SkylineBlitzCanvas onEarnCoins={onEarnCoins} />;
       default:
         return <CyberDriftCanvas onEarnCoins={onEarnCoins} />;
     }

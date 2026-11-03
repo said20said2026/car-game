@@ -166,7 +166,7 @@ export default function App() {
         setTimeout(() => {
           document.getElementById('instructions')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
-      } else if (['featured-games', 'cyber-drift', 'neon-rider', 'hyper-drag', 'retro-grand-prix', 'highway-pursuit'].includes(target)) {
+      } else if (['featured-games', 'cyber-drift', 'neon-rider', 'hyper-drag', 'retro-grand-prix', 'highway-pursuit', 'desert-rally', 'neon-kart', 'midnight-touge', 'speedboat-rush', 'monster-truck', 'canyon-infiltrator', 'skyline-blitz'].includes(target)) {
         setIsPolicyOpen(false);
         if (target !== 'featured-games') {
           setActiveGameId(target);
@@ -368,6 +368,13 @@ export default function App() {
                 { id: 'hyper-drag', label: '⏱️ Hyper Drag', badge: '1/4 Mile' },
                 { id: 'retro-grand-prix', label: '🏁 Grand Prix', badge: 'Formula' },
                 { id: 'highway-pursuit', label: '🚨 Highway Pursuit', badge: 'Police' },
+                { id: 'desert-rally', label: '🏜️ Desert Rally', badge: 'Dakar' },
+                { id: 'neon-kart', label: '🍄 Neon Kart', badge: 'Battle' },
+                { id: 'midnight-touge', label: '⛰️ Touge King', badge: 'Japan' },
+                { id: 'speedboat-rush', label: '🚤 Speedboat', badge: 'Hydro' },
+                { id: 'monster-truck', label: '💥 Monster Truck', badge: 'Mayhem' },
+                { id: 'canyon-infiltrator', label: '✈️ Canyon Jet', badge: 'Mach 2.5' },
+                { id: 'skyline-blitz', label: '🛹 Hoverboard', badge: 'Blitz' },
               ].map((tab) => (
                 <button
                   key={tab.id}
