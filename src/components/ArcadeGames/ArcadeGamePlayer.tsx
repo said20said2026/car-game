@@ -104,9 +104,9 @@ export const ArcadeGamePlayer: React.FC<ArcadeGamePlayerProps> = ({
 
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-game font-black text-sm sm:text-base text-white tracking-wide">
+              <h2 className="font-game font-black text-sm sm:text-base text-white tracking-wide">
                 {isRTL ? game.titleAr : game.title}
-              </h3>
+              </h2>
               <span className="hidden sm:inline-block px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                 {isRTL ? game.badgeAr : game.badge}
               </span>

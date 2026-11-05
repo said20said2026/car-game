@@ -34,6 +34,7 @@ const FeaturedGamesSection = React.lazy(() =>
 import { loadPlayerStats, savePlayerStats } from './utils/storage';
 import { getSavedLanguage, getTranslation, applyGlobalTranslation, LANGUAGES } from './utils/i18n';
 import { getArticleTranslation } from './utils/articleTranslations';
+import { applyPageSeo } from './utils/seoTitles';
 
 export default function App() {
   const racingRef = useRef<RacingGameHandle | null>(null);
@@ -99,32 +100,8 @@ export default function App() {
     setIsGarageOpen(true);
   };
 
-  // Support direct path and hash navigation for pages (e.g. /privacy, /terms, /contact, /about, /cars, /instructions)
+  // Support direct path and hash navigation for pages (e.g. /privacy, /terms, /contact, /about, /cars, /instructions, #cyber-drift, etc.)
   useEffect(() => {
-    const defaultTitle = 'Apex Pulse: Neon Horizon – High-Speed 3D Highway Racer';
-    const defaultDescription = 'Feel the rush in Apex Pulse: Neon Horizon! Dodge highway traffic, unleash nitrous, and master rain-slick streets in this free 3D arcade browser racing game.';
-    const siteUrl = 'https://www.games-children.com';
-
-    const updateMetaDescription = (desc: string) => {
-      let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
-      if (!metaDesc) {
-        metaDesc = document.createElement('meta');
-        metaDesc.name = 'description';
-        document.head.appendChild(metaDesc);
-      }
-      metaDesc.content = desc;
-    };
-
-    const updateCanonical = (path: string) => {
-      let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-      if (!canonicalLink) {
-        canonicalLink = document.createElement('link');
-        canonicalLink.rel = 'canonical';
-        document.head.appendChild(canonicalLink);
-      }
-      canonicalLink.href = `${siteUrl}${path === '/' ? '' : path}`;
-    };
-
     const handleRoute = () => {
       const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
       const hash = window.location.hash.replace('#', '');
@@ -133,58 +110,36 @@ export default function App() {
       if (['privacy', 'terms', 'disclaimer', 'contact', 'about'].includes(target)) {
         setPolicyTab(target as PolicyTab);
         setIsPolicyOpen(true);
-        const titles: Record<string, string> = {
-          privacy: 'Privacy Policy - Apex Pulse: Neon Horizon | games-children.com',
-          terms: 'Terms of Service - Apex Pulse: Neon Horizon | games-children.com',
-          disclaimer: 'Disclaimer - Apex Pulse: Neon Horizon | games-children.com',
-          contact: 'Contact Us & Support - Apex Pulse: Neon Horizon | games-children.com',
-          about: 'About Us - Apex Pulse: Neon Horizon | games-children.com',
-        };
-        const descriptions: Record<string, string> = {
-          privacy: 'Read our Privacy Policy, COPPA compliance, cookie disclosures, and data protection guidelines for Apex Pulse: Neon Horizon.',
-          terms: 'Review the Terms of Service and fair play guidelines for Apex Pulse: Neon Horizon on games-children.com.',
-          disclaimer: 'Legal disclaimer and safety advisory for Apex Pulse: Neon Horizon browser car racing game.',
-          contact: 'Get in touch with our team for feedback, bug reports, and customer support for Apex Pulse.',
-          about: 'Learn about our mission to bring fast, safe, high-performance browser games to families and players worldwide.',
-        };
-        document.title = titles[target] || defaultTitle;
-        updateMetaDescription(descriptions[target] || defaultDescription);
-        updateCanonical(`/${target}`);
+        applyPageSeo(target, currentLang);
       } else if (target === 'cars') {
         setIsPolicyOpen(false);
-        document.title = 'Supercars Fleet & Upgrades - Apex Pulse: Neon Horizon';
-        updateMetaDescription('Explore the 6 high-octane racing supercars, performance stats, turbo specs, and garage upgrades in Apex Pulse.');
-        updateCanonical('/cars');
+        applyPageSeo('cars', currentLang);
         setTimeout(() => {
           document.getElementById('cars')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
       } else if (target === 'instructions') {
         setIsPolicyOpen(false);
-        document.title = 'How to Play & Controls Guide - Apex Pulse: Neon Horizon';
-        updateMetaDescription('Master keyboard and touch controls, nitro boosts, drafting, and near-miss multipliers in Apex Pulse.');
-        updateCanonical('/instructions');
+        applyPageSeo('instructions', currentLang);
         setTimeout(() => {
           document.getElementById('instructions')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
-      } else if (['featured-games', 'cyber-drift', 'neon-rider', 'hyper-drag', 'retro-grand-prix', 'highway-pursuit', 'desert-rally', 'neon-kart', 'midnight-touge', 'speedboat-rush', 'monster-truck', 'canyon-infiltrator', 'skyline-blitz'].includes(target)) {
+      } else if (target === 'featured-games') {
         setIsPolicyOpen(false);
-        if (target !== 'featured-games') {
-          setActiveGameId(target);
-          setTimeout(() => {
-            document.getElementById('game-arena')?.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-        } else {
-          setTimeout(() => {
-            document.getElementById('featured-games')?.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-        }
-        document.title = defaultTitle;
-        updateMetaDescription(defaultDescription);
-        updateCanonical('/');
+        applyPageSeo('featured-games', currentLang);
+        setTimeout(() => {
+          document.getElementById('featured-games')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } else if (['cyber-drift', 'neon-rider', 'hyper-drag', 'retro-grand-prix', 'highway-pursuit', 'desert-rally', 'neon-kart', 'midnight-touge', 'speedboat-rush', 'monster-truck', 'canyon-infiltrator', 'skyline-blitz'].includes(target)) {
+        setIsPolicyOpen(false);
+        setActiveGameId(target);
+        applyPageSeo(target, currentLang);
+        setTimeout(() => {
+          document.getElementById('game-arena')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
       } else {
-        document.title = defaultTitle;
-        updateMetaDescription(defaultDescription);
-        updateCanonical('/');
+        if (!isPolicyOpen) {
+          applyPageSeo(activeGameId, currentLang);
+        }
       }
     };
 
@@ -195,7 +150,14 @@ export default function App() {
       window.removeEventListener('hashchange', handleRoute);
       window.removeEventListener('popstate', handleRoute);
     };
-  }, []);
+  }, [currentLang]);
+
+  // Keep SEO titles & metadata in sync whenever active game or language changes
+  useEffect(() => {
+    if (!isPolicyOpen) {
+      applyPageSeo(activeGameId, currentLang);
+    }
+  }, [activeGameId, currentLang, isPolicyOpen]);
 
   const handleOpenPolicy = (tab: PolicyTab) => {
     setPolicyTab(tab);
@@ -203,30 +165,16 @@ export default function App() {
     try {
       window.history.pushState({ tab }, '', `/${tab}`);
     } catch {}
-    const titles: Record<string, string> = {
-      privacy: 'Privacy Policy - Apex Pulse: Neon Horizon | games-children.com',
-      terms: 'Terms of Service - Apex Pulse: Neon Horizon | games-children.com',
-      disclaimer: 'Disclaimer - Apex Pulse: Neon Horizon | games-children.com',
-      contact: 'Contact Us & Support - Apex Pulse: Neon Horizon | games-children.com',
-      about: 'About Us - Apex Pulse: Neon Horizon | games-children.com',
-    };
-    document.title = titles[tab] || 'Apex Pulse: Neon Horizon – High-Speed 3D Highway Racer';
-    const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (canonical) canonical.href = `https://www.games-children.com/${tab}`;
+    applyPageSeo(tab, currentLang);
   };
 
   const handleClosePolicy = () => {
     setIsPolicyOpen(false);
     try {
-      window.history.pushState({}, '', '/');
+      const targetHash = activeGameId !== 'apex-pulse' ? `#${activeGameId}` : '';
+      window.history.pushState({}, '', `/${targetHash}`);
     } catch {}
-    document.title = 'Apex Pulse: Neon Horizon – High-Speed 3D Highway Racer';
-    const metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
-    if (metaDesc) {
-      metaDesc.content = 'Feel the rush in Apex Pulse: Neon Horizon! Dodge highway traffic, unleash nitrous, and master rain-slick streets in this free 3D arcade browser racing game.';
-    }
-    const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (canonical) canonical.href = 'https://www.games-children.com';
+    applyPageSeo(activeGameId, currentLang);
   };
 
   const handlePlayNow = () => {

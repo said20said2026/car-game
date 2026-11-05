@@ -73,11 +73,11 @@ export const FeaturedGamesSection: React.FC<FeaturedGamesSectionProps> = ({
           </div>
 
           <h2 className="text-2xl sm:text-4xl font-black font-game text-[#ffcc00] tracking-tight">
-            {isRTL ? 'ألعاب السباق والأكشن الممتازة (بدون تحميل)' : 'Premier 3D & 2D Arcade Racing Games'}
+            {isRTL ? 'أفضل ألعاب سباق سيارات وتفحيط ومطاردات مجانية بدون تحميل (12 لعبة أركيد حصرية)' : 'Top Free 3D & 2D Arcade Car Racing Games (12 Unique Experiences, Zero Downloads)'}
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-1.5 max-w-2xl leading-relaxed">
             {isRTL
-              ? 'مجموعة منتقاة من أروع ألعاب السباق والانجراف والتسارع ومطاردات الشرطة، مصممة بأعلى معايير الفيزياء والجرافيكس لتعمل بسلاسة فائقة 60 FPS مباشرة عبر المتصفح دون الحاجة لأي تثبيت أو تنزيل.'
+              ? 'مجموعة ألعاب أركيد فريدة ومصممة بأعلى معايير الفيزياء والجرافيكس لتتصدر أفضل ألعاب المتصفح: دريفت طوكيو، رالي الصحراء، سباقات الكارت، ومطاردات الشرطة التكتيكية بسلاسة 60 إطاراً في الثانية دون أي تنزيل.'
               : 'Handcrafted high-octane racing experiences featuring authentic drift physics, synthwave circuits, quarter-mile drag timing, formula grand prix, and tactical police pursuits—all 100% free and playable right in your browser.'}
           </p>
         </div>
